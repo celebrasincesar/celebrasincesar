@@ -1998,6 +1998,7 @@ function PageAlce({ onIniciarWizard }) {
                 {
                   icon: '📍', title: 'Talavera de la Reina 380',
                   sub: 'Las Condes, Santiago de Chile', color: 'rgba(41,185,232,0.15)',
+                  href: 'https://www.google.com/maps/place/Celebraciones+de+cumplea%C3%B1os+infantiles+Alce/@-33.4103966,-70.5469409,17z/data=!3m1!4b1!4m6!3m5!1s0x9662cffa12a16607:0x929326a7c505c57!8m2!3d-33.4103966!4d-70.5469409!16s%2Fg%2F11y0fd4d9w',
                 },
                 {
                   icon: '🚇', title: 'Cerca de Metro Los Dominicos',
@@ -2015,35 +2016,56 @@ function PageAlce({ onIniciarWizard }) {
                   icon: '📧', title: 'celebracionesalce@gmail.com',
                   sub: 'Para consultas y presupuestos detallados', color: 'rgba(41,185,232,0.12)',
                 },
-              ].map((item) => (
-                <div key={item.title} className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl"
-                    style={{ background: item.color }}>
-                    {item.icon}
-                  </div>
-                  <div>
-                    <p className="font-black text-white text-base">{item.title}</p>
-                    <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.sub}</p>
-                  </div>
-                </div>
-              ))}
+              ].map((item) => {
+                const inner = (
+                  <>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl"
+                      style={{ background: item.color }}>
+                      {item.icon}
+                    </div>
+                    <div>
+                      <p className="font-black text-white text-base">{item.title}</p>
+                      <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.sub}</p>
+                    </div>
+                  </>
+                );
+                return item.href ? (
+                  <a key={item.title} href={item.href} target="_blank" rel="noopener noreferrer"
+                    className="flex items-start gap-4 hover:opacity-80 transition-opacity">
+                    {inner}
+                  </a>
+                ) : (
+                  <div key={item.title} className="flex items-start gap-4">{inner}</div>
+                );
+              })}
 
-              <a
-                href="https://wa.me/56944356955"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 font-black px-6 py-3.5 rounded-2xl text-white text-sm transition-all hover:scale-105 mt-2"
-                style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}
-              >
-                💬 Consultar por WhatsApp
-              </a>
+              <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                <a
+                  href="https://www.google.com/maps/place/Celebraciones+de+cumplea%C3%B1os+infantiles+Alce/@-33.4103966,-70.5469409,17z/data=!3m1!4b1!4m6!3m5!1s0x9662cffa12a16607:0x929326a7c505c57!8m2!3d-33.4103966!4d-70.5469409!16s%2Fg%2F11y0fd4d9w"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 font-black px-6 py-3.5 rounded-2xl text-white text-sm transition-all hover:scale-105"
+                  style={{ background: 'linear-gradient(135deg, #1565C0, #29B9E8)', boxShadow: '0 4px 20px rgba(41,185,232,0.35)' }}
+                >
+                  📍 Cómo llegar →
+                </a>
+                <a
+                  href="https://wa.me/56944356955"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 font-black px-6 py-3.5 rounded-2xl text-white text-sm transition-all hover:scale-105"
+                  style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}
+                >
+                  💬 Consultar por WhatsApp
+                </a>
+              </div>
             </div>
 
             {/* Mapa embed */}
             <div className="rounded-3xl overflow-hidden shadow-2xl"
               style={{ border: '1px solid rgba(41,185,232,0.2)', height: '340px' }}>
               <iframe
-                src="https://maps.google.com/maps?q=Talavera+de+la+Reina+380,+Las+Condes,+Santiago,+Chile&t=m&z=16&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?ftid=0x9662cffa12a16607:0x929326a7c505c57&t=m&z=17&ie=UTF8&iwloc=B&output=embed"
                 width="100%"
                 height="340"
                 style={{ border: 0, display: 'block', filter: 'invert(92%) hue-rotate(180deg) saturate(1.2) contrast(0.85)' }}
