@@ -67,6 +67,9 @@ export const metadata = {
   alternates: {
     canonical: 'https://celebrasincesar.cl',
   },
+  verification: {
+    google: 'JarfBZN5S6AN9rRQu8YmaUesPlcqJazlXWttsJBl22A',
+  },
   other: {
     'geo.region': 'CL-RM',
     'geo.placename': 'Las Condes, Santiago, Chile',
