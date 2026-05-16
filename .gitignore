@@ -14,9 +14,8 @@ out/
 .DS_Store
 Thumbs.db
 
-# Archivos grandes (supera el límite de 100MB de GitHub)
-public/video-home.mp4
-
 # Logs
 *.log
 npm-debug.log*
+
+.vercel
