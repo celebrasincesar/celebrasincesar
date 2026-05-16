@@ -1,0 +1,22 @@
+# Dependencias
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Variables de entorno — NUNCA subir al repo
+.env
+.env.local
+.env.*.local
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos grandes (supera el límite de 100MB de GitHub)
+public/video-home.mp4
+
+# Logs
+*.log
+npm-debug.log*
