@@ -175,7 +175,7 @@ function HeroStatic({ onVerOpciones }) {
           className="text-white/65 text-sm md:text-base mb-10 max-w-lg"
           style={{ textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}
         >
-          Elegí el espacio perfecto, armá la celebración y confirmá en minutos.
+          Elige el espacio perfecto, arma la celebración y confirma en minutos.
           Sin complicaciones, con todo incluido.
         </p>
 
@@ -253,7 +253,7 @@ function CardInicio({ onSelect }) {
               <span style={{ color: '#F97316' }}>y celebra sin cesar</span>
             </h2>
             <p className="text-white/45 text-base max-w-lg mx-auto">
-              Selecciona el venue ideal para tu hijo. Cada espacio tiene su magia — armás tu celebración en minutos.
+              Selecciona el espacio ideal para tu hijo. Cada espacio tiene su magia — arma tu celebración en minutos.
             </p>
           </div>
 
@@ -1206,7 +1206,7 @@ const INFRAS = [
   },
   {
     emoji: '🏠', title: 'Salón con Aire Acondicionado',
-    desc: 'Salón principal amplio y techado con AC. Para el festejo, la torta y la comodidad de todos los adultos.',
+    desc: 'Salón principal amplio y techado con AC. Para la celebración, el pastel y la comodidad de todos los adultos.',
     color: '#8B5CF6', imagen: '/infra-salon.jpg',
   },
   {
@@ -2316,7 +2316,7 @@ export default function App() {
 Somos ${cantNinosTexto} niños para el cumple de ${estado.nombreNino}${estado.edadNino ? ` (${estado.edadNino} años)` : ''}.
 🏡 Sector: ${sectorTexto}
 
-Elegí estos adicionales:
+Adicionales seleccionados:
 ${adicionalesTexto}
 
 El total estimado es ${clp(total)}.${notasLinea}
