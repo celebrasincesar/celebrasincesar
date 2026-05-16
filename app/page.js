@@ -2065,7 +2065,7 @@ function PageAlce({ onIniciarWizard }) {
             <div className="rounded-3xl overflow-hidden shadow-2xl"
               style={{ border: '1px solid rgba(41,185,232,0.2)', height: '340px' }}>
               <iframe
-                src="https://maps.google.com/maps?ftid=0x9662cffa12a16607:0x929326a7c505c57&t=m&z=17&ie=UTF8&iwloc=B&output=embed"
+                src="https://maps.google.com/maps?q=Celebraciones+de+cumplea%C3%B1os+infantiles+Alce,+Las+Condes,+Santiago&t=m&z=17&ie=UTF8&iwloc=B&output=embed"
                 width="100%"
                 height="340"
                 style={{ border: 0, display: 'block', filter: 'invert(92%) hue-rotate(180deg) saturate(1.2) contrast(0.85)' }}
