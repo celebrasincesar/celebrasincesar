@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { PRECIOS_BASE, PRECIOS_EXTRAS, CATEGORIAS_ADICIONALES, BLOQUES_VITRINA } from '../data/master';
 
 // ── Lookup rápido de items por ID (para resolver grupos de la vitrina)
@@ -45,6 +46,8 @@ function Header({ onHome }) {
             src="/logo-celebra.png"
             alt="Celebra Sin Cesar"
             className="h-14 w-auto group-hover:scale-105 transition-transform duration-200"
+            loading="eager"
+            decoding="async"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
@@ -101,13 +104,16 @@ function HeroStatic({ onVerOpciones }) {
         }}
       />
 
-      {/* Imagen estática de fondo */}
-      <img
+      {/* Imagen estática de fondo — priority=true para LCP */}
+      <Image
         src="/foto-home-bg.jpg"
         alt=""
-        className="absolute inset-0 w-full h-full object-cover"
+        fill
+        priority
+        className="object-cover"
+        sizes="100vw"
         aria-hidden="true"
-        onError={(e) => (e.target.style.display = 'none')}
+        onError={(e) => { e.currentTarget.style.display = 'none'; }}
       />
 
       {/* Overlay oscuro gradiente */}
@@ -128,6 +134,8 @@ function HeroStatic({ onVerOpciones }) {
             src="/logo-celebra.png"
             alt="Celebra Sin Cesar"
             className="h-36 md:h-48 w-auto mx-auto"
+            loading="eager"
+            decoding="async"
             style={{
               filter:
                 'drop-shadow(0 8px 32px rgba(0,0,0,0.45)) drop-shadow(0 2px 12px rgba(0,0,0,0.3))',
@@ -952,12 +960,14 @@ function ModalCarrusel({ grupo, extras, cantNinos, onToggle, onCerrar }) {
                   className="relative w-full"
                   style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0D2B6E, #1565C0)' }}
                 >
-                  <img
+                  <Image
                     src={isCentro ? (fotos[fotoIdxSafe] || item.imagen) : item.imagen}
                     alt={item.nombre}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 85vw, 33vw"
                     style={isCentro ? { filter: 'saturate(1.1) contrast(1.05) brightness(1.03)' } : {}}
-                    onError={(e) => (e.target.style.display = 'none')}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
 
                   {/* ── Flechas de navegación entre fotos del ítem (solo card central) ── */}
@@ -1296,10 +1306,12 @@ function GaleriaInfra() {
                 background: '#0D1B3E',
               }}
             >
-              <img
+              <Image
                 src={f.imagen} alt={f.title}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                onError={(e) => { e.target.style.display = 'none'; }}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                sizes="34vw"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
 
               {/* Gradiente oscuro inferior */}
@@ -1368,13 +1380,15 @@ function GaleriaInfra() {
             <div className="w-full max-w-4xl rounded-3xl overflow-hidden relative"
               style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)' }}>
               <div className="relative w-full" style={{ aspectRatio: '16/9', background: '#0D1B3E' }}>
-                <img
+                <Image
                   key={lightboxIdx}
                   src={INFRAS[lightboxIdx].imagen}
                   alt={INFRAS[lightboxIdx].title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 896px"
                   style={{ filter: 'saturate(1.08) contrast(1.04)' }}
-                  onError={(e) => (e.target.style.display = 'none')}
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 />
                 <div className="absolute bottom-0 left-0 right-0 h-24"
                   style={{ background: 'linear-gradient(to bottom, transparent, rgba(6,10,30,0.55))' }} />
@@ -1452,9 +1466,10 @@ function PageAlce({ onIniciarWizard }) {
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(135deg, #060F2E 0%, #0D2B6E 45%, #0E6FA8 100%)' }} />
         {/* Foto de fondo (misma que el hero principal) */}
-        <img src="/foto-home-bg.jpg" alt="" aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover"
-          onError={(e) => (e.target.style.display = 'none')} />
+        <Image src="/foto-home-bg.jpg" alt="" fill aria-hidden="true"
+          className="object-cover"
+          sizes="100vw"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         {/* Overlay oscuro */}
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(135deg, rgba(6,15,46,0.88) 0%, rgba(13,43,110,0.7) 60%, rgba(14,111,168,0.55) 100%)' }} />
@@ -1464,13 +1479,13 @@ function PageAlce({ onIniciarWizard }) {
 
             {/* Logo Alce Kids */}
             <div className="flex-shrink-0">
-              <div className="w-44 h-44 rounded-3xl overflow-hidden"
+              <div className="w-44 h-44 rounded-3xl overflow-hidden relative"
                 style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 0 2px rgba(41,185,232,0.3)' }}>
-                <img src="/logo-alce.png" alt="Alce Kids"
-                  className="w-full h-full object-cover"
-                  onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                <div style={{ display: 'none' }}
-                  className="w-full h-full items-center justify-center text-7xl bg-blue-900">🦌</div>
+                <Image src="/logo-alce.png" alt="Alce Kids"
+                  fill
+                  className="object-cover"
+                  sizes="176px"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }} />
               </div>
             </div>
 
@@ -1592,11 +1607,13 @@ function PageAlce({ onIniciarWizard }) {
                 style={{ aspectRatio: '4/3', background: '#0D1B3E' }}
               >
                 {/* ── Foto de fondo — cubre todo el recuadro ── */}
-                <img
+                <Image
                   src={f.imagen}
                   alt={f.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => { e.target.style.display = 'none'; }}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 />
 
                 {/* ── Gradiente oscuro: transparente arriba → oscuro abajo ── */}
@@ -1685,13 +1702,15 @@ function PageAlce({ onIniciarWizard }) {
               style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)' }}
             >
               <div className="relative w-full" style={{ aspectRatio: '16/9', background: '#0D1B3E' }}>
-                <img
+                <Image
                   key={lightboxIdx}
                   src={INFRAS[lightboxIdx].imagen}
                   alt={INFRAS[lightboxIdx].title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 896px"
                   style={{ filter: 'saturate(1.08) contrast(1.04)' }}
-                  onError={(e) => (e.target.style.display = 'none')}
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 />
                 {/* Gradiente inferior */}
                 <div
@@ -2398,6 +2417,7 @@ El total estimado es ${clp(total)}.${notasLinea}
                     muted
                     loop
                     playsInline
+                    preload="none"
                   />
                 </div>
 
@@ -2999,11 +3019,13 @@ El total estimado es ${clp(total)}.${notasLinea}
                               }}
                             />
                             {/* Foto real */}
-                            <img
+                            <Image
                               src={grupo.imagen}
                               alt={grupo.nombre}
-                              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              onError={(e) => (e.target.style.display = 'none')}
+                              fill
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
+                              sizes="(max-width: 768px) 50vw, 25vw"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
                             {/* Overlay oscuro gradiente (inferior más oscuro) */}
                             <div

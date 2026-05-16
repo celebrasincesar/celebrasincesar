@@ -1,12 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-
+/* Fuente cargada via next/font (auto-alojada en Vercel — no necesita @import externo) */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --font-nunito: 'Nunito', sans-serif;
-}
 
 * {
   box-sizing: border-box;
