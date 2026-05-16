@@ -73,8 +73,8 @@ export const metadata = {
   other: {
     'geo.region': 'CL-RM',
     'geo.placename': 'Las Condes, Santiago, Chile',
-    'geo.position': '-33.4069;-70.5700',
-    'ICBM': '-33.4069, -70.5700',
+    'geo.position': '-33.4103966;-70.5469409',
+    'ICBM': '-33.4103966, -70.5469409',
   },
 };
 
@@ -96,8 +96,8 @@ const localBusinessSchema = {
   },
   geo: {
     '@type': 'GeoCoordinates',
-    latitude: -33.4069,
-    longitude: -70.57,
+    latitude: -33.4103966,
+    longitude: -70.5469409,
   },
   areaServed: [
     { '@type': 'City', name: 'Las Condes' },
