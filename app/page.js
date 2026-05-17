@@ -177,7 +177,7 @@ function HeroStatic({ onVerOpciones }) {
           className="text-white/65 text-sm md:text-base mb-10 max-w-lg"
           style={{ textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}
         >
-          Casa de cumpleaños exclusiva en Las Condes. Piscina de pelotas, tobogán, granja y adultos ilimitados — todo incluido.
+          El recinto de cumpleaños más completo de Las Condes. Piscina de pelotas, tobogán, granja y adultos ilimitados — todo incluido.
         </p>
 
         {/* Botón CTA */}
@@ -206,7 +206,7 @@ function HeroStatic({ onVerOpciones }) {
           className="text-white/70 text-sm font-bold hover:text-white transition-colors mt-1"
           style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}
         >
-          Conocer la casa sin compromiso →
+          Conocer el lugar sin compromiso →
         </a>
       </div>
 
@@ -307,7 +307,7 @@ function CardInicio({ onSelect }) {
                 </div>
 
                 <h2 className="text-2xl font-black text-center mb-1 text-white">Alce Kids</h2>
-                <p className="font-bold text-center text-sm mb-1" style={{ color: '#29B9E8' }}>Casa de cumpleaños · 0 a 6 años · Las Condes</p>
+                <p className="font-bold text-center text-sm mb-1" style={{ color: '#29B9E8' }}>Recinto exclusivo · 0 a 6 años · Las Condes</p>
                 <p className="text-white/40 text-xs text-center mb-5">Talavera de la Reina 380 · cerca Metro Los Dominicos</p>
 
                 {/* Mini features */}
@@ -322,7 +322,7 @@ function CardInicio({ onSelect }) {
 
                 <div className="font-black py-3.5 rounded-2xl text-center text-white text-sm group-hover:scale-[1.02] transition-transform"
                   style={{ background: 'linear-gradient(90deg, #1565C0, #29B9E8)', boxShadow: '0 4px 20px rgba(21,101,192,0.4)' }}>
-                  Ver la casa y armar mi celebración →
+                  Ver el recinto y armar mi celebración →
                 </div>
               </div>
             </div>
@@ -393,7 +393,7 @@ function CardInicio({ onSelect }) {
         <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <p className="text-white font-black text-xl mb-1.5">📸 Síguenos en Instagram</p>
-            <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-sm">@celebracionesalce · +1.200 familias del sector oriente · fotos reales de la casa</p>
+            <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-sm">@celebracionesalce · +1.200 familias del sector oriente · fotos reales del recinto</p>
           </div>
           <a
             href="https://www.instagram.com/celebracionesalce/"
@@ -1222,7 +1222,7 @@ const INFRAS = [
   },
   {
     emoji: '🎪', title: '2 Sectores Independientes',
-    desc: 'Sector tobogán y sector piscina de pelotas. Elige un solo sector (hasta 10 niños) o la casa completa para grupos grandes.',
+    desc: 'Sector tobogán y sector piscina de pelotas. Elige un solo sector (hasta 10 niños) o el recinto completo para grupos grandes.',
     color: '#29B9E8', imagen: '/infra-sectores.jpg',
   },
   {
@@ -1438,7 +1438,7 @@ function GaleriaInfra() {
 }
 
 function PageAlce({ onIniciarWizard }) {
-  const waVisita = `https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Me gustaría conocer la casa Alce Kids sin compromiso. ¿Cuándo podría pasar a visitarla?')}`;
+  const waVisita = `https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Me gustaría conocer el espacio Alce Kids sin compromiso. ¿Cuándo podría pasar a visitarlo?')}`;
   const [lightboxIdx, setLightboxIdx] = useState(null);
 
   // Teclado para el lightbox
@@ -1503,7 +1503,7 @@ function PageAlce({ onIniciarWizard }) {
                 Alce <span style={{ color: '#29B9E8' }}>Kids</span>
               </h1>
               <p className="font-black text-xl mb-2" style={{ color: '#FED7AA' }}>
-                La casa de cumpleaños más increíble del sector oriente
+                El lugar de cumpleaños más especial del sector oriente
               </p>
               <p className="text-base mb-8 max-w-lg" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 40 años de historia familiar · Niños de 0 a 6 años · Las Condes, Santiago de Chile
@@ -1595,7 +1595,7 @@ function PageAlce({ onIniciarWizard }) {
               <span style={{ color: '#1565C0' }}>esperando a tu hijo</span>
             </h2>
             <p className="text-gray-400 text-base max-w-sm mx-auto">
-              Cada rincón de la casa fue pensado para que los niños no paren de reír
+              Cada rincón del espacio fue diseñado para que los niños no paren de reír
             </p>
           </div>
 
@@ -1822,7 +1822,7 @@ function PageAlce({ onIniciarWizard }) {
               <div className="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none"
                 style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
               <div className="text-xs font-black uppercase tracking-widest mb-5" style={{ color: '#F97316' }}>
-                🏰 Casa Completa
+                🏰 Recinto Completo
               </div>
               <div>
                 <span className="font-black text-5xl text-white">$225k</span>
@@ -1833,7 +1833,7 @@ function PageAlce({ onIniciarWizard }) {
                 <span className="text-white/40 text-sm ml-2">Sábado · hasta 30 niños</span>
               </div>
               <ul className="space-y-2.5">
-                {['Toda la casa exclusiva para ti', 'Hasta 30 niños (+ extras a $10k c/u)', 'Adultos ilimitados sin costo', '3 horas + 30 min para decorar', 'Cocina y salón con AC incluido'].map((item) => (
+                {['Todo el recinto exclusivo para ti', 'Hasta 30 niños (+ extras a $10k c/u)', 'Adultos ilimitados sin costo', '3 horas + 30 min para decorar', 'Cocina y salón con AC incluido'].map((item) => (
                   <li key={item} className="flex items-center gap-2.5 text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>
                     <span className="font-black flex-shrink-0" style={{ color: '#F97316' }}>✓</span> {item}
                   </li>
@@ -2091,7 +2091,7 @@ function PageAlce({ onIniciarWizard }) {
           </h2>
           <p className="text-lg mb-10 max-w-xl mx-auto leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
             Elige tu fecha, arma tu celebración y confirma en minutos.<br />
-            O visita la casa primero — <em>quien la ve, la reserva</em>.
+            O visita el lugar primero — <em>quien lo ve, lo reserva</em>.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -2130,8 +2130,7 @@ function Footer() {
             Celebra Sin César
           </div>
           <p className="leading-relaxed text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            Casa de cumpleaños exclusiva en Las Condes, Santiago. Niños de 0 a 6 años en el
-            histórico recinto Alce Kids.
+            El recinto de cumpleaños más completo de Las Condes, Santiago. Niños de 0 a 6 años con 40 años de historia familiar.
           </p>
           <div className="flex gap-2 mt-4">
             <a
@@ -2313,7 +2312,7 @@ export default function App() {
       estado.cantNinos === 'hasta20' ? 'hasta 20' :
       estado.cantNinos === 'hasta30' ? 'hasta 30' :
       `30 + ${estado.ninosExtra || 1}`;
-    const sectorTexto = estado.sector === 'independiente' ? 'Sector Independiente' : 'Casa Completa';
+    const sectorTexto = estado.sector === 'independiente' ? 'Sector Independiente' : 'Recinto Completo';
 
     const adicionales = [
       estado.packCelebra ? `• Pack Celebra Sin Cesar (Piñata + Decoración): ${clp(PRECIOS_EXTRAS.pack_celebra)}` : '',
@@ -2352,8 +2351,8 @@ El total estimado es ${clp(total)}.${notasLinea}
   const generarWhatsAppVisita = () => {
     const nombre = estado.nombreNino;
     const msg = nombre
-      ? `¡Hola César! Me gustaría conocer la casa Alce Kids antes de reservar la celebración de ${nombre}. ¿Cuándo podría pasar a visitarla sin compromiso?`
-      : `¡Hola César! Me gustaría conocer la casa Alce Kids sin compromiso. ¿Cuándo podría pasar a visitarla?`;
+      ? `¡Hola César! Me gustaría conocer el espacio Alce Kids antes de reservar la celebración de ${nombre}. ¿Cuándo podría pasar a visitarlo sin compromiso?`
+      : `¡Hola César! Me gustaría conocer el espacio Alce Kids sin compromiso. ¿Cuándo podría pasar a visitarlo?`;
     window.open(`https://wa.me/56944356955?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
@@ -2403,7 +2402,7 @@ El total estimado es ${clp(total)}.${notasLinea}
           </div>
           <div className="flex-1 relative z-10">
             <h2 className="text-white font-black text-2xl leading-none">Alce Kids</h2>
-            <p className="text-blue-200/70 text-sm mt-0.5">Casa de cumpleaños · Talavera de la Reina 380, Las Condes · 0 a 6 años</p>
+            <p className="text-blue-200/70 text-sm mt-0.5">Recinto exclusivo · Talavera de la Reina 380, Las Condes · 0 a 6 años</p>
           </div>
           <div className="hidden md:flex flex-col items-end gap-2 relative z-10">
             <div className="flex items-center gap-1.5">
@@ -2415,7 +2414,7 @@ El total estimado es ${clp(total)}.${notasLinea}
               className="text-xs font-bold px-3 py-1 rounded-full transition-all hover:scale-105"
               style={{ background: 'rgba(41,185,232,0.2)', color: '#93c5fd' }}
             >
-              ← Ver info de la casa
+              ← Ver el recinto
             </button>
           </div>
         </div>
@@ -2714,8 +2713,8 @@ El total estimado es ${clp(total)}.${notasLinea}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   {[
                     { id: 'hasta10', label: 'Hasta 10 niños', tag: 'Sector Independiente disponible', precio: null },
-                    { id: 'hasta20', label: 'Hasta 20 niños', tag: 'Casa Completa',  precio: esSabado ? PRECIOS_BASE.completo_20_sab : PRECIOS_BASE.completo_20 },
-                    { id: 'hasta30', label: 'Hasta 30 niños', tag: 'Casa Completa',  precio: esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30 },
+                    { id: 'hasta20', label: 'Hasta 20 niños', tag: 'Recinto Completo',  precio: esSabado ? PRECIOS_BASE.completo_20_sab : PRECIOS_BASE.completo_20 },
+                    { id: 'hasta30', label: 'Hasta 30 niños', tag: 'Recinto Completo',  precio: esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30 },
                     { id: 'mas30',   label: 'Más de 30 niños', tag: '+$10.000 por niño extra', precio: esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30 },
                   ].map((op) => {
                     const sel = estado.cantNinos === op.id;
@@ -2756,13 +2755,13 @@ El total estimado es ${clp(total)}.${notasLinea}
                         {
                           id: 'independiente',
                           nombre: 'Sector Independiente',
-                          desc: 'Un solo sector de la casa. Más íntimo y recogido.',
+                          desc: 'Un solo sector del recinto. Más íntimo y privado.',
                           precio: esSabado ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente,
                           emoji: '🌳',
                         },
                         {
                           id: 'completo',
-                          nombre: 'Casa Completa',
+                          nombre: 'Recinto Completo',
                           desc: 'Acceso a todas las áreas. La experiencia completa.',
                           precio: esSabado ? PRECIOS_BASE.completo_10_sab : PRECIOS_BASE.completo_10,
                           emoji: '🏡',
@@ -2794,8 +2793,8 @@ El total estimado es ${clp(total)}.${notasLinea}
 
                 {estado.cantNinos && estado.cantNinos !== 'hasta10' && (
                   <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
-                    <p className="text-blue-700 font-bold text-sm">🏡 Casa Completa — asignada automáticamente</p>
-                    <p className="text-blue-500 text-xs mt-1">Para grupos de más de 10 niños, la Casa Completa garantiza la mejor experiencia para todos.</p>
+                    <p className="text-blue-700 font-bold text-sm">🏡 Recinto Completo — asignado automáticamente</p>
+                    <p className="text-blue-500 text-xs mt-1">Para grupos de más de 10 niños, el Recinto Completo garantiza la mejor experiencia para todos.</p>
                   </div>
                 )}
 
@@ -2933,7 +2932,7 @@ El total estimado es ${clp(total)}.${notasLinea}
                 </div>
 
                 {/* Galería interactiva */}
-                <h3 className="font-black text-gray-700 mb-3">📸 Nuestra casa de cumpleaños — toca cualquier foto para verla en grande</h3>
+                <h3 className="font-black text-gray-700 mb-3">📸 Nuestro espacio — toca cualquier foto para verla en grande</h3>
                 <div className="mb-6">
                   <GaleriaInfra />
                 </div>
@@ -3176,7 +3175,7 @@ El total estimado es ${clp(total)}.${notasLinea}
                     className="font-bold text-sm hover:underline transition-colors"
                     style={{ color: '#1565C0' }}
                   >
-                    Prefiero conocer la casa antes de reservar →
+                    Prefiero conocer el lugar antes de reservar →
                   </button>
                 </div>
               </div>
