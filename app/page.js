@@ -2205,6 +2205,14 @@ function Footer() {
         }}
       >
         © 2026 Celebra Sin César · Alce Kids · Las Condes, Santiago
+        {' · '}
+        <a
+          href="/terminos"
+          className="hover:underline transition-opacity hover:opacity-70"
+          style={{ color: 'rgba(255,255,255,0.35)' }}
+        >
+          Términos y Condiciones
+        </a>
       </div>
     </footer>
   );
@@ -3151,6 +3159,13 @@ El total estimado es ${clp(total)}.${notasLinea}
                     style={{ lineHeight: '1.5' }}
                   />
                 </div>
+
+                <p className="text-xs text-center" style={{ color: '#9CA3AF' }}>
+                  Al confirmar aceptas nuestros{' '}
+                  <a href="/terminos" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-70" style={{ color: '#1565C0' }}>
+                    Términos y Condiciones
+                  </a>
+                </p>
 
                 <div className="flex gap-3">
                   <button onClick={() => setPaso(3)}
