@@ -177,7 +177,7 @@ function HeroStatic({ onVerOpciones }) {
           className="text-white/65 text-sm md:text-base mb-10 max-w-lg"
           style={{ textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}
         >
-          El recinto de cumpleaños más completo de Las Condes. Piscina de pelotas, tobogán, granja y adultos ilimitados — todo incluido.
+          La casa de cumpleaños más completa de Las Condes. Piscina de pelotas, tobogán, granja y adultos ilimitados — todo incluido.
         </p>
 
         {/* Botón CTA */}
@@ -2130,7 +2130,7 @@ function Footer() {
             Celebra Sin César
           </div>
           <p className="leading-relaxed text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            El recinto de cumpleaños más completo de Las Condes, Santiago. Niños de 0 a 6 años con 40 años de historia familiar.
+            La casa de cumpleaños más completa de Las Condes, Santiago. Niños de 0 a 6 años con 40 años de historia familiar.
           </p>
           <div className="flex gap-2 mt-4">
             <a
