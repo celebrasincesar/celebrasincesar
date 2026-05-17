@@ -12,6 +12,15 @@ const nunito = Nunito({
 // ── SEO: metadatos completos para Google, WhatsApp y redes sociales ──────────
 export const metadata = {
   metadataBase: new URL('https://celebrasincesar.cl'),
+  icons: {
+    icon: [
+      { url: '/logo-alce.png', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/logo-alce.png', type: 'image/png' },
+    ],
+    shortcut: '/logo-alce.png',
+  },
   title: {
     default: 'Celebra Sin César | Cumpleaños Infantiles Las Condes',
     template: '%s | Celebra Sin César',
