@@ -47,7 +47,8 @@ function Header({ onHome }) {
             alt="Celebra Sin Cesar"
             className="h-14 w-auto group-hover:scale-105 transition-transform duration-200"
             loading="eager"
-            decoding="async"
+            decoding="sync"
+            fetchPriority="high"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
@@ -135,7 +136,8 @@ function HeroStatic({ onVerOpciones }) {
             alt="Celebra Sin Cesar"
             className="h-36 md:h-48 w-auto mx-auto"
             loading="eager"
-            decoding="async"
+            decoding="sync"
+            fetchPriority="high"
             style={{
               filter:
                 'drop-shadow(0 8px 32px rgba(0,0,0,0.45)) drop-shadow(0 2px 12px rgba(0,0,0,0.3))',
@@ -2429,8 +2431,8 @@ El total estimado es ${clp(total)}.${notasLinea}
               <div>
                 {/* ── Video — sin bordes, sin texto, sin overlays ── */}
                 <div
-                  className="overflow-hidden mb-7"
-                  style={{ height: '450px', background: '#0D2B6E' }}
+                  className="overflow-hidden mb-7 aspect-video md:aspect-auto md:h-[450px]"
+                  style={{ background: '#0D2B6E' }}
                 >
                   <video
                     className="w-full h-full object-cover"
@@ -2439,7 +2441,7 @@ El total estimado es ${clp(total)}.${notasLinea}
                     muted
                     loop
                     playsInline
-                    preload="none"
+                    preload="auto"
                   />
                 </div>
 
