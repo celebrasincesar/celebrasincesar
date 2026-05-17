@@ -171,14 +171,13 @@ function HeroStatic({ onVerOpciones }) {
           className="text-white/90 text-xl md:text-2xl font-black mb-2"
           style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
         >
-          Cumpleaños infantiles únicos en Las Condes
+          El cumpleaños que tu hijo siempre recordará
         </p>
         <p
           className="text-white/65 text-sm md:text-base mb-10 max-w-lg"
           style={{ textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}
         >
-          Elige el espacio perfecto, arma la celebración y confirma en minutos.
-          Sin complicaciones, con todo incluido.
+          Casa de cumpleaños exclusiva en Las Condes. Piscina de pelotas, tobogán, granja y adultos ilimitados — todo incluido.
         </p>
 
         {/* Botón CTA */}
@@ -192,7 +191,7 @@ function HeroStatic({ onVerOpciones }) {
               '0 8px 32px rgba(249,115,22,0.4), 0 2px 12px rgba(0,0,0,0.25)',
           }}
         >
-          Ver nuestras opciones de celebración
+          Quiero ver cómo funciona →
           <span className="text-xl transition-transform duration-300 group-hover:translate-y-1 inline-block">
             ↓
           </span>
@@ -201,13 +200,13 @@ function HeroStatic({ onVerOpciones }) {
         {/* CTA visita sin compromiso */}
         <p className="text-white/45 text-xs mt-5">¿Primero quieres ver el lugar en persona?</p>
         <a
-          href={`https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Me gustaría conocer el jardín Alce Kids sin compromiso. ¿Cuándo podría pasar a visitarlo?')}`}
+          href={`https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Me gustaría conocer Alce Kids sin compromiso. ¿Cuándo podría pasar a visitarlo?')}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-white/70 text-sm font-bold hover:text-white transition-colors mt-1"
           style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}
         >
-          Visitar el jardín sin compromiso →
+          Conocer la casa sin compromiso →
         </a>
       </div>
 
@@ -250,12 +249,12 @@ function CardInicio({ onSelect }) {
               📍 Las Condes · Santiago de Chile
             </div>
             <h2 className="text-4xl md:text-5xl font-black leading-tight mb-4 text-white">
-              Elige tu espacio
+              El cumpleaños que tu hijo
               <br />
-              <span style={{ color: '#F97316' }}>y celebra sin cesar</span>
+              <span style={{ color: '#F97316' }}>nunca olvidará</span>
             </h2>
             <p className="text-white/45 text-base max-w-lg mx-auto">
-              Selecciona el espacio ideal para tu hijo. Cada espacio tiene su magia — arma tu celebración en minutos.
+              Elige tu opción, arma la celebración completa y confirma en minutos — sin llamadas, sin burocracia.
             </p>
           </div>
 
@@ -308,7 +307,7 @@ function CardInicio({ onSelect }) {
                 </div>
 
                 <h2 className="text-2xl font-black text-center mb-1 text-white">Alce Kids</h2>
-                <p className="font-bold text-center text-sm mb-1" style={{ color: '#29B9E8' }}>Jardín · 0 a 6 años · Las Condes</p>
+                <p className="font-bold text-center text-sm mb-1" style={{ color: '#29B9E8' }}>Casa de cumpleaños · 0 a 6 años · Las Condes</p>
                 <p className="text-white/40 text-xs text-center mb-5">Talavera de la Reina 380 · cerca Metro Los Dominicos</p>
 
                 {/* Mini features */}
@@ -323,7 +322,7 @@ function CardInicio({ onSelect }) {
 
                 <div className="font-black py-3.5 rounded-2xl text-center text-white text-sm group-hover:scale-[1.02] transition-transform"
                   style={{ background: 'linear-gradient(90deg, #1565C0, #29B9E8)', boxShadow: '0 4px 20px rgba(21,101,192,0.4)' }}>
-                  Ver el jardín y armar mi celebración →
+                  Ver la casa y armar mi celebración →
                 </div>
               </div>
             </div>
@@ -374,7 +373,7 @@ function CardInicio({ onSelect }) {
             style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             {[
               { num: '35', label: 'Reseñas ⭐ 5.0 en Google', color: '#F97316' },
-              { num: '40+', label: 'Años de historia familiar', color: '#29B9E8' },
+              { num: '40+', label: 'Años en Las Condes', color: '#29B9E8' },
               { num: '100%', label: 'Adultos incluidos siempre', color: '#F97316' },
               { num: 'Vie · Sáb · Dom', label: 'Horario AM y PM disponible', color: '#29B9E8' },
             ].map((s) => (
@@ -394,7 +393,7 @@ function CardInicio({ onSelect }) {
         <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <p className="text-white font-black text-xl mb-1.5">📸 Síguenos en Instagram</p>
-            <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-sm">@celebracionesalce · +1.200 familias nos siguen · fotos reales del jardín</p>
+            <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-sm">@celebracionesalce · +1.200 familias del sector oriente · fotos reales de la casa</p>
           </div>
           <a
             href="https://www.instagram.com/celebracionesalce/"
@@ -1183,7 +1182,7 @@ function ModalCarrusel({ grupo, extras, cantNinos, onToggle, onCerrar }) {
 const INFRAS = [
   {
     emoji: '🎱', title: 'Piscina de Pelotas Gigante',
-    desc: 'El ícono del jardín. Una piscina enorme llena de pelotas de colores donde los niños pueden saltar, rodar y jugar por horas.',
+    desc: 'El favorito de todos. Una piscina enorme llena de pelotas de colores donde los niños pueden saltar, rodar y jugar por horas.',
     color: '#1565C0', imagen: '/infra-piscina.jpg',
   },
   {
@@ -1193,7 +1192,7 @@ const INFRAS = [
   },
   {
     emoji: '🚗', title: 'Autopista para Niños',
-    desc: 'Circuito pintado en el piso con casita, semáforos y señales. Los niños manejan sus propios vehículos por el jardín.',
+    desc: 'Circuito pintado en el piso con casita, semáforos y señales. Los niños manejan sus propios vehículos como conductores de verdad.',
     color: '#29B9E8', imagen: '/infra-autopista.jpg',
   },
   {
@@ -1223,7 +1222,7 @@ const INFRAS = [
   },
   {
     emoji: '🎪', title: '2 Sectores Independientes',
-    desc: 'Sector tobogán y sector piscina de pelotas. Arrienda uno solo (hasta 10 niños) o el jardín completo.',
+    desc: 'Sector tobogán y sector piscina de pelotas. Elige un solo sector (hasta 10 niños) o la casa completa para grupos grandes.',
     color: '#29B9E8', imagen: '/infra-sectores.jpg',
   },
   {
@@ -1233,12 +1232,12 @@ const INFRAS = [
   },
   {
     emoji: '🌟', title: 'Área de Columpios',
-    desc: 'Set de columpios seguros y coloridos para los más pequeños del jardín. El lugar favorito para mecerse, reír y descubrir la libertad.',
+    desc: 'Set de columpios seguros y coloridos para los más pequeños. El rincón favorito para mecerse, reír y descubrir la libertad.',
     color: '#F59E0B', imagen: '/infra-columpios.jpg',
   },
   {
     emoji: '🎡', title: 'Sillas Locas',
-    desc: '¡El favorito absoluto que hace gritar a todos! Sillas giratorias de diversión extrema para los niños más aventureros y valientes del jardín.',
+    desc: '¡El favorito absoluto que hace gritar a todos! Sillas giratorias de diversión extrema para los niños más aventureros y valientes de la fiesta.',
     color: '#EF4444', imagen: '/infra-sillas-locas.jpg',
   },
 ];
@@ -1439,7 +1438,7 @@ function GaleriaInfra() {
 }
 
 function PageAlce({ onIniciarWizard }) {
-  const waVisita = `https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Me gustaría visitar el jardín Alce Kids sin compromiso. ¿Cuándo podría pasar a conocerlo?')}`;
+  const waVisita = `https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Me gustaría conocer la casa Alce Kids sin compromiso. ¿Cuándo podría pasar a visitarla?')}`;
   const [lightboxIdx, setLightboxIdx] = useState(null);
 
   // Teclado para el lightbox
@@ -1504,7 +1503,7 @@ function PageAlce({ onIniciarWizard }) {
                 Alce <span style={{ color: '#29B9E8' }}>Kids</span>
               </h1>
               <p className="font-black text-xl mb-2" style={{ color: '#FED7AA' }}>
-                El jardín mágico para el cumpleaños más increíble
+                La casa de cumpleaños más increíble del sector oriente
               </p>
               <p className="text-base mb-8 max-w-lg" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 40 años de historia familiar · Niños de 0 a 6 años · Las Condes, Santiago de Chile
@@ -1560,7 +1559,7 @@ function PageAlce({ onIniciarWizard }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { num: '35', label: 'Reseñas ⭐ 5.0', sub: 'en Google Maps', color: '#FBBF24' },
-              { num: '40+', label: 'Años de historia', sub: 'jardín familiar', color: '#29B9E8' },
+              { num: '40+', label: 'Años de historia', sub: 'en Las Condes', color: '#29B9E8' },
               { num: '0–6', label: 'Años de edad', sub: 'bienvenidos', color: '#F97316' },
               { num: '100%', label: 'Adultos incluidos', sub: 'sin cargo extra', color: '#86efac' },
             ].map((s) => (
@@ -1596,7 +1595,7 @@ function PageAlce({ onIniciarWizard }) {
               <span style={{ color: '#1565C0' }}>esperando a tu hijo</span>
             </h2>
             <p className="text-gray-400 text-base max-w-sm mx-auto">
-              Cada rincón del jardín fue diseñado para que los niños no paren de reír
+              Cada rincón de la casa fue pensado para que los niños no paren de reír
             </p>
           </div>
 
@@ -1823,7 +1822,7 @@ function PageAlce({ onIniciarWizard }) {
               <div className="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none"
                 style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
               <div className="text-xs font-black uppercase tracking-widest mb-5" style={{ color: '#F97316' }}>
-                🏰 Jardín Completo
+                🏰 Casa Completa
               </div>
               <div>
                 <span className="font-black text-5xl text-white">$225k</span>
@@ -1834,7 +1833,7 @@ function PageAlce({ onIniciarWizard }) {
                 <span className="text-white/40 text-sm ml-2">Sábado · hasta 30 niños</span>
               </div>
               <ul className="space-y-2.5">
-                {['Todo el jardín exclusivo para ti', 'Hasta 30 niños (+ extras a $10k c/u)', 'Adultos ilimitados sin costo', '3 horas + 30 min para decorar', 'Cocina y salón con AC incluido'].map((item) => (
+                {['Toda la casa exclusiva para ti', 'Hasta 30 niños (+ extras a $10k c/u)', 'Adultos ilimitados sin costo', '3 horas + 30 min para decorar', 'Cocina y salón con AC incluido'].map((item) => (
                   <li key={item} className="flex items-center gap-2.5 text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>
                     <span className="font-black flex-shrink-0" style={{ color: '#F97316' }}>✓</span> {item}
                   </li>
@@ -2092,7 +2091,7 @@ function PageAlce({ onIniciarWizard }) {
           </h2>
           <p className="text-lg mb-10 max-w-xl mx-auto leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
             Elige tu fecha, arma tu celebración y confirma en minutos.<br />
-            O visita el jardín primero — <em>quien lo ve, lo ama</em>.
+            O visita la casa primero — <em>quien la ve, la reserva</em>.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -2131,8 +2130,8 @@ function Footer() {
             Celebra Sin César
           </div>
           <p className="leading-relaxed text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            Cumpleaños infantiles únicos en Las Condes, Santiago. Niños de 0 a 6 años en el
-            histórico Jardín Alce.
+            Casa de cumpleaños exclusiva en Las Condes, Santiago. Niños de 0 a 6 años en el
+            histórico recinto Alce Kids.
           </p>
           <div className="flex gap-2 mt-4">
             <a
@@ -2206,7 +2205,7 @@ function Footer() {
           color: 'rgba(255,255,255,0.22)',
         }}
       >
-        © 2026 Celebra Sin César · Jardín Alce Kids · Las Condes, Santiago
+        © 2026 Celebra Sin César · Alce Kids · Las Condes, Santiago
       </div>
     </footer>
   );
@@ -2314,7 +2313,7 @@ export default function App() {
       estado.cantNinos === 'hasta20' ? 'hasta 20' :
       estado.cantNinos === 'hasta30' ? 'hasta 30' :
       `30 + ${estado.ninosExtra || 1}`;
-    const sectorTexto = estado.sector === 'independiente' ? 'Sector Independiente' : 'Jardín Completo';
+    const sectorTexto = estado.sector === 'independiente' ? 'Sector Independiente' : 'Casa Completa';
 
     const adicionales = [
       estado.packCelebra ? `• Pack Celebra Sin Cesar (Piñata + Decoración): ${clp(PRECIOS_EXTRAS.pack_celebra)}` : '',
@@ -2353,8 +2352,8 @@ El total estimado es ${clp(total)}.${notasLinea}
   const generarWhatsAppVisita = () => {
     const nombre = estado.nombreNino;
     const msg = nombre
-      ? `¡Hola César! Me gustaría visitar el jardín Alce Kids antes de reservar la celebración de ${nombre}. ¿Cuándo podría pasar a conocerlo sin compromiso?`
-      : `¡Hola César! Me gustaría conocer el jardín Alce Kids sin compromiso. ¿Cuándo podría pasar a visitarlo?`;
+      ? `¡Hola César! Me gustaría conocer la casa Alce Kids antes de reservar la celebración de ${nombre}. ¿Cuándo podría pasar a visitarla sin compromiso?`
+      : `¡Hola César! Me gustaría conocer la casa Alce Kids sin compromiso. ¿Cuándo podría pasar a visitarla?`;
     window.open(`https://wa.me/56944356955?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
@@ -2404,7 +2403,7 @@ El total estimado es ${clp(total)}.${notasLinea}
           </div>
           <div className="flex-1 relative z-10">
             <h2 className="text-white font-black text-2xl leading-none">Alce Kids</h2>
-            <p className="text-blue-200/70 text-sm mt-0.5">Jardín Alce · Talavera de la Reina 380, Las Condes · 0 a 6 años</p>
+            <p className="text-blue-200/70 text-sm mt-0.5">Casa de cumpleaños · Talavera de la Reina 380, Las Condes · 0 a 6 años</p>
           </div>
           <div className="hidden md:flex flex-col items-end gap-2 relative z-10">
             <div className="flex items-center gap-1.5">
@@ -2416,7 +2415,7 @@ El total estimado es ${clp(total)}.${notasLinea}
               className="text-xs font-bold px-3 py-1 rounded-full transition-all hover:scale-105"
               style={{ background: 'rgba(41,185,232,0.2)', color: '#93c5fd' }}
             >
-              ← Ver info del jardín
+              ← Ver info de la casa
             </button>
           </div>
         </div>
@@ -2715,8 +2714,8 @@ El total estimado es ${clp(total)}.${notasLinea}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   {[
                     { id: 'hasta10', label: 'Hasta 10 niños', tag: 'Sector Independiente disponible', precio: null },
-                    { id: 'hasta20', label: 'Hasta 20 niños', tag: 'Jardín Completo',  precio: esSabado ? PRECIOS_BASE.completo_20_sab : PRECIOS_BASE.completo_20 },
-                    { id: 'hasta30', label: 'Hasta 30 niños', tag: 'Jardín Completo',  precio: esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30 },
+                    { id: 'hasta20', label: 'Hasta 20 niños', tag: 'Casa Completa',  precio: esSabado ? PRECIOS_BASE.completo_20_sab : PRECIOS_BASE.completo_20 },
+                    { id: 'hasta30', label: 'Hasta 30 niños', tag: 'Casa Completa',  precio: esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30 },
                     { id: 'mas30',   label: 'Más de 30 niños', tag: '+$10.000 por niño extra', precio: esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30 },
                   ].map((op) => {
                     const sel = estado.cantNinos === op.id;
@@ -2757,13 +2756,13 @@ El total estimado es ${clp(total)}.${notasLinea}
                         {
                           id: 'independiente',
                           nombre: 'Sector Independiente',
-                          desc: 'Un solo sector del jardín. Más íntimo y recogido.',
+                          desc: 'Un solo sector de la casa. Más íntimo y recogido.',
                           precio: esSabado ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente,
                           emoji: '🌳',
                         },
                         {
                           id: 'completo',
-                          nombre: 'Jardín Completo',
+                          nombre: 'Casa Completa',
                           desc: 'Acceso a todas las áreas. La experiencia completa.',
                           precio: esSabado ? PRECIOS_BASE.completo_10_sab : PRECIOS_BASE.completo_10,
                           emoji: '🏡',
@@ -2795,8 +2794,8 @@ El total estimado es ${clp(total)}.${notasLinea}
 
                 {estado.cantNinos && estado.cantNinos !== 'hasta10' && (
                   <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4">
-                    <p className="text-blue-700 font-bold text-sm">🏡 Jardín Completo — asignado automáticamente</p>
-                    <p className="text-blue-500 text-xs mt-1">Para grupos de más de 10 niños, el Jardín Completo garantiza la mejor experiencia para todos.</p>
+                    <p className="text-blue-700 font-bold text-sm">🏡 Casa Completa — asignada automáticamente</p>
+                    <p className="text-blue-500 text-xs mt-1">Para grupos de más de 10 niños, la Casa Completa garantiza la mejor experiencia para todos.</p>
                   </div>
                 )}
 
@@ -2934,7 +2933,7 @@ El total estimado es ${clp(total)}.${notasLinea}
                 </div>
 
                 {/* Galería interactiva */}
-                <h3 className="font-black text-gray-700 mb-3">📸 Nuestro espacio — toca cualquier foto para verla en grande</h3>
+                <h3 className="font-black text-gray-700 mb-3">📸 Nuestra casa de cumpleaños — toca cualquier foto para verla en grande</h3>
                 <div className="mb-6">
                   <GaleriaInfra />
                 </div>
@@ -3177,7 +3176,7 @@ El total estimado es ${clp(total)}.${notasLinea}
                     className="font-bold text-sm hover:underline transition-colors"
                     style={{ color: '#1565C0' }}
                   >
-                    Prefiero conocer el jardín antes de reservar →
+                    Prefiero conocer la casa antes de reservar →
                   </button>
                 </div>
               </div>
