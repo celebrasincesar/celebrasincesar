@@ -12,5 +12,11 @@ export default function sitemap() {
       changeFrequency: 'monthly',
       priority: 0.4,
     },
+    {
+      url: 'https://celebrasincesar.cl/confirmacion',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.3,
+    },
   ];
 }
