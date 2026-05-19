@@ -368,8 +368,26 @@ function CardInicio({ onSelect }) {
             </div>
           </div>
 
+          {/* ── Propuesta de valor — libertad de elección ── */}
+          <div className="flex flex-wrap justify-center gap-3 mt-14 mb-2">
+            {[
+              { icon: '🔓', text: 'Sin paquetes obligatorios' },
+              { icon: '🎒', text: 'Trae lo que quieras de afuera' },
+              { icon: '🛋️', text: 'O lo organizamos por ti' },
+            ].map((chip) => (
+              <div
+                key={chip.text}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.12)' }}
+              >
+                <span>{chip.icon}</span>
+                <span>{chip.text}</span>
+              </div>
+            ))}
+          </div>
+
           {/* Stats — números grandes con glow */}
-          <div className="flex flex-wrap justify-center gap-12 mt-20 pt-14"
+          <div className="flex flex-wrap justify-center gap-12 mt-16 pt-14"
             style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             {[
               { num: '35', label: 'Reseñas ⭐ 5.0 en Google', color: '#F97316' },
@@ -1774,6 +1792,82 @@ function PageAlce({ onIniciarWizard }) {
       )}
 
       {/* ══════════════════════════════════════════
+          TU MANERA — Flexibilidad total
+      ══════════════════════════════════════════ */}
+      <div style={{ background: 'linear-gradient(180deg, #F8FBFF 0%, #EFF6FF 100%)' }}>
+        <div className="max-w-5xl mx-auto px-4 py-20">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-5"
+              style={{ background: 'rgba(21,101,192,0.08)', color: '#1565C0', border: '1px solid rgba(21,101,192,0.18)' }}>
+              🔓 Sin paquetes ni obligaciones
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black mb-3" style={{ color: '#0D1B3E' }}>
+              Tu celebración,<br />
+              <span style={{ color: '#1565C0' }}>como tú la imaginas</span>
+            </h2>
+            <p className="text-gray-400 text-base max-w-lg mx-auto">
+              Arriendas el espacio — y desde ahí, decides tú. Sin que nadie te obligue a comprar nada.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+
+            {/* Card 1 — Lo organizo yo */}
+            <div className="rounded-3xl p-8"
+              style={{ background: 'white', border: '1px solid rgba(21,101,192,0.12)', boxShadow: '0 4px 24px rgba(21,101,192,0.07)' }}>
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 text-2xl"
+                style={{ background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)' }}>🎒</div>
+              <h3 className="font-black text-xl mb-3" style={{ color: '#0D1B3E' }}>Lo organizo yo</h3>
+              <p className="text-gray-500 text-sm leading-relaxed mb-5">
+                Trae tu propia comida, torta, decoración y animadores — sin restricciones ni permisos especiales.
+                El espacio es tuyo y lo usas como quieras.
+              </p>
+              <ul className="space-y-2.5">
+                {[
+                  'Sin proveedor obligatorio',
+                  'Cocina disponible para calentar',
+                  'Libertad total para personalizar',
+                ].map((t) => (
+                  <li key={t} className="flex items-center gap-2.5 text-sm" style={{ color: 'rgba(55,65,81,0.8)' }}>
+                    <span className="font-black flex-shrink-0" style={{ color: '#1565C0' }}>✓</span> {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Card 2 — Me relajo y disfruto */}
+            <div className="rounded-3xl p-8 relative overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #FFF7ED, #FFEDD5)', border: '1px solid rgba(249,115,22,0.28)', boxShadow: '0 4px 24px rgba(249,115,22,0.08)' }}>
+              <div className="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none"
+                style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 text-2xl relative"
+                style={{ background: 'linear-gradient(135deg, #FFF7ED, #FED7AA)' }}>🛋️</div>
+              <h3 className="font-black text-xl mb-3 relative" style={{ color: '#0D1B3E' }}>Me relajo y disfruto</h3>
+              <p className="text-sm leading-relaxed mb-5 relative" style={{ color: 'rgba(124,45,18,0.75)' }}>
+                Elige entre nuestros servicios opcionales de animación, decoración y más.
+                Llegas con los niños y disfrutas — nosotros nos encargamos del resto.
+              </p>
+              <ul className="space-y-2.5 relative">
+                {[
+                  'Animadores profesionales',
+                  'Decoración temática lista',
+                  'Todo coordinado sin estrés',
+                ].map((t) => (
+                  <li key={t} className="flex items-center gap-2.5 text-sm" style={{ color: 'rgba(124,45,18,0.8)' }}>
+                    <span className="font-black flex-shrink-0" style={{ color: '#F97316' }}>✓</span> {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <p className="text-center mt-8 text-sm text-gray-400 max-w-md mx-auto">
+            También puedes combinar ambas opciones — traer lo que ya tienes y contratar solo lo que te falta. Sin presiones.
+          </p>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════
           PRECIOS — Visión general transparente
       ══════════════════════════════════════════ */}
       <div style={{ background: 'linear-gradient(160deg, #060F2E 0%, #0D1B3E 100%)' }}>
@@ -1783,7 +1877,7 @@ function PageAlce({ onIniciarWizard }) {
               Precios <span style={{ color: '#F97316' }}>transparentes</span>
             </h2>
             <p className="text-base" style={{ color: 'rgba(255,255,255,0.45)' }}>
-              Sin letra chica · Adultos siempre incluidos · Reserva con el 50%
+              Sin paquetes obligatorios · Adultos siempre incluidos · Reserva con el 50%
             </p>
           </div>
 
@@ -1842,7 +1936,14 @@ function PageAlce({ onIniciarWizard }) {
             </div>
           </div>
 
-          <p className="text-center mt-8 text-sm" style={{ color: 'rgba(255,255,255,0.28)' }}>
+          {/* Nota libertad */}
+          <div className="flex justify-center mt-8 mb-4">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold"
+              style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              🔓 El precio es por el espacio — los servicios adicionales son siempre opcionales
+            </div>
+          </div>
+          <p className="text-center text-sm" style={{ color: 'rgba(255,255,255,0.28)' }}>
             Precios referenciales · sujetos a disponibilidad · Reserva con el 50% del arriendo
           </p>
         </div>
@@ -2089,9 +2190,12 @@ function PageAlce({ onIniciarWizard }) {
           <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
             ¿Listo para la celebración<br />más increíble?
           </h2>
-          <p className="text-lg mb-10 max-w-xl mx-auto leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
+          <p className="text-lg mb-4 max-w-xl mx-auto leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
             Elige tu fecha, arma tu celebración y confirma en minutos.<br />
             O visita el lugar primero — <em>quien lo ve, lo reserva</em>.
+          </p>
+          <p className="text-sm mb-10 max-w-md mx-auto" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            Trae lo tuyo de afuera o déjalo en nuestras manos — tú decides, sin obligaciones.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -2966,7 +3070,8 @@ El total estimado es ${clp(total)}.${notasLinea}
             {paso === 4 && (
               <div>
                 <h2 className="text-2xl font-black mb-1" style={{color:'#1565C0'}}>Arma tu celebración ideal</h2>
-                <p className="text-gray-400 mb-6 text-sm">Todos los adicionales son opcionales. Toca cualquier cuadrado para ver las opciones.</p>
+                <p className="text-gray-400 mb-1 text-sm">¿Traes todo de afuera? Perfecto — el espacio es tuyo y no necesitas contratar nada.</p>
+                <p className="text-gray-400 mb-5 text-sm">¿Prefieres delegar? Elige lo que quieras de aquí. Todo es opcional, sin obligaciones.</p>
 
                 {/* Pack Celebra Sin Cesar */}
                 <div
