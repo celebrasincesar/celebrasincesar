@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { PRECIOS_BASE, PRECIOS_EXTRAS, CATEGORIAS_ADICIONALES, BLOQUES_VITRINA } from '../data/master';
+import { STATS, INSTAGRAM_STRIP_TEXT, RESEÑAS_CORTO, RESEÑAS_LARGO } from '../data/stats';
 
 // ── Lookup rápido de items por ID (para resolver grupos de la vitrina)
 const ITEM_LOOKUP = Object.fromEntries(
@@ -294,7 +295,7 @@ function CardInicio({ onSelect }) {
                 {[...Array(5)].map((_, i) => (
                   <span key={i} className="text-xs" style={{ color: '#FBBF24' }}>★</span>
                 ))}
-                <span className="text-xs font-black text-white/60 ml-1">5.0</span>
+                <span className="text-xs font-black text-white/60 ml-1">{STATS.rating}</span>
               </div>
 
               {/* Contenido */}
@@ -390,8 +391,8 @@ function CardInicio({ onSelect }) {
           <div className="flex flex-wrap justify-center gap-12 mt-16 pt-14"
             style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             {[
-              { num: '35', label: 'Reseñas ⭐ 5.0 en Google', color: '#F97316' },
-              { num: '40+', label: 'Años en Las Condes', color: '#29B9E8' },
+              { num: String(STATS.reseñas), label: `Reseñas ⭐ ${STATS.rating} en Google`, color: '#F97316' },
+              { num: `${STATS.añosHistoria}+`, label: 'Años en Las Condes', color: '#29B9E8' },
               { num: '100%', label: 'Adultos incluidos siempre', color: '#F97316' },
               { num: 'Vie · Sáb · Dom', label: 'Horario AM y PM disponible', color: '#29B9E8' },
             ].map((s) => (
@@ -411,7 +412,7 @@ function CardInicio({ onSelect }) {
         <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <p className="text-white font-black text-xl mb-1.5">📸 Síguenos en Instagram</p>
-            <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-sm">@celebracionesalce · +1.200 familias del sector oriente · fotos reales del recinto</p>
+            <p style={{ color: 'rgba(255,255,255,0.45)' }} className="text-sm">{INSTAGRAM_STRIP_TEXT}</p>
           </div>
           <a
             href="https://www.instagram.com/celebracionesalce/"
@@ -1534,8 +1535,8 @@ function PageAlce({ onIniciarWizard }) {
                     <span key={i} className="text-2xl" style={{ color: '#FBBF24' }}>★</span>
                   ))}
                 </div>
-                <span className="font-black text-white text-2xl">5.0</span>
-                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>· 35 reseñas verificadas en Google</span>
+                <span className="font-black text-white text-2xl">{STATS.rating}</span>
+                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>· {STATS.reseñas} reseñas verificadas en Google</span>
               </div>
 
               {/* Botones CTA */}
@@ -1576,8 +1577,8 @@ function PageAlce({ onIniciarWizard }) {
         <div className="max-w-5xl mx-auto px-4 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { num: '35', label: 'Reseñas ⭐ 5.0', sub: 'en Google Maps', color: '#FBBF24' },
-              { num: '40+', label: 'Años de historia', sub: 'en Las Condes', color: '#29B9E8' },
+              { num: String(STATS.reseñas), label: `Reseñas ⭐ ${STATS.rating}`, sub: 'en Google Maps', color: '#FBBF24' },
+              { num: `${STATS.añosHistoria}+`, label: 'Años de historia', sub: 'en Las Condes', color: '#29B9E8' },
               { num: '0–6', label: 'Años de edad', sub: 'bienvenidos', color: '#F97316' },
               { num: '100%', label: 'Adultos incluidos', sub: 'sin cargo extra', color: '#86efac' },
             ].map((s) => (
@@ -1963,7 +1964,7 @@ function PageAlce({ onIniciarWizard }) {
             <h2 className="text-4xl md:text-5xl font-black mb-2" style={{ color: '#0D1B3E' }}>
               Lo que dicen las familias
             </h2>
-            <p className="text-gray-400 text-base">35 reseñas verificadas · Promedio 5.0 en Google Maps</p>
+            <p className="text-gray-400 text-base">{RESEÑAS_CORTO}</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -2029,7 +2030,7 @@ function PageAlce({ onIniciarWizard }) {
               className="inline-flex items-center gap-2 font-bold text-sm px-7 py-3.5 rounded-full transition-all hover:scale-105"
               style={{ background: 'rgba(21,101,192,0.07)', color: '#1565C0', border: '1px solid rgba(21,101,192,0.2)' }}
             >
-              Ver todas las 35 reseñas en Google Maps →
+              Ver todas las {STATS.reseñas} reseñas en Google Maps →
             </a>
           </div>
         </div>
@@ -2296,7 +2297,7 @@ function Footer() {
             className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black"
             style={{ background: 'rgba(249,115,22,0.15)', color: '#F97316' }}
           >
-            ⭐ 5.0 · 35 reseñas Google
+            ⭐ {STATS.rating} · {STATS.reseñas} reseñas Google
           </div>
         </div>
       </div>
@@ -2518,8 +2519,8 @@ El total estimado es ${clp(total)}.${notasLinea}
           </div>
           <div className="hidden md:flex flex-col items-end gap-2 relative z-10">
             <div className="flex items-center gap-1.5">
-              <span className="text-white font-black text-xl">⭐ 5.0</span>
-              <span className="text-blue-200/60 text-xs">· 35 reseñas</span>
+              <span className="text-white font-black text-xl">⭐ {STATS.rating}</span>
+              <span className="text-blue-200/60 text-xs">· {STATS.reseñas} reseñas</span>
             </div>
             <button
               onClick={() => setVista('alce')}
