@@ -125,7 +125,7 @@ export default function ConfirmacionPage() {
             <p className="text-xs text-gray-400 mb-2">Confirma la cantidad final — puede haber cambiado desde la reserva</p>
             <input
               type="number"
-              min="1" max="30"
+              min="1" max="40"
               value={form.ninosHasta6}
               onChange={(e) => set('ninosHasta6', e.target.value)}
               placeholder="Ej: 12"
@@ -140,7 +140,7 @@ export default function ConfirmacionPage() {
               ¿Vendrán niños mayores de 6 años? <span className="font-normal text-gray-400">(opcional)</span>
             </label>
             <p className="text-xs text-gray-400 mb-2">
-              Pueden asistir pero no usar los juegos — solo para coordinación
+              Los juegos están diseñados para niños de hasta 6 años — los mayores pueden asistir, pero su acceso a la infraestructura será limitado. Para que disfruten igual, te recomendamos contratar adicionales como animación, inflables o juegos deportivos pensados para ellos.
             </p>
             <input
               type="number"
