@@ -85,33 +85,33 @@ export default function TerminosPage() {
 
         <Section num="3" titulo="Aceptación de los términos">
           <p>
-            La aceptación de estos Términos y Condiciones opera de manera automática e irrevocable
-            ante cualquiera de los siguientes actos: (a) el pago total o parcial del valor de la
+            Los presentes Términos y Condiciones se entienden aceptados desde el momento en que
+            ocurre cualquiera de los siguientes actos: (a) el pago total o parcial del valor de la
             reserva; (b) la confirmación verbal o escrita de la fecha de celebración; (c) el ingreso
-            al recinto el día del evento. Desde ese momento el contratante se obliga a cumplir y
-            hacer cumplir a todos sus invitados el presente reglamento.
+            al recinto el día del evento. Desde ese momento el contratante se compromete a cumplir
+            y hacer cumplir a todos sus invitados el presente reglamento.
           </p>
         </Section>
 
-        <Section num="4" titulo="Edades permitidas y público objetivo">
+        <Section num="4" titulo="Edades y público objetivo">
           <p>
-            Alce Kids está diseñado exclusivamente para niños y niñas de <strong>0 a 6 años</strong>.
+            Alce Kids está diseñado con cariño para niños y niñas de <strong>0 a 6 años</strong>.
             Todas las instalaciones — dimensiones, materiales, alturas y medidas de seguridad —
-            han sido concebidas para este rango etario.
+            han sido pensadas para este grupo etario.
           </p>
           <ul>
             <li>
-              El ingreso de niños mayores de 6 años queda sujeto a la autorización expresa del
-              administrador del recinto en el momento de la visita.
+              El ingreso de niños mayores de 6 años queda sujeto a la autorización del
+              administrador del recinto el día del evento.
             </li>
             <li>
-              Los adultos podrán ingresar en número ilimitado para acompañar a los menores; sin
-              embargo, no está permitido que adultos utilicen los juegos y estructuras salvo cuando
-              sea estrictamente necesario para asistir a un menor.
+              Los adultos pueden ingresar en número ilimitado para acompañar a los menores.
+              Les pedimos que los juegos y estructuras se reserven para los niños, salvo cuando
+              sea necesario asistir a un menor.
             </li>
             <li>
-              Alce Kids se reserva el derecho de negar el ingreso o solicitar el retiro de cualquier
-              persona cuya presencia resulte incompatible con la seguridad del evento.
+              Alce Kids puede solicitar el retiro de cualquier persona cuya presencia resulte
+              incompatible con la seguridad del evento.
             </li>
           </ul>
         </Section>
@@ -119,11 +119,10 @@ export default function TerminosPage() {
         <Section num="5" titulo="Supervisión y responsabilidad parental">
           <p>
             Durante toda la celebración habrá un anfitrión de Alce Kids presente en el recinto,
-            encargado de supervisar el correcto uso del espacio y de orientar a los asistentes.
-            Sin perjuicio de lo anterior, la supervisión permanente e individual de los menores
-            es responsabilidad exclusiva de sus padres, tutores o adultos acompañantes. Alce Kids
-            no presta servicio de guardería ni dispone de personal dedicado a la vigilancia
-            individual de niños.
+            encargado de orientar a los asistentes y velar por el uso adecuado del espacio.
+            Con todo, la supervisión permanente e individual de los menores es responsabilidad
+            de sus padres, tutores o adultos acompañantes. Alce Kids no presta servicio de
+            guardería ni cuenta con personal de vigilancia individual de niños.
           </p>
           <ul>
             <li>
@@ -136,46 +135,45 @@ export default function TerminosPage() {
             </li>
             <li>
               En caso de emergencia médica, el personal de Alce Kids prestará primeros auxilios
-              básicos y contactará a los servicios de emergencia, pero la responsabilidad sobre
-              la salud del menor recae en sus padres o tutores.
+              básicos y contactará a los servicios de emergencia. La responsabilidad sobre la
+              salud del menor recae en sus padres o tutores.
             </li>
           </ul>
         </Section>
 
-        <Section num="6" titulo="Uso correcto de las instalaciones">
+        <Section num="6" titulo="Uso del espacio e instalaciones">
           <p>
-            El espacio cuenta con infraestructura diseñada para el juego seguro de la primera
-            infancia. Para garantizar la integridad de todos los participantes:
+            Cada área del recinto fue diseñada pensando en la seguridad de los más pequeños.
+            Para cuidar a todos los participantes, te pedimos tener en cuenta lo siguiente:
           </p>
           <ul>
             <li>
-              <strong>Piscina de pelotas:</strong> uso exclusivo para menores de hasta 6 años. Está
-              prohibido ingresar calzado, objetos cortantes, alimentos o bebidas. Los adultos solo
-              pueden ingresar para asistir a un menor en dificultad.
+              <strong>Piscina de pelotas:</strong> exclusiva para menores de hasta 6 años. Por
+              favor no ingreses calzado, objetos con bordes ni alimentos o bebidas. Los adultos
+              pueden ingresar solo para asistir a un menor.
             </li>
             <li>
-              <strong>Tobogán y estructuras de juego:</strong> un niño a la vez. Prohibido
-              empujarse, descender de cabeza o usar las estructuras de forma contraria a su diseño.
+              <strong>Tobogán y estructuras de juego:</strong> un niño a la vez. Pedimos no
+              empujarse ni usar las estructuras de forma contraria a su diseño.
             </li>
             <li>
-              <strong>Granja de animales:</strong> los menores deben ir acompañados de un adulto.
-              Prohibido alimentar a los animales con productos externos. El contacto físico se
-              permite bajo supervisión del personal.
+              <strong>Granja de animales:</strong> los niños deben ir siempre acompañados de un
+              adulto. No alimentes a los animales con productos externos. El contacto físico se
+              realiza bajo supervisión del personal.
             </li>
             <li>
-              <strong>Áreas de libre juego:</strong> los adultos deben abstenerse de generar
-              situaciones de riesgo, como carreras o juegos bruscos entre menores de distintas
-              edades.
+              <strong>Áreas de libre juego:</strong> te pedimos evitar situaciones de riesgo como
+              carreras o juegos bruscos entre niños de distintas edades.
             </li>
           </ul>
           <p className="mt-3">
-            Los vehículos deben estacionarse exclusivamente en las zonas habilitadas para ello.
-            Queda prohibido estacionar en el pasto, zonas verdes o accesos del recinto.
+            Los vehículos deben estacionarse únicamente en las zonas habilitadas para ello.
+            Por favor evita estacionar sobre el pasto, zonas verdes o accesos del recinto.
           </p>
           <p className="mt-3">
-            Cualquier uso indebido de las instalaciones que derive en daños o lesiones será
-            responsabilidad exclusiva de quien lo provoque, eximiendo completamente a Alce Kids de
-            toda consecuencia legal o económica.
+            El uso indebido de las instalaciones que derive en daños o lesiones será responsabilidad
+            de quien lo provoque, eximiendo a Alce Kids de toda consecuencia legal o económica
+            derivada de dicha conducta.
           </p>
         </Section>
 
@@ -192,17 +190,17 @@ export default function TerminosPage() {
           </p>
         </Section>
 
-        <Section num="9" titulo="Capacidad y aforo">
+        <Section num="8" titulo="Capacidad y aforo">
           <p>
             Cada bloque horario admite un número máximo de personas determinado por la modalidad
-            contratada. Superar el aforo establecido compromete la seguridad de los asistentes y
-            está expresamente prohibido. Alce Kids podrá solicitar el retiro de personas que
-            excedan el límite sin que ello genere derecho a compensación alguna para el
-            contratante.
+            contratada. Respetar el aforo es fundamental para garantizar la seguridad y comodidad
+            de todos los asistentes. En caso de superarse el límite acordado, Alce Kids podrá
+            solicitar que se regule el ingreso, sin que ello genere derecho a compensación
+            para el contratante.
           </p>
         </Section>
 
-        <Section num="10" titulo="Horarios y puntualidad">
+        <Section num="9" titulo="Horarios y puntualidad">
           <p>
             Los bloques horarios son inamovibles: <strong>AM 11:00–14:00</strong> y{' '}
             <strong>PM 15:30–18:30</strong>. El tiempo de uso del recinto corresponde
@@ -210,12 +208,12 @@ export default function TerminosPage() {
           </p>
           <ul>
             <li>
-              La preparación del espacio puede iniciarse hasta 30 minutos antes del comienzo del
-              bloque, previa coordinación.
+              Puedes iniciar la preparación del espacio hasta 30 minutos antes del comienzo del
+              bloque, previa coordinación con el equipo.
             </li>
             <li>
-              El retraso en el inicio de la celebración por parte del contratante no dará derecho
-              a extensión del bloque ni a compensación económica.
+              Si la celebración comienza tarde por parte del contratante, el tiempo no se extiende
+              ni se compensa económicamente.
             </li>
             <li>
               La permanencia en el recinto más allá del horario contratado generará un cargo
@@ -225,7 +223,7 @@ export default function TerminosPage() {
           </ul>
         </Section>
 
-        <Section num="11" titulo="Condiciones de pago y reserva">
+        <Section num="10" titulo="Condiciones de pago y reserva">
           <p>
             La reserva se confirma con el pago de un anticipo del <strong>50 % del valor total</strong>{' '}
             acordado. El saldo restante debe cancelarse con un mínimo de{' '}
@@ -239,16 +237,16 @@ export default function TerminosPage() {
             </li>
             <li>
               El anticipo no es reembolsable, salvo en los casos contemplados en la cláusula de
-              fuerza mayor (sección 19).
+              fuerza mayor (sección 20).
             </li>
             <li>
-              El incumplimiento del pago del saldo antes del plazo establecido faculta a Alce Kids
-              a liberar la fecha reservada sin derecho a devolución del anticipo.
+              El no pago del saldo antes del plazo establecido faculta a Alce Kids a liberar la
+              fecha reservada, sin derecho a devolución del anticipo.
             </li>
           </ul>
         </Section>
 
-        <Section num="12" titulo="Política de cancelación y reagendamiento">
+        <Section num="11" titulo="Cancelación y reagendamiento">
           <ul>
             <li>
               <strong>Cancelación con 7 o más días de anticipación:</strong> el anticipo se
@@ -256,63 +254,63 @@ export default function TerminosPage() {
               siguientes, sujeto a disponibilidad.
             </li>
             <li>
-              <strong>Cancelación con menos de 5 días de anticipación:</strong> el anticipo no
+              <strong>Cancelación con menos de 7 días de anticipación:</strong> el anticipo no
               es reembolsable ni canjeable.
             </li>
             <li>
-              <strong>Reagendamiento:</strong> se permite una modificación de fecha con un mínimo
-              de 7 días de anticipación y sujeto a disponibilidad.
+              <strong>Cambio de fecha:</strong> se permite una modificación con un mínimo de
+              7 días de anticipación, sujeto a disponibilidad.
             </li>
           </ul>
           <p className="mt-3">
-            Entendemos que los imprevistos ocurren. Ante cualquier situación excepcional, siempre
-            estamos disponibles para conversar y buscar la mejor solución para ambas partes.
+            Entendemos que los imprevistos ocurren. Ante cualquier situación excepcional,
+            siempre estamos disponibles para conversar y buscar la mejor solución para ambas partes.
           </p>
         </Section>
 
-        <Section num="13" titulo="Artículos prohibidos">
+        <Section num="12" titulo="Lo que pedimos no ingresar">
           <p>
-            Está estrictamente prohibido ingresar al recinto los siguientes elementos:
+            Para proteger a los niños y mantener el espacio en las mejores condiciones, te pedimos
+            no ingresar los siguientes elementos:
           </p>
           <ul>
             <li>Bebidas alcohólicas o cualquier sustancia psicoactiva</li>
             <li>Fuegos artificiales, pirotecnia o velas de gran formato</li>
             <li>Artículos de vidrio (botellas, fuentes, copas, etc.)</li>
-            <li>Armas de cualquier tipo</li>
             <li>Animales propios de los invitados</li>
             <li>Confeti, papel picado, challa y serpentinas</li>
-            <li>Equipos de sonido externos de alto volumen que superen los límites permitidos</li>
+            <li>Equipos de sonido externos de alto volumen</li>
             <li>
               Cualquier elemento que a criterio del personal de Alce Kids represente un riesgo para
-              la seguridad de los asistentes o daño a las instalaciones
+              la seguridad de los asistentes o un daño a las instalaciones
             </li>
           </ul>
           <p className="mt-3">
-            El incumplimiento de esta norma faculta a Alce Kids a retirar el artículo o, en casos
-            graves, a dar por terminado el evento sin reembolso.
+            Si hay algún artículo que no estás seguro de poder traer, consúltanos antes — con gusto
+            te orientamos. Ante incumplimientos graves, Alce Kids podrá solicitar retirar el artículo
+            o, en casos extremos, dar por terminado el evento sin reembolso.
           </p>
         </Section>
 
-        <Section num="14" titulo="Alimentos y bebidas">
+        <Section num="13" titulo="Alimentos y bebidas">
           <p>
-            El contratante puede ingresar alimentos y bebidas para la celebración respetando las
-            siguientes condiciones:
+            Puedes traer libremente alimentos y bebidas para la celebración, respetando estas
+            condiciones:
           </p>
           <ul>
             <li>
-              El ingreso de torta de cumpleaños, bocadillos y bebidas sin alcohol está
-              expresamente permitido.
+              La torta de cumpleaños, bocadillos y bebidas sin alcohol están expresamente
+              permitidos — ¡son parte de la fiesta!
             </li>
             <li>
-              Se prohíbe el ingreso de bebidas alcohólicas de cualquier graduación.
+              No está permitido el ingreso de bebidas alcohólicas de ningún tipo.
             </li>
             <li>
-              Los alimentos solo pueden consumirse en el área designada para ello (salón o zona de
-              mesas). Está prohibido consumir alimentos dentro de las áreas de juego.
+              Los alimentos solo pueden consumirse en el área de mesas. Por favor no los lleves
+              a las zonas de juego.
             </li>
             <li>
-              En caso de que el contratante opte por el servicio de catering externo, deberá
-              informarlo previamente para coordinar la logística de ingreso.
+              Si contratas catering externo, avísanos con anticipación para coordinar el ingreso.
             </li>
             <li>
               Alce Kids no se hace responsable por alergias, intoxicaciones u otras afecciones
@@ -321,173 +319,161 @@ export default function TerminosPage() {
           </ul>
         </Section>
 
-        <Section num="15" titulo="Decoración y montaje">
+        <Section num="14" titulo="Decoración y montaje">
           <p>
-            El contratante puede ingresar decoración temática, cumpliendo las siguientes normas:
+            Puedes ingresar toda la decoración temática que quieras. Te pedimos seguir estas
+            indicaciones para cuidar el espacio:
           </p>
           <ul>
             <li>
-              Solo se permite el uso de cinta adhesiva de baja adhesión (masking tape) para fijar
-              decoraciones. Queda prohibido el uso de silicona caliente, clavos, tornillos o
-              cualquier elemento que dañe paredes, techos o mobiliario.
+              Para fijar decoraciones, por favor usa únicamente cinta de papel removible
+              (masking tape). Evita cualquier elemento que pueda perforar o dañar las superficies
+              del recinto.
             </li>
             <li>
-              Queda expresamente prohibido el uso de confeti, papel picado, challa y serpentinas
-              en cualquier área del recinto. Los globos de látex y elementos de pequeño tamaño
-              solo podrán usarse bajo supervisión directa de un adulto responsable.
+              El confeti, papel picado, challa y serpentinas no están permitidos en ningún área.
+              Los globos de látex y elementos pequeños pueden usarse bajo supervisión directa
+              de un adulto.
             </li>
             <li>
-              Las velas solo están permitidas sobre el pastel de cumpleaños y deben apagarse de
-              inmediato tras el ritual de soplado.
+              Las velas solo están permitidas sobre el pastel de cumpleaños y deben apagarse
+              de inmediato tras el momento de soplar.
             </li>
             <li>
-              El montaje de decoración deberá quedar concluido dentro del tiempo de preparación
-              autorizado y el desmontaje deberá realizarse antes del término del bloque
-              contratado.
+              El montaje debe quedar listo dentro del tiempo de preparación autorizado y el
+              desmontaje, antes del término del bloque contratado.
             </li>
           </ul>
         </Section>
 
-        <Section num="16" titulo="Daños a las instalaciones">
+        <Section num="15" titulo="Daños a las instalaciones">
           <p>
             El contratante es responsable de los daños que se produzcan en el recinto, su
-            mobiliario, equipos y elementos decorativos durante el tiempo de uso del espacio.
+            mobiliario, equipos y elementos decorativos durante el tiempo de uso.
           </p>
           <ul>
             <li>
-              Los daños constatados serán valorados por el personal de Alce Kids y cobrados al
-              contratante dentro de las 48 horas siguientes a la celebración.
+              Los daños constatados serán valorados por el equipo de Alce Kids y comunicados
+              al contratante dentro de las 48 horas siguientes a la celebración.
             </li>
             <li>
-              En caso de daños a las estructuras de juego provocados por uso indebido, el costo de
-              reparación o reposición será de cargo exclusivo del contratante o de la familia del
-              menor que los provocó, según corresponda.
+              Los daños a estructuras de juego provocados por uso indebido serán de cargo del
+              contratante o de la familia del menor responsable, según corresponda.
             </li>
             <li>
-              Alce Kids se reserva el derecho a retener el saldo pendiente de pago como garantía
-              provisional ante daños constatados al término del evento.
+              Alce Kids puede retener el saldo pendiente de pago como garantía provisional
+              ante daños constatados al término del evento.
             </li>
           </ul>
         </Section>
 
-        <Section num="17" titulo="Limitación de responsabilidad">
+        <Section num="16" titulo="Responsabilidad y seguridad">
           <p>
             Alce Kids ha diseñado sus instalaciones con estándares de seguridad apropiados para la
-            primera infancia. Sin perjuicio de lo anterior:
+            primera infancia y cuenta con personal capacitado para atender situaciones de emergencia.
+            Con todo, es importante que tengas en cuenta lo siguiente:
           </p>
           <ul>
             <li>
-              Alce Kids no será responsable por accidentes, lesiones o daños a personas o bienes
-              que sean consecuencia del incumplimiento de las normas de uso establecidas en estos
-              Términos y Condiciones.
+              Alce Kids no será responsable por accidentes, lesiones o daños que sean consecuencia
+              directa del incumplimiento de las normas de uso establecidas en estos términos.
             </li>
             <li>
               Alce Kids no será responsable por accidentes derivados de la falta de supervisión
               adulta de los menores.
             </li>
             <li>
-              La responsabilidad máxima de Alce Kids ante cualquier reclamo no podrá exceder el
-              valor total pagado por el contratante por el arrendamiento del espacio.
-            </li>
-            <li>
-              Se recomienda al contratante contar con un seguro de accidentes personal para sus
-              invitados, en especial para los menores participantes.
+              Si lo deseas, puedes contratar un seguro de accidentes personal para tus invitados —
+              te recomendamos considerarlo, especialmente para los niños más pequeños.
             </li>
           </ul>
           <p className="mt-3">
-            Lo anterior es sin perjuicio de los derechos irrenunciables que la Ley N.º 19.496
+            Lo anterior no afecta los derechos irrenunciables que la Ley N.º 19.496
             reconoce a los consumidores.
           </p>
         </Section>
 
-        <Section num="18" titulo="Derecho de admisión">
+        <Section num="17" titulo="Derecho de admisión">
           <p>
-            Alce Kids se reserva el derecho de admisión y permanencia en el recinto. Podrá
-            solicitar el retiro de cualquier persona — adulto o menor — cuya conducta:
+            Alce Kids se reserva el derecho de admisión y permanencia en el recinto. Podremos
+            pedir el retiro de cualquier persona — adulto o menor — cuya conducta:
           </p>
           <ul>
             <li>Ponga en riesgo la integridad física de otros asistentes</li>
             <li>Cause daños a las instalaciones</li>
             <li>Incumpla reiteradamente las normas de uso</li>
-            <li>Sea contraria a las buenas costumbres o al orden del evento</li>
+            <li>Sea contraria al orden y buen ambiente del evento</li>
           </ul>
           <p className="mt-3">
             El ejercicio de este derecho no generará obligación de reembolso ni de compensación
-            alguna para el contratante.
+            para el contratante.
           </p>
         </Section>
 
-        <Section num="19" titulo="Privacidad e imagen">
+        <Section num="18" titulo="Privacidad e imagen">
           <p>
-            El contratante autoriza expresamente a Alce Kids a fotografiar y/o filmar las
-            celebraciones realizadas en el recinto con fines promocionales, incluyendo su
-            publicación en redes sociales y sitio web institucional, con la debida reserva de
-            identidades cuando corresponda.
+            El contratante autoriza a Alce Kids a fotografiar y/o filmar las celebraciones
+            realizadas en el recinto con fines promocionales, incluyendo su publicación en redes
+            sociales y sitio web, con la debida reserva de identidades cuando corresponda.
           </p>
           <p className="mt-3">
-            Si el contratante desea que las imágenes de su celebración no sean utilizadas con
-            fines promocionales, deberá comunicarlo de forma expresa y por escrito al momento de
-            formalizar la reserva.
+            Si prefieres que las imágenes de tu celebración no sean utilizadas con fines
+            promocionales, simplemente comunícanoslo por escrito al momento de confirmar la reserva.
+            Lo respetamos sin problema.
           </p>
           <p className="mt-3">
             Los datos personales proporcionados serán tratados de conformidad con la Ley N.º 19.628
-            sobre Protección de la Vida Privada de Chile, siendo utilizados exclusivamente para
-            la gestión de la reserva y comunicaciones relacionadas con el servicio.
+            sobre Protección de la Vida Privada, y utilizados exclusivamente para la gestión de la
+            reserva y comunicaciones relacionadas con el servicio.
           </p>
         </Section>
 
-        <Section num="20" titulo="Propiedad privada y seguridad del recinto">
+        <Section num="19" titulo="Recinto privado y seguridad">
           <p>
-            Alce Kids es un recinto privado y cerrado. El ingreso queda restringido a los
-            asistentes inscritos en la celebración reservada. No se permite el acceso a personas
-            ajenas al evento durante el desarrollo del mismo.
+            Alce Kids es un recinto privado y cerrado. El ingreso está reservado para los
+            asistentes de la celebración confirmada. No se permite el acceso a personas ajenas
+            al evento durante su realización.
           </p>
           <p className="mt-3">
-            El recinto dispone de cámaras de seguridad en áreas comunes, cuyo objetivo es velar
-            por la integridad de las personas y las instalaciones. Las grabaciones podrán ser
-            puestas a disposición de la autoridad competente en caso de incidentes que lo ameriten.
+            El recinto cuenta con cámaras de seguridad en áreas comunes para velar por la
+            integridad de las personas y las instalaciones. Las grabaciones podrán ponerse a
+            disposición de la autoridad competente en caso de incidentes que lo ameriten.
           </p>
         </Section>
 
-        <Section num="21" titulo="Caso fortuito y fuerza mayor">
+        <Section num="20" titulo="Caso fortuito y fuerza mayor">
           <p>
             Ninguna de las partes será responsable por el incumplimiento de sus obligaciones cuando
-            dicho incumplimiento sea consecuencia de un caso fortuito o de fuerza mayor en los
-            términos del artículo 45 del Código Civil de Chile, incluyendo, sin carácter taxativo:
-            catástrofes naturales, cortes de suministros básicos, emergencias sanitarias declaradas
-            por la autoridad, o cualquier acto de autoridad pública que impida la realización del
-            evento.
+            dicho incumplimiento sea consecuencia de un caso fortuito o fuerza mayor en los términos
+            del artículo 45 del Código Civil de Chile, incluyendo: catástrofes naturales, cortes
+            de suministros básicos, emergencias sanitarias declaradas por la autoridad, o cualquier
+            acto de autoridad pública que impida la realización del evento.
           </p>
           <p className="mt-3">
-            En caso de que Alce Kids deba cancelar un evento por fuerza mayor, el anticipo pagado
-            será devuelto íntegramente o aplicado como crédito para una nueva fecha, a elección del
+            Si Alce Kids debe cancelar un evento por fuerza mayor, el anticipo pagado será
+            devuelto íntegramente o aplicado como crédito para una nueva fecha, a elección del
             contratante.
           </p>
           <p className="mt-3">
-            Las condiciones climáticas adversas (lluvia, calor extremo, etc.) no constituyen caso
-            de fuerza mayor que justifique la cancelación sin costo, dado que el recinto cuenta con
-            zonas cubiertas y salón climatizado que permiten el desarrollo normal de la celebración
-            en cualquier condición meteorológica.
+            Las condiciones climáticas adversas (lluvia, calor intenso, etc.) no constituyen
+            caso de fuerza mayor que justifique la cancelación sin costo, dado que el recinto
+            cuenta con zonas cubiertas y salón climatizado para garantizar el desarrollo normal
+            de la celebración en cualquier condición meteorológica. En caso de lluvia, siempre
+            buscamos contigo la mejor solución.
           </p>
         </Section>
 
-        <Section num="22" titulo="Legislación aplicable y jurisdicción">
+        <Section num="21" titulo="Marco legal aplicable">
           <p>
             Los presentes Términos y Condiciones se rigen íntegramente por la legislación chilena,
             en particular por el Código Civil, la Ley N.º 19.496 sobre Protección de los Derechos
             de los Consumidores y sus normas complementarias.
           </p>
           <p className="mt-3">
-            Para la resolución de cualquier controversia derivada de la interpretación, aplicación
-            o incumplimiento de este instrumento, las partes se someten a la jurisdicción de los
-            Tribunales Ordinarios de Justicia de la ciudad de Santiago, Región Metropolitana de
-            Chile, renunciando expresamente a cualquier otro fuero o domicilio que pudiera
-            corresponderles.
-          </p>
-          <p className="mt-3">
-            Sin perjuicio de lo anterior, el contratante podrá acudir al Servicio Nacional del
-            Consumidor (SERNAC) en caso de estimar que sus derechos como consumidor han sido
-            vulnerados.
+            Cualquier consulta, reclamo o diferencia derivada de la interpretación o aplicación de
+            estos términos se resolverá en primer lugar mediante diálogo directo entre las partes.
+            Si no se alcanza una solución, el contratante puede acudir al Servicio Nacional del
+            Consumidor (SERNAC) o a los organismos competentes conforme a la legislación vigente.
           </p>
         </Section>
 
@@ -511,7 +497,7 @@ export default function TerminosPage() {
             </a>
           </p>
           <p className="mt-3 text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            Última actualización: enero 2024 · Versión 1.0
+            Última actualización: mayo 2026 · Versión 2.0
           </p>
         </div>
 
@@ -563,5 +549,3 @@ function Section({ num, titulo, children }) {
     </section>
   );
 }
-
-// Extend Section to handle ul lists nicely via global CSS already present

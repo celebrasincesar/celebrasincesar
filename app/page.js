@@ -192,10 +192,7 @@ function HeroStatic({ onVerOpciones }) {
               '0 8px 32px rgba(249,115,22,0.4), 0 2px 12px rgba(0,0,0,0.25)',
           }}
         >
-          Quiero ver cómo funciona →
-          <span className="text-xl transition-transform duration-300 group-hover:translate-y-1 inline-block">
-            ↓
-          </span>
+          Ver cómo funciona ↓
         </button>
 
         {/* CTA visita sin compromiso */}
@@ -2057,8 +2054,8 @@ function PageAlce({ onIniciarWizard }) {
                 style={{ background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)' }}>📅</div>
               <h3 className="font-black text-xl mb-3" style={{ color: '#0D1B3E' }}>Opción 1: Cambiar la fecha</h3>
               <p className="text-gray-500 text-sm leading-relaxed">
-                Con <strong className="text-gray-700">24 a 48 horas de anticipación</strong>, te buscamos
-                la próxima fecha disponible <strong className="text-gray-700">sin costo adicional</strong>.
+                Avisándonos con anticipación, te buscamos la próxima fecha disponible{' '}
+                <strong className="text-gray-700">sin costo adicional</strong>.
                 Sin letra chica, sin multas. Tu celebración se hace igual — solo en otro día.
               </p>
             </div>
@@ -2780,11 +2777,12 @@ El total estimado es ${clp(total)}.${notasLinea}
                       style={{ background: 'linear-gradient(135deg,#FFFBEB,#FEF3C7)', border: '2px solid #FCD34D' }}>
                       <span className="text-2xl flex-shrink-0">⚠️</span>
                       <div>
-                        <p className="font-black text-amber-800">Aviso de Seguridad</p>
+                        <p className="font-black text-amber-800">Importante</p>
                         <p className="text-amber-700 text-sm mt-1 leading-relaxed">
-                          Para resguardar la seguridad de los más pequeños, es{' '}
-                          <strong>obligatorio contratar un adicional de entretenimiento</strong>{' '}
-                          para el grupo de niños mayores de 6 años. Lo encontrarás en el catálogo de adicionales (Animador +6 años).
+                          Los juegos están diseñados para niños de hasta 6 años, por lo que los
+                          mayores tendrán acceso limitado a la infraestructura. Para que lo pasen
+                          igual de bien, te recomendamos contratar un adicional de animación o
+                          actividades para su edad — lo encontrarás en el catálogo de adicionales.
                         </p>
                       </div>
                     </div>
