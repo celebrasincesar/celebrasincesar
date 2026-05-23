@@ -89,7 +89,7 @@ function Header({ onHome }) {
 //   video-home.mp4   → video de fondo del hero
 //   logo-celebra.png → logo principal
 //   logo-alce.png    → logo Alce Kids
-//   foto-jardin-1.jpg, foto-jardin-2.jpg, foto-jardin-3.jpg → galería
+//   foto-jardin-1.webp, foto-jardin-2.webp, foto-jardin-3.webp → galería
 // ─────────────────────────────────────────────
 function HeroStatic({ onVerOpciones }) {
   return (
@@ -108,7 +108,7 @@ function HeroStatic({ onVerOpciones }) {
 
       {/* Imagen estática de fondo — priority=true para LCP */}
       <Image
-        src="/foto-home-bg.jpg"
+        src="/foto-home-bg.webp"
         alt=""
         fill
         priority
@@ -1199,62 +1199,62 @@ const INFRAS = [
   {
     emoji: '🎱', title: 'Piscina de Pelotas Gigante',
     desc: 'El favorito de todos. Una piscina enorme llena de pelotas de colores donde los niños pueden saltar, rodar y jugar por horas.',
-    color: '#1565C0', imagen: '/infra-piscina.jpg',
+    color: '#1565C0', imagen: '/infra-piscina.webp',
   },
   {
     emoji: '🛝', title: 'Gran Tobogán',
     desc: 'Estructura de juegos colorida con tobogán, escaladores y zonas de exploración para los más atrevidos y curiosos.',
-    color: '#F97316', imagen: '/infra-tobogan.jpg',
+    color: '#F97316', imagen: '/infra-tobogan.webp',
   },
   {
     emoji: '🚗', title: 'Autopista para Niños',
     desc: 'Circuito pintado en el piso con casita, semáforos y señales. Los niños manejan sus propios vehículos como conductores de verdad.',
-    color: '#29B9E8', imagen: '/infra-autopista.jpg',
+    color: '#29B9E8', imagen: '/infra-autopista.webp',
   },
   {
     emoji: '🐰', title: 'Granja con Animales',
     desc: 'Conejos y amigos del campo que los niños pueden conocer de cerca. Una experiencia única e irrepetible en Las Condes.',
-    color: '#22c55e', imagen: '/infra-granja.jpg',
+    color: '#22c55e', imagen: '/infra-granja.webp',
   },
   {
     emoji: '⛱️', title: 'Pozo de Arena',
     desc: 'Un área de arena donde los pequeños pueden construir castillos, excavar y dejar volar la imaginación sin límites.',
-    color: '#F59E0B', imagen: '/infra-arena.jpg',
+    color: '#F59E0B', imagen: '/infra-arena.webp',
   },
   {
     emoji: '🏠', title: 'Salón con Aire Acondicionado',
     desc: 'Salón principal amplio y techado con AC. Para la celebración, el pastel y la comodidad de todos los adultos.',
-    color: '#8B5CF6', imagen: '/infra-salon.jpg',
+    color: '#8B5CF6', imagen: '/infra-salon.webp',
   },
   {
     emoji: '🔒', title: 'Privacidad Total',
     desc: 'Cerramientos verdes y toldos para el sol. Tu fiesta es completamente privada, solo para tu familia e invitados.',
-    color: '#1565C0', imagen: '/infra-privacidad.jpg',
+    color: '#1565C0', imagen: '/infra-privacidad.webp',
   },
   {
     emoji: '👨‍👩‍👧‍👦', title: 'Adultos Ilimitados',
     desc: 'Sin cobro extra por adultos. Trae abuelos, tíos y amigos. Cocina, baños y espacio para todos sin costo adicional.',
-    color: '#F97316', imagen: '/infra-adultos.jpg',
+    color: '#F97316', imagen: '/infra-adultos.webp',
   },
   {
     emoji: '🎪', title: '2 Sectores Independientes',
     desc: 'Sector tobogán y sector piscina de pelotas. Elige un solo sector (hasta 10 niños) o el recinto completo para grupos grandes.',
-    color: '#29B9E8', imagen: '/infra-sectores.jpg',
+    color: '#29B9E8', imagen: '/infra-sectores.webp',
   },
   {
     emoji: '🎭', title: 'Escenario y Tarima',
     desc: 'Tarima elevada para shows de animadores, obras de teatro y el momento del cumpleaños. ¡Los niños se convierten en protagonistas del escenario!',
-    color: '#EC4899', imagen: '/infra-escenario.jpg',
+    color: '#EC4899', imagen: '/infra-escenario.webp',
   },
   {
     emoji: '🌟', title: 'Área de Columpios',
     desc: 'Set de columpios seguros y coloridos para los más pequeños. El rincón favorito para mecerse, reír y descubrir la libertad.',
-    color: '#F59E0B', imagen: '/infra-columpios.jpg',
+    color: '#F59E0B', imagen: '/infra-columpios.webp',
   },
   {
     emoji: '🎡', title: 'Sillas Locas',
     desc: '¡El favorito absoluto que hace gritar a todos! Sillas giratorias de diversión extrema para los niños más aventureros y valientes de la fiesta.',
-    color: '#EF4444', imagen: '/infra-sillas-locas.jpg',
+    color: '#EF4444', imagen: '/infra-sillas-locas.webp',
   },
 ];
 
@@ -1483,7 +1483,7 @@ function PageAlce({ onIniciarWizard }) {
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(135deg, #060F2E 0%, #0D2B6E 45%, #0E6FA8 100%)' }} />
         {/* Foto de fondo (misma que el hero principal) */}
-        <Image src="/foto-home-bg.jpg" alt="" fill aria-hidden="true"
+        <Image src="/foto-home-bg.webp" alt="" fill aria-hidden="true"
           className="object-cover"
           sizes="100vw"
           onError={(e) => { e.currentTarget.style.display = 'none'; }} />
