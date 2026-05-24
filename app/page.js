@@ -972,17 +972,17 @@ function ModalCarrusel({ grupo, extras, cantNinos, onToggle, onCerrar }) {
                     : 'none',
                 }}
               >
-                {/* Imagen 16:9 — no crece tanto, deja espacio al panel de info */}
+                {/* Imagen 1:1 — cuadrada, inmersiva en móvil y elegante en escritorio */}
                 <div
                   className="relative w-full"
-                  style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0D2B6E, #1565C0)' }}
+                  style={{ aspectRatio: '1/1', background: 'linear-gradient(135deg, #0D2B6E, #1565C0)' }}
                 >
                   <Image
                     src={isCentro ? (fotos[fotoIdxSafe] || item.imagen) : item.imagen}
                     alt={item.nombre}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 85vw, 33vw"
+                    sizes="(max-width: 768px) 82vw, 560px"
                     style={isCentro ? { filter: 'saturate(1.1) contrast(1.05) brightness(1.03)' } : {}}
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
