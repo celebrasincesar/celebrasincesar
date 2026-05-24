@@ -1396,7 +1396,7 @@ function GaleriaInfra() {
 
             <div className="w-full max-w-4xl rounded-3xl overflow-hidden relative"
               style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)' }}>
-              <div className="relative w-full" style={{ aspectRatio: '16/9', background: '#0D1B3E' }}>
+              <div className="relative w-full aspect-[4/3] md:aspect-video" style={{ background: '#0D1B3E' }}>
                 <Image
                   key={lightboxIdx}
                   src={INFRAS[lightboxIdx].imagen}
@@ -1718,7 +1718,7 @@ function PageAlce({ onIniciarWizard }) {
               className="w-full max-w-4xl rounded-3xl overflow-hidden relative"
               style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)' }}
             >
-              <div className="relative w-full" style={{ aspectRatio: '16/9', background: '#0D1B3E' }}>
+              <div className="relative w-full aspect-[4/3] md:aspect-video" style={{ background: '#0D1B3E' }}>
                 <Image
                   key={lightboxIdx}
                   src={INFRAS[lightboxIdx].imagen}
