@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { PRECIOS_BASE, PRECIOS_EXTRAS, CATEGORIAS_ADICIONALES, BLOQUES_VITRINA } from '../data/master';
+import { CARRUSEL, VITRINA } from '../data/imagenes';
 import { STATS, INSTAGRAM_STRIP_TEXT, RESEÑAS_CORTO, RESEÑAS_LARGO } from '../data/stats';
 
 // ── Lookup rápido de items por ID (para resolver grupos de la vitrina)
@@ -828,21 +829,18 @@ function ModalCarrusel({ grupo, extras, cantNinos, onToggle, onCerrar }) {
   // url → true (cargó) | false (error) | undefined (pendiente)
   const [fotoStates, setFotoStates] = useState({});
 
-  // Al cambiar de ítem: resetear foto y precargar todas las URLs del nuevo ítem
+  // Precargar fotos del grupo al montar (las fotos son del grupo, no del ítem)
   useEffect(() => {
     setFotoIdx(0);
     setFotoStates({});
-    const item = items[indice];
-    const urls = item?.imagenes?.length > 0
-      ? item.imagenes
-      : item?.imagen ? [item.imagen] : [];
+    const urls = CARRUSEL[grupo.carpeta] || [];
     urls.forEach((url) => {
       const img = new window.Image();
       img.onload  = () => setFotoStates((p) => ({ ...p, [url]: true  }));
       img.onerror = () => setFotoStates((p) => ({ ...p, [url]: false }));
       img.src = url;
     });
-  }, [indice, items]);
+  }, [grupo.carpeta]);
 
   // Navegación por teclado
   useEffect(() => {
@@ -860,10 +858,8 @@ function ModalCarrusel({ grupo, extras, cantNinos, onToggle, onCerrar }) {
   const itemActual = items[indice];
   const estaSeleccionado = extras.some((e) => e.id === itemActual.id);
 
-  // URLs crudas del ítem actual
-  const allFotos = itemActual.imagenes?.length > 0
-    ? itemActual.imagenes
-    : itemActual.imagen ? [itemActual.imagen] : [];
+  // Fotos del grupo (carpeta) — compartidas por todos los ítems del grupo
+  const allFotos = CARRUSEL[grupo.carpeta] || [];
 
   // Solo fotos que cargaron correctamente (filtra rutas inexistentes).
   // Mientras precarga (estado undefined) las incluye provisoriamente.
@@ -978,7 +974,7 @@ function ModalCarrusel({ grupo, extras, cantNinos, onToggle, onCerrar }) {
                   style={{ aspectRatio: '1/1', background: 'linear-gradient(135deg, #0D2B6E, #1565C0)' }}
                 >
                   <Image
-                    src={isCentro ? (fotos[fotoIdxSafe] || item.imagen) : item.imagen}
+                    src={isCentro ? (fotos[fotoIdxSafe] || VITRINA[grupo.carpeta] || '') : (VITRINA[grupo.carpeta] || fotos[0] || '')}
                     alt={item.nombre}
                     fill
                     className="object-cover"
@@ -3153,14 +3149,16 @@ El total estimado es ${clp(total)}.${notasLinea}
                               }}
                             />
                             {/* Foto real */}
-                            <Image
-                              src={grupo.imagen}
-                              alt={grupo.nombre}
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-105"
-                              sizes="(max-width: 768px) 50vw, 25vw"
-                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                            />
+                            {VITRINA[grupo.carpeta] && (
+                              <Image
+                                src={VITRINA[grupo.carpeta]}
+                                alt={grupo.nombre}
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                sizes="(max-width: 768px) 50vw, 25vw"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              />
+                            )}
                             {/* Overlay oscuro gradiente (inferior más oscuro) */}
                             <div
                               className="absolute inset-0"
