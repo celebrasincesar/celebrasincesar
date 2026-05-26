@@ -2630,7 +2630,7 @@ export default function App() {
 
     const adicionales = [
       estado.packCelebra ? `• Pack Celebra Sin Cesar (Piñata + Decoración): ${clp(PRECIOS_EXTRAS.pack_celebra)}` : '',
-      ...estado.extras.map((e) => `• ${e.nombre}: ${e.gratis ? 'INCLUIDO' : clp(e.precio)}`),
+      ...estado.extras.map((e) => `• ${e.nombre}: ${e.gratis ? 'INCLUIDO' : clp(getPrecio(e, estado.cantNinos))}`),
       estado.usaCocina ? `• Aseo Profundo: ${clp(PRECIOS_EXTRAS.aseo_profundo)}` : '',
       estado.horaExtra ? `• Hora adicional (4 hrs total): ${clp(PRECIOS_EXTRAS.hora_adicional)}` : '',
       (estado.cantNinos === 'mas30' && estado.ninosExtra > 0)
