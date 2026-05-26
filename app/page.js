@@ -818,6 +818,202 @@ function ResumenLateral({ estado, total, onWhatsApp }) {
 }
 
 // ─────────────────────────────────────────────
+// BOTTOM SHEET MÓVIL — Resumen completo de la celebración
+// Mismo contenido que ResumenLateral pero en drawer desde abajo.
+// Cada extra tiene × para quitarlo sin salir del flujo.
+// ─────────────────────────────────────────────
+function BottomSheetResumen({ estado, total, onWhatsApp, onCerrar, onQuitarExtra }) {
+  const { fecha, hora, nombreNino, edadNino, cantNinos, sector, extras,
+          usaCocina, packCelebra, horaExtra, ninosExtra } = estado;
+  const esSabado = fecha?.getDay() === 6;
+
+  const precioBase =
+    sector === 'independiente'                         ? (esSabado ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente) :
+    (sector === 'completo' && cantNinos === 'hasta10') ? (esSabado ? PRECIOS_BASE.completo_10_sab  : PRECIOS_BASE.completo_10) :
+    cantNinos === 'hasta20'                            ? (esSabado ? PRECIOS_BASE.completo_20_sab  : PRECIOS_BASE.completo_20) :
+    (cantNinos === 'hasta30' || cantNinos === 'mas30') ? (esSabado ? PRECIOS_BASE.completo_30_sab  : PRECIOS_BASE.completo_30) : 0;
+
+  const sectorLabel = sector === 'independiente' ? 'Sector Independiente' : 'Jardín Completo';
+
+  return (
+    <>
+      {/* Overlay oscuro — cierra al tocar fuera */}
+      <div
+        className="fixed inset-0 z-[110] lg:hidden"
+        style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
+        onClick={onCerrar}
+      />
+
+      {/* Sheet — sube desde abajo */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-[120] lg:hidden flex flex-col rounded-t-3xl"
+        style={{
+          background: 'linear-gradient(160deg, #060F2E 0%, #0D1B3E 60%, #081529 100%)',
+          border: '1px solid rgba(41,185,232,0.2)',
+          borderBottom: 'none',
+          boxShadow: '0 -12px 48px rgba(0,0,0,0.55)',
+          maxHeight: '84vh',
+        }}
+      >
+        {/* Pill handle */}
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.18)' }} />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-2 pb-3 flex-shrink-0">
+          <div>
+            <h3 className="font-black text-base leading-tight" style={{ color: '#29B9E8' }}>📋 Tu celebración</h3>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Se actualiza en tiempo real</p>
+          </div>
+          <button
+            onClick={onCerrar}
+            className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm text-white transition-all active:scale-90"
+            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.12)' }}
+          >✕</button>
+        </div>
+
+        {/* Contenido scrollable */}
+        <div className="flex-1 overflow-y-auto px-5 pb-3 space-y-0">
+
+          {/* Info de reserva */}
+          {(fecha || hora || nombreNino || sector) && (
+            <div className="space-y-2.5 pb-4 mb-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              {fecha && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>📅 Fecha</span>
+                  <span className="font-bold text-white text-sm">
+                    {fecha.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </span>
+                </div>
+              )}
+              {hora && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>🕐 Horario</span>
+                  <span className="font-bold text-white text-sm">{hora === 'AM' ? 'AM · 11:00–14:00' : 'PM · 15:30–18:30'}</span>
+                </div>
+              )}
+              {nombreNino && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>🎂 Festejado</span>
+                  <span className="font-bold text-white text-sm">{nombreNino}{edadNino ? ` · ${edadNino} años` : ''}</span>
+                </div>
+              )}
+              {sector && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>🏡 Sector</span>
+                  <span className="font-bold text-sm" style={{ color: '#29B9E8' }}>{sectorLabel}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Desglose de precios */}
+          {precioBase > 0 && (
+            <>
+              <p className="text-xs font-black uppercase tracking-widest pt-3 pb-2"
+                style={{ color: 'rgba(255,255,255,0.3)' }}>Desglose</p>
+
+              {/* Base */}
+              <div className="flex justify-between items-center py-1.5">
+                <span className="text-sm truncate pr-2" style={{ color: 'rgba(255,255,255,0.6)' }}>🏡 {sectorLabel}</span>
+                <span className="font-bold text-white text-sm flex-shrink-0">{clp(precioBase)}</span>
+              </div>
+
+              {/* Pack */}
+              {packCelebra && (
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>🎉 Pack Celebra</span>
+                  <span className="font-bold text-white text-sm">{clp(PRECIOS_EXTRAS.pack_celebra)}</span>
+                </div>
+              )}
+
+              {/* Extras — cada uno con × para quitar */}
+              {extras.map((e) => (
+                <div
+                  key={e.id}
+                  className="flex items-center gap-2 py-2 px-2.5 rounded-2xl my-1"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                >
+                  <span className="text-sm flex-1 truncate" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                    {e.emoji} {e.nombre}
+                  </span>
+                  <span
+                    className="font-bold text-sm flex-shrink-0"
+                    style={{ color: e.gratis ? '#4ade80' : 'white' }}
+                  >
+                    {e.gratis ? 'GRATIS' : clp(getPrecio(e, cantNinos))}
+                  </span>
+                  <button
+                    onClick={() => onQuitarExtra(e.id)}
+                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 font-black text-xs transition-all active:scale-90"
+                    style={{ background: 'rgba(239,68,68,0.15)', color: 'rgba(239,68,68,0.85)', border: '1px solid rgba(239,68,68,0.2)' }}
+                    aria-label={`Quitar ${e.nombre}`}
+                  >✕</button>
+                </div>
+              ))}
+
+              {/* Aseo profundo */}
+              {usaCocina && (
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>🧹 Aseo profundo</span>
+                  <span className="font-bold text-white text-sm">{clp(PRECIOS_EXTRAS.aseo_profundo)}</span>
+                </div>
+              )}
+
+              {/* Hora adicional */}
+              {horaExtra && (
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>⏰ Hora adicional</span>
+                  <span className="font-bold text-white text-sm">{clp(PRECIOS_EXTRAS.hora_adicional)}</span>
+                </div>
+              )}
+
+              {/* Niños adicionales */}
+              {cantNinos === 'mas30' && ninosExtra > 0 && (
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-sm truncate pr-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    👶 Niños adicionales ({ninosExtra})
+                  </span>
+                  <span className="font-bold text-white text-sm flex-shrink-0">
+                    {clp(ninosExtra * PRECIOS_EXTRAS.nino_extra)}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Footer pegado — total + CTA */}
+        <div
+          className="flex-shrink-0 px-5 pt-4 pb-8"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.1)', background: 'rgba(4,8,24,0.6)', backdropFilter: 'blur(8px)' }}
+        >
+          <div className="flex items-baseline justify-between mb-3">
+            <span className="font-black text-xs uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              Total estimado
+            </span>
+            <span className="font-black text-3xl" style={{ color: '#F97316', textShadow: '0 0 20px rgba(249,115,22,0.4)' }}>
+              {clp(total)}
+            </span>
+          </div>
+          <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            Precio referencial · sujeto a disponibilidad
+          </p>
+          <button
+            onClick={onWhatsApp}
+            className="w-full text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}
+          >
+            💬 Confirmar por WhatsApp
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────
 // MODAL CARRUSEL — Catálogo de Experiencias Premium
 // Recibe `grupo` resuelto (con items[] ya completos)
 // ─────────────────────────────────────────────
@@ -973,15 +1169,22 @@ function ModalCarrusel({ grupo, extras, cantNinos, onToggle, onCerrar }) {
                   className="relative w-full"
                   style={{ aspectRatio: '1/1', background: 'linear-gradient(135deg, #0D2B6E, #1565C0)' }}
                 >
-                  <Image
-                    src={isCentro ? (fotos[fotoIdxSafe] || VITRINA[grupo.carpeta] || '') : (VITRINA[grupo.carpeta] || fotos[0] || '')}
-                    alt={item.nombre}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 82vw, 560px"
-                    style={isCentro ? { filter: 'saturate(1.1) contrast(1.05) brightness(1.03)' } : {}}
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
+                  {(() => {
+                    const src = isCentro
+                      ? (fotos[fotoIdxSafe] || VITRINA[grupo.carpeta])
+                      : (VITRINA[grupo.carpeta] || fotos[0]);
+                    return src ? (
+                      <Image
+                        src={src}
+                        alt={item.nombre}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 82vw, 560px"
+                        style={isCentro ? { filter: 'saturate(1.1) contrast(1.05) brightness(1.03)' } : {}}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    ) : null;
+                  })()}
 
                   {/* ── Flechas de navegación entre fotos del ítem (solo card central) ── */}
                   {isCentro && totalFotos > 1 && (
@@ -2365,6 +2568,11 @@ export default function App() {
   const set = (campo, valor) => setEstado((p) => ({ ...p, [campo]: valor }));
 
   const [grupoAbierto, setGrupoAbierto] = useState(null); // grupo resuelto activo
+  const [sheetAbierto, setSheetAbierto] = useState(false); // bottom sheet móvil
+
+  // Quitar un extra por id (para el bottom sheet)
+  const quitarExtra = (itemId) =>
+    setEstado((p) => ({ ...p, extras: p.extras.filter((e) => e.id !== itemId) }));
 
   // Toggle de ítem dentro del modal
   // - single-select: quita todos los de este grupo antes de agregar
@@ -3317,26 +3525,53 @@ El total estimado es ${clp(total)}.${notasLinea}
         />
       )}
 
-      {/* Barra inferior móvil */}
-      {total > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 px-4 py-3 flex items-center justify-between lg:hidden z-50"
+      {/* Barra inferior móvil — toca para ver el desglose completo */}
+      {total > 0 && !sheetAbierto && (
+        <div
+          onClick={() => setSheetAbierto(true)}
+          className="fixed bottom-0 left-0 right-0 px-4 py-3 flex items-center justify-between lg:hidden z-50 cursor-pointer"
           style={{
             background: 'linear-gradient(135deg, #060F2E 0%, #0D1B3E 100%)',
             borderTop: '1px solid rgba(41,185,232,0.2)',
             boxShadow: '0 -4px 24px rgba(0,0,0,0.4)',
-          }}>
+          }}
+        >
           <div>
-            <div className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>Total estimado</div>
-            <div className="font-black text-2xl" style={{ color: '#F97316', textShadow: '0 0 16px rgba(249,115,22,0.4)' }}>{clp(total)}</div>
+            {/* Conteo + indicador "Ver detalle" */}
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span
+                className="inline-flex items-center justify-center w-5 h-5 rounded-full font-black text-white"
+                style={{ background: '#F97316', fontSize: '10px' }}
+              >
+                {estado.extras.length + (estado.packCelebra ? 1 : 0)}
+              </span>
+              <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                seleccionados · <span style={{ color: '#29B9E8' }}>Ver detalle ↑</span>
+              </span>
+            </div>
+            <div className="font-black text-2xl" style={{ color: '#F97316', textShadow: '0 0 16px rgba(249,115,22,0.4)' }}>
+              {clp(total)}
+            </div>
           </div>
           <button
-            onClick={generarWhatsApp}
-            className="text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 transition-all hover:scale-105"
+            onClick={(e) => { e.stopPropagation(); generarWhatsApp(); }}
+            className="text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 transition-all active:scale-95"
             style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 4px 16px rgba(34,197,94,0.35)' }}
           >
             💬 Confirmar
           </button>
         </div>
+      )}
+
+      {/* Bottom sheet móvil — resumen completo */}
+      {sheetAbierto && (
+        <BottomSheetResumen
+          estado={estado}
+          total={total}
+          onWhatsApp={generarWhatsApp}
+          onCerrar={() => setSheetAbierto(false)}
+          onQuitarExtra={quitarExtra}
+        />
       )}
     </>
   );
