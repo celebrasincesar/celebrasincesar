@@ -42,9 +42,9 @@ const getAddCantidad = (cantNinos) => {
   const r = MULTIPLICADORES.cantidad.find((c) => c.id === cantNinos);
   return r ? r.add : 0;
 };
-// precio_final = base + add_edad + add_cantidad
+// precio_final = base + add_edad + add_cantidad (solo si hay base válida)
 const aplicarMult = (base, edadNino, cantNinos) =>
-  base + getAddEdad(edadNino) + getAddCantidad(cantNinos);
+  base === 0 ? 0 : base + getAddEdad(edadNino) + getAddCantidad(cantNinos);
 
 const MESES = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
