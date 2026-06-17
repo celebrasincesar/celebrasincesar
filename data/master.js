@@ -37,18 +37,60 @@ export const MARCA = {
 export const PRECIOS_BASE = {
 
   // ── Viernes y Domingo ──────────────────────────────────────────
-  independiente:     180000,  // $180.000 · hasta 10 niños · Sector Independiente
-  completo_10:       225000,  // $225.000 · hasta 10 niños · Jardín Completo
-  completo_20:       235000,  // $235.000 · hasta 20 niños
-  completo_30:       250000,  // $250.000 · hasta 30 niños  (y más de 30)
+  //  Estos son los PRECIOS BASE (rango más bajo: 1-3 años, hasta 10 niños).
+  //  El precio final = PRECIOS_BASE × mult_edad × mult_cantidad (ver MULTIPLICADORES abajo).
+  //  La diferencia entre hasta10 / hasta20 / hasta30 la manejan los multiplicadores,
+  //  por eso completo_10 = completo_20 = completo_30 (mismo precio base).
+  independiente:     150000,  // $150.000 · Sector Independiente · base (1-3 años, hasta 10 niños)
+  completo_10:       195000,  // $195.000 · Jardín Completo     · base (1-3 años, hasta 10 niños)
+  completo_20:       195000,  // igual que completo_10 — add_cantidad +$15k diferencia
+  completo_30:       195000,  // igual que completo_10 — add_cantidad +$30k diferencia
 
-  // ── Sábado ─────────────────────────────────────────────────────
-  independiente_sab: 195000,  // $195.000 · hasta 10 niños · Sector Independiente
-  completo_10_sab:   235000,  // $235.000 · hasta 10 niños · Jardín Completo
-  completo_20_sab:   250000,  // $250.000 · hasta 20 niños
-  completo_30_sab:   265000,  // $265.000 · hasta 30 niños  (y más de 30)
+  // ── Sábado (+$15.000 sobre el precio base de cada sector) ──────
+  independiente_sab: 165000,  // $165.000 · Sector Independiente
+  completo_10_sab:   210000,  // $210.000 · Jardín Completo
+  completo_20_sab:   210000,  // igual que completo_10_sab
+  completo_30_sab:   210000,  // igual que completo_10_sab
 
   completo_mas: 290000,       // legacy — no usar
+};
+
+
+// ─────────────────────────────────────────────────────────────────────
+// ② B  INCREMENTOS DE PRECIO  (edad del cumpleañero + cantidad niños)
+//
+//  precio_final = PRECIOS_BASE[key]  +  add_edad  +  add_cantidad
+//
+//  Cada escalón sube $15.000 fijos (sistema lineal):
+//    Rango 0 → +$0       (precio base)
+//    Rango 1 → +$15.000
+//    Rango 2 → +$30.000
+//    Rango 3 → +$45.000
+//
+//  Para cambiar el incremento de un rango: edita sólo el campo add.
+//  Para que todos sean iguales (sin diferencia): pon 0 en todos.
+// ─────────────────────────────────────────────────────────────────────
+export const MULTIPLICADORES = {
+
+  // ── Edad del cumpleañero ────────────────────────────────────────────
+  //    edades: las edades que caen en ese rango
+  //    add:    monto fijo que se suma al precio base (en pesos)
+  edad: [
+    { edades: [1, 2, 3], add: 0      },  // 1, 2 o 3 años  → sin incremento (precio base)
+    { edades: [4],        add: 15000  },  // 4 años         → +$15.000
+    { edades: [5],        add: 30000  },  // 5 años         → +$30.000
+    { edades: [6],        add: 45000  },  // 6 años         → +$45.000
+  ],
+
+  // ── Cantidad de niños ───────────────────────────────────────────────
+  //    id:   valor de cantNinos en el wizard
+  //    add:  monto fijo que se suma al precio base (en pesos)
+  cantidad: [
+    { id: 'hasta10', add: 0      },  // hasta 10 niños → sin incremento (precio base)
+    { id: 'hasta20', add: 15000  },  // hasta 20 niños → +$15.000
+    { id: 'hasta30', add: 30000  },  // hasta 30 niños → +$30.000
+    { id: 'mas30',   add: 30000  },  // más de 30      → igual que hasta30 + $10k/niño extra
+  ],
 };
 
 

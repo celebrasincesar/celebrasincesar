@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { PRECIOS_BASE, PRECIOS_EXTRAS, CATEGORIAS_ADICIONALES, BLOQUES_VITRINA } from '../data/master';
+import { PRECIOS_BASE, PRECIOS_EXTRAS, CATEGORIAS_ADICIONALES, BLOQUES_VITRINA, MULTIPLICADORES } from '../data/master';
 import { CARRUSEL, VITRINA } from '../data/imagenes';
 import { STATS, INSTAGRAM_STRIP_TEXT, RESEÑAS_CORTO, RESEÑAS_LARGO } from '../data/stats';
 
@@ -28,6 +28,23 @@ const getPrecio = (item, cantNinos) => {
   if (item.precios) return item.precios[cantNinos] ?? item.precios.hasta10 ?? 0;
   return item.precio ?? 0;
 };
+
+// ── Incrementos de precio: edad + cantidad (sistema lineal +$15k/escalón) ──
+const getAddEdad = (edadNino) => {
+  if (!edadNino) return 0;
+  const e = Number(edadNino);
+  for (const r of MULTIPLICADORES.edad) {
+    if (r.edades.includes(e)) return r.add;
+  }
+  return 0;
+};
+const getAddCantidad = (cantNinos) => {
+  const r = MULTIPLICADORES.cantidad.find((c) => c.id === cantNinos);
+  return r ? r.add : 0;
+};
+// precio_final = base + add_edad + add_cantidad
+const aplicarMult = (base, edadNino, cantNinos) =>
+  base + getAddEdad(edadNino) + getAddCantidad(cantNinos);
 
 const MESES = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -645,13 +662,14 @@ function ResumenLateral({ estado, total, onWhatsApp }) {
   const { fecha, hora, nombreNino, edadNino, cantNinos, sector, extras, usaCocina, packCelebra, horaExtra, ninosExtra } = estado;
   const esSabado = fecha?.getDay() === 6;
 
-  // Precio base — tabla diferenciada viernes/domingo vs sábado
-  const precioBase =
-    sector === 'independiente'                       ? (esSabado ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente) :
+  // Precio base — tabla diferenciada viernes/domingo vs sábado + multiplicadores edad/cantidad
+  const _baseRaw_lateral =
+    sector === 'independiente'                         ? (esSabado ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente) :
     (sector === 'completo' && cantNinos === 'hasta10') ? (esSabado ? PRECIOS_BASE.completo_10_sab  : PRECIOS_BASE.completo_10) :
-    cantNinos === 'hasta20'                          ? (esSabado ? PRECIOS_BASE.completo_20_sab  : PRECIOS_BASE.completo_20) :
+    cantNinos === 'hasta20'                            ? (esSabado ? PRECIOS_BASE.completo_20_sab  : PRECIOS_BASE.completo_20) :
     (cantNinos === 'hasta30' || cantNinos === 'mas30') ? (esSabado ? PRECIOS_BASE.completo_30_sab  : PRECIOS_BASE.completo_30) : 0;
-  const precioBaseVisible = precioBase; // precio correcto ya incorporado
+  const precioBase = aplicarMult(_baseRaw_lateral, edadNino, cantNinos);
+  const precioBaseVisible = precioBase;
 
   const sectorLabel = sector === 'independiente' ? 'Sector Independiente' : 'Jardín Completo';
 
@@ -827,11 +845,12 @@ function BottomSheetResumen({ estado, total, onWhatsApp, onCerrar, onQuitarExtra
           usaCocina, packCelebra, horaExtra, ninosExtra } = estado;
   const esSabado = fecha?.getDay() === 6;
 
-  const precioBase =
+  const _baseRaw_sheet =
     sector === 'independiente'                         ? (esSabado ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente) :
     (sector === 'completo' && cantNinos === 'hasta10') ? (esSabado ? PRECIOS_BASE.completo_10_sab  : PRECIOS_BASE.completo_10) :
     cantNinos === 'hasta20'                            ? (esSabado ? PRECIOS_BASE.completo_20_sab  : PRECIOS_BASE.completo_20) :
     (cantNinos === 'hasta30' || cantNinos === 'mas30') ? (esSabado ? PRECIOS_BASE.completo_30_sab  : PRECIOS_BASE.completo_30) : 0;
+  const precioBase = aplicarMult(_baseRaw_sheet, edadNino, cantNinos);
 
   const sectorLabel = sector === 'independiente' ? 'Sector Independiente' : 'Jardín Completo';
 
@@ -2089,11 +2108,11 @@ function PageAlce({ onIniciarWizard }) {
                 🏡 Sector Independiente
               </div>
               <div>
-                <span className="font-black text-5xl text-white">$180k</span>
+                <span className="font-black text-5xl text-white">${Math.round(PRECIOS_BASE.independiente / 1000)}k</span>
                 <span className="text-white/40 text-sm ml-2">Vie · Dom</span>
               </div>
               <div className="mt-1 mb-6">
-                <span className="font-black text-3xl text-white/70">$195k</span>
+                <span className="font-black text-3xl text-white/70">${Math.round(PRECIOS_BASE.independiente_sab / 1000)}k</span>
                 <span className="text-white/40 text-sm ml-2">Sábado</span>
               </div>
               <ul className="space-y-2.5">
@@ -2116,12 +2135,12 @@ function PageAlce({ onIniciarWizard }) {
                 🏰 Recinto Completo
               </div>
               <div>
-                <span className="font-black text-5xl text-white">$225k</span>
+                <span className="font-black text-5xl text-white">desde ${Math.round(PRECIOS_BASE.completo_10 / 1000)}k</span>
                 <span className="text-white/40 text-sm ml-2">Vie · Dom</span>
               </div>
               <div className="mt-1 mb-6">
-                <span className="font-black text-3xl text-white/70">$265k</span>
-                <span className="text-white/40 text-sm ml-2">Sábado · hasta 30 niños</span>
+                <span className="font-black text-3xl text-white/70">desde ${Math.round(PRECIOS_BASE.completo_10_sab / 1000)}k</span>
+                <span className="text-white/40 text-sm ml-2">Sábado</span>
               </div>
               <ul className="space-y-2.5">
                 {['Todo el recinto exclusivo para ti', 'Hasta 30 niños (+ extras a $10k c/u)', 'Adultos ilimitados sin costo', '3 horas + 30 min para decorar', 'Cocina y salón con AC incluido'].map((item) => (
@@ -2600,14 +2619,16 @@ export default function App() {
   const total = useMemo(() => {
     let t = 0;
     const _sab = estado.fecha?.getDay() === 6;
+    let _baseRaw_total = 0;
     if (estado.sector === 'independiente')
-      t += _sab ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente;
+      _baseRaw_total = _sab ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente;
     else if (estado.cantNinos === 'hasta10' && estado.sector === 'completo')
-      t += _sab ? PRECIOS_BASE.completo_10_sab : PRECIOS_BASE.completo_10;
+      _baseRaw_total = _sab ? PRECIOS_BASE.completo_10_sab : PRECIOS_BASE.completo_10;
     else if (estado.cantNinos === 'hasta20')
-      t += _sab ? PRECIOS_BASE.completo_20_sab : PRECIOS_BASE.completo_20;
+      _baseRaw_total = _sab ? PRECIOS_BASE.completo_20_sab : PRECIOS_BASE.completo_20;
     else if (estado.cantNinos === 'hasta30' || estado.cantNinos === 'mas30')
-      t += _sab ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30;
+      _baseRaw_total = _sab ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30;
+    t += aplicarMult(_baseRaw_total, estado.edadNino, estado.cantNinos);
     if (estado.packCelebra) t += PRECIOS_EXTRAS.pack_celebra;
     estado.extras.forEach((e) => (t += getPrecio(e, estado.cantNinos)));
     if (estado.usaCocina) t += PRECIOS_EXTRAS.aseo_profundo;
@@ -3028,9 +3049,9 @@ El total estimado es ${clp(total)}.${notasLinea}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   {[
                     { id: 'hasta10', label: 'Hasta 10 niños', tag: 'Sector Independiente disponible', precio: null },
-                    { id: 'hasta20', label: 'Hasta 20 niños', tag: 'Recinto Completo',  precio: esSabado ? PRECIOS_BASE.completo_20_sab : PRECIOS_BASE.completo_20 },
-                    { id: 'hasta30', label: 'Hasta 30 niños', tag: 'Recinto Completo',  precio: esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30 },
-                    { id: 'mas30',   label: 'Más de 30 niños', tag: '+$10.000 por niño extra', precio: esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30 },
+                    { id: 'hasta20', label: 'Hasta 20 niños', tag: 'Recinto Completo',  precio: aplicarMult(esSabado ? PRECIOS_BASE.completo_20_sab : PRECIOS_BASE.completo_20, estado.edadNino, 'hasta20') },
+                    { id: 'hasta30', label: 'Hasta 30 niños', tag: 'Recinto Completo',  precio: aplicarMult(esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30, estado.edadNino, 'hasta30') },
+                    { id: 'mas30',   label: 'Más de 30 niños', tag: '+$10.000 por niño extra', precio: aplicarMult(esSabado ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30, estado.edadNino, 'mas30') },
                   ].map((op) => {
                     const sel = estado.cantNinos === op.id;
                     return (
@@ -3071,14 +3092,14 @@ El total estimado es ${clp(total)}.${notasLinea}
                           id: 'independiente',
                           nombre: 'Sector Independiente',
                           desc: 'Un solo sector del recinto. Más íntimo y privado.',
-                          precio: esSabado ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente,
+                          precio: aplicarMult(esSabado ? PRECIOS_BASE.independiente_sab : PRECIOS_BASE.independiente, estado.edadNino, 'hasta10'),
                           emoji: '🌳',
                         },
                         {
                           id: 'completo',
                           nombre: 'Recinto Completo',
                           desc: 'Acceso a todas las áreas. La experiencia completa.',
-                          precio: esSabado ? PRECIOS_BASE.completo_10_sab : PRECIOS_BASE.completo_10,
+                          precio: aplicarMult(esSabado ? PRECIOS_BASE.completo_10_sab : PRECIOS_BASE.completo_10, estado.edadNino, 'hasta10'),
                           emoji: '🏡',
                         },
                       ].map((s) => {
