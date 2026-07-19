@@ -15,6 +15,7 @@ body {
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 /* Custom scrollbar */
@@ -37,4 +38,39 @@ html {
 /* Calendar day hover */
 .calendar-day:hover:not(:disabled) {
   background-color: #dbeafe;
+}
+
+/* ── Pulido premium ─────────────────────────────────────────── */
+
+/* Selección de texto con color de marca */
+::selection {
+  background: rgba(41, 185, 232, 0.35);
+  color: inherit;
+}
+
+/* Sin flash gris al tocar en móvil (iOS/Android) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Anillo de foco visible solo al navegar con teclado (accesibilidad) */
+:focus-visible {
+  outline: 3px solid #29B9E8;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Respeta la preferencia de movimiento reducido del usuario */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

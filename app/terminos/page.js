@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Términos y Condiciones | Celebra Sin César',
+  title: 'Términos y Condiciones',
   description:
     'Términos y condiciones de uso del espacio Alce Kids Las Condes. Reglamento de celebraciones infantiles, política de reservas y responsabilidades.',
   robots: { index: true, follow: true },
@@ -28,7 +28,7 @@ export default function TerminosPage() {
             Términos y Condiciones de Uso
           </h1>
           <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            Alce Kids · Celebra Sin César · Las Condes, Santiago · Vigente desde enero 2024
+            Alce Kids · Celebra Sin Cesar · Las Condes, Santiago · Vigente desde enero 2024
           </p>
         </div>
       </header>
@@ -51,7 +51,9 @@ export default function TerminosPage() {
 
         <Section num="1" titulo="Identificación del prestador">
           <p>
-            <strong>Razón social:</strong> Alce Kids / Celebra Sin César<br />
+            <strong>Razón social:</strong> CELEBRA SIN CESAR SpA<br />
+            <strong>RUT:</strong> 78.408.845-6<br />
+            <strong>Nombre de fantasía:</strong> Alce Kids · Celebra Sin Cesar<br />
             <strong>Domicilio:</strong> Talavera de la Reina 380, Las Condes, Región Metropolitana,
             Chile<br />
             <strong>Sitio web:</strong>{' '}
@@ -91,6 +93,13 @@ export default function TerminosPage() {
             al recinto el día del evento. Desde ese momento el contratante se compromete a cumplir
             y hacer cumplir a todos sus invitados el presente reglamento.
           </p>
+          <p className="mt-3">
+            Adicionalmente, antes de la celebración el contratante completa un{' '}
+            <strong>formulario de confirmación</strong> en el que ratifica la aceptación de estos
+            términos y formula declaraciones expresas sobre supervisión de los menores, uso
+            correcto de las instalaciones y veracidad de la información entregada. Dichas
+            declaraciones forman parte integrante del presente contrato.
+          </p>
         </Section>
 
         <Section num="4" titulo="Edades y público objetivo">
@@ -101,8 +110,24 @@ export default function TerminosPage() {
           </p>
           <ul>
             <li>
-              El ingreso de niños mayores de 6 años queda sujeto a la autorización del
-              administrador del recinto el día del evento.
+              Los niños mayores de 6 años son bienvenidos como acompañantes. Sin embargo, por
+              seguridad y diseño estructural, <strong>no pueden usar los juegos e infraestructura
+              del jardín</strong> (piscina de pelotas, tobogán, estructuras, columpios y
+              similares), dimensionados exclusivamente para niños de 0 a 6 años.
+            </li>
+            <li>
+              Para los mayores de 6 años existen servicios adicionales aptos para su edad —
+              inflables según la edad recomendada de cada modelo, juegos deportivos y animación —
+              disponibles en el catálogo de adicionales.
+            </li>
+            <li>
+              <strong>Velar por el cumplimiento de esta regla corresponde al contratante y al
+              adulto a cargo de cada menor</strong>, quienes asumen el deber de impedir de manera
+              activa que los niños mayores de 6 años accedan a la infraestructura del jardín. El
+              anfitrión de Alce Kids no ejerce función de vigilancia individual (sección 5). El
+              uso de la infraestructura del jardín por niños mayores de 6 años constituye uso
+              contrario al diseño para los efectos de la sección 16, y las consecuencias que de
+              él deriven serán de cargo del adulto responsable del menor.
             </li>
             <li>
               Los adultos pueden ingresar en número ilimitado para acompañar a los menores.
@@ -130,13 +155,22 @@ export default function TerminosPage() {
               durante toda su permanencia en el recinto.
             </li>
             <li>
+              En el formulario de confirmación, el contratante designa a un{' '}
+              <strong>adulto responsable del evento</strong> (que puede ser él mismo), quien deberá
+              permanecer en el recinto durante toda la celebración. El contratante se obliga,
+              además, a que cada menor asista acompañado de su padre, madre, tutor o de un adulto
+              expresamente encargado por éstos.
+            </li>
+            <li>
               El contratante responde solidariamente por el comportamiento de todos sus invitados,
               tanto adultos como menores.
             </li>
             <li>
               En caso de emergencia médica, el personal de Alce Kids prestará primeros auxilios
-              básicos y contactará a los servicios de emergencia. La responsabilidad sobre la
-              salud del menor recae en sus padres o tutores.
+              básicos y contactará a los servicios de emergencia. Si la urgencia lo exige y no es
+              posible ubicar de inmediato al padre, madre o tutor, el contratante autoriza al
+              personal a gestionar el traslado del menor a un centro asistencial. La
+              responsabilidad sobre la salud del menor recae en sus padres o tutores.
             </li>
           </ul>
         </Section>
@@ -217,8 +251,9 @@ export default function TerminosPage() {
             </li>
             <li>
               La permanencia en el recinto más allá del horario contratado generará un cargo
-              adicional de $30.000 CLP por cada 15 minutos de exceso, o la diferencia
-              proporcional que Alce Kids determine, según disponibilidad.
+              adicional de <strong>$15.000 CLP por cada 15 minutos de exceso</strong> o fracción.
+              Si prefieres más tiempo, la hora adicional contratada con anticipación tiene un
+              valor preferente — pídela al reservar.
             </li>
           </ul>
         </Section>
@@ -370,17 +405,29 @@ export default function TerminosPage() {
         <Section num="16" titulo="Responsabilidad y seguridad">
           <p>
             Alce Kids ha diseñado sus instalaciones con estándares de seguridad apropiados para la
-            primera infancia y cuenta con personal capacitado para atender situaciones de emergencia.
+            primera infancia: dimensiones, alturas, materiales y superficies pensados para niños
+            de 0 a 6 años. Las estructuras de juego son objeto de{' '}
+            <strong>revisión e inspección periódica</strong>, de la cual se mantiene registro.
+            El recinto cuenta con personal capacitado para atender situaciones de emergencia.
             Con todo, es importante que tengas en cuenta lo siguiente:
           </p>
           <ul>
             <li>
+              Antes de iniciar el evento, el contratante puede solicitar un recorrido por las
+              instalaciones para verificar su estado. El inicio del uso del recinto sin
+              observaciones implica conformidad con el estado aparente de conservación de las
+              instalaciones.
+            </li>
+            <li>
               Alce Kids no será responsable por accidentes, lesiones o daños que sean consecuencia
-              directa del incumplimiento de las normas de uso establecidas en estos términos.
+              directa del incumplimiento de las normas de uso establecidas en estos términos, del
+              uso de los juegos por personas fuera del rango de edad indicado, o de un uso
+              contrario a su diseño.
             </li>
             <li>
               Alce Kids no será responsable por accidentes derivados de la falta de supervisión
-              adulta de los menores.
+              adulta de los menores, deber que corresponde a sus padres, tutores o adultos
+              acompañantes conforme a la sección 5.
             </li>
             <li>
               Si lo deseas, puedes contratar un seguro de accidentes personal para tus invitados —
@@ -412,19 +459,26 @@ export default function TerminosPage() {
 
         <Section num="18" titulo="Privacidad e imagen">
           <p>
-            El contratante autoriza a Alce Kids a fotografiar y/o filmar las celebraciones
-            realizadas en el recinto con fines promocionales, incluyendo su publicación en redes
-            sociales y sitio web, con la debida reserva de identidades cuando corresponda.
+            Alce Kids solo captará y utilizará imágenes de las celebraciones con fines
+            promocionales (redes sociales y sitio web) cuando el contratante lo{' '}
+            <strong>autorice expresamente</strong> en el formulario de confirmación. Sin esa
+            autorización, no se publicarán imágenes del evento.
           </p>
           <p className="mt-3">
-            Si prefieres que las imágenes de tu celebración no sean utilizadas con fines
-            promocionales, simplemente comunícanoslo por escrito al momento de confirmar la reserva.
-            Lo respetamos sin problema.
+            La autorización del contratante alcanza únicamente a su propia imagen y a la de los
+            menores a su cargo. En fotografías donde aparezcan otros asistentes, Alce Kids evitará
+            publicar rostros identificables de menores cuyos padres o tutores no hayan autorizado
+            su difusión. La autorización es siempre revocable: basta comunicarlo por escrito y las
+            imágenes serán retiradas de los canales administrados por Alce Kids.
           </p>
           <p className="mt-3">
-            Los datos personales proporcionados serán tratados de conformidad con la Ley N.º 19.628
-            sobre Protección de la Vida Privada, y utilizados exclusivamente para la gestión de la
-            reserva y comunicaciones relacionadas con el servicio.
+            Los datos personales proporcionados serán tratados conforme a la Ley N.º 19.628 sobre
+            Protección de la Vida Privada y a la Ley N.º 21.719 según su entrada en vigencia, y se
+            utilizarán exclusivamente para la gestión de la reserva y comunicaciones relacionadas
+            con el servicio. La información de salud entregada (como alergias o necesidades
+            especiales) es un <strong>dato sensible</strong>: se usa únicamente para resguardar el
+            bienestar de los asistentes durante el evento, no se comparte con terceros y se elimina
+            una vez realizada la celebración.
           </p>
         </Section>
 
@@ -456,10 +510,12 @@ export default function TerminosPage() {
           </p>
           <p className="mt-3">
             Las condiciones climáticas adversas (lluvia, calor intenso, etc.) no constituyen
-            caso de fuerza mayor que justifique la cancelación sin costo, dado que el recinto
-            cuenta con zonas cubiertas y salón climatizado para garantizar el desarrollo normal
-            de la celebración en cualquier condición meteorológica. En caso de lluvia, siempre
-            buscamos contigo la mejor solución.
+            caso de fuerza mayor que dé derecho a cancelación con reembolso. No obstante, dado que
+            parte importante de la entretención se desarrolla al aire libre, si el día del evento
+            se presenta lluvia, Alce Kids ofrece reagendar la celebración a una nueva fecha
+            disponible sin costo de reprogramación, conservando íntegramente el anticipo. El salón
+            techado y climatizado permanece disponible para quienes prefieran realizar la
+            celebración igualmente. Siempre buscamos contigo la mejor solución.
           </p>
         </Section>
 
@@ -483,7 +539,7 @@ export default function TerminosPage() {
           style={{ background: '#0D1B3E', color: 'rgba(255,255,255,0.6)' }}
         >
           <p className="font-black text-white mb-2">
-            Alce Kids · Celebra Sin César
+            Alce Kids · CELEBRA SIN CESAR SpA
           </p>
           <p>Talavera de la Reina 380, Las Condes, Santiago, Chile</p>
           <p className="mt-1">
@@ -497,7 +553,7 @@ export default function TerminosPage() {
             </a>
           </p>
           <p className="mt-3 text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            Última actualización: mayo 2026 · Versión 2.0
+            Última actualización: julio 2026 · Versión 3.2
           </p>
         </div>
 

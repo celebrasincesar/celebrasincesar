@@ -7,16 +7,18 @@ export default function sitemap() {
       priority: 1,
     },
     {
-      url: 'https://celebrasincesar.cl/terminos',
+      url: 'https://celebrasincesar.cl/catalogo',
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.4,
+      changeFrequency: 'weekly',
+      priority: 0.8,
     },
     {
-      url: 'https://celebrasincesar.cl/confirmacion',
+      url: 'https://celebrasincesar.cl/terminos',
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.3,
     },
+    // /confirmacion excluida a propósito: formulario privado pre-evento (noindex)
+    // /armar excluida a propósito: canonical → home (mismo contenido)
   ];
 }

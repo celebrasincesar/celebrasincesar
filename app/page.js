@@ -1,10 +1,14 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { PRECIOS_BASE, PRECIOS_EXTRAS, CATEGORIAS_ADICIONALES, BLOQUES_VITRINA, MULTIPLICADORES } from '../data/master';
 import { CARRUSEL, VITRINA } from '../data/imagenes';
 import { STATS, INSTAGRAM_STRIP_TEXT, RESEÑAS_CORTO, RESEÑAS_LARGO } from '../data/stats';
+import { TESTIMONIOS, GOOGLE_REVIEWS_URL } from '../data/testimonios';
+import { FAQS } from '../data/faqs';
+import { BloqueSection, FichaCarrusel } from './adicionales-grid';
 
 // ── Lookup rápido de items por ID (para resolver grupos de la vitrina)
 const ITEM_LOOKUP = Object.fromEntries(
@@ -19,6 +23,14 @@ function resolveGrupo(grupo) {
 // UTILIDADES
 // ─────────────────────────────────────────────
 const clp = (n) => `$${n.toLocaleString('es-CL')}`;
+
+function WaIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style={{ display: 'inline', verticalAlign: '-0.125em' }}>
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+  );
+}
 
 // Resuelve el precio de un ítem según la capacidad de niños elegida.
 // Si el ítem tiene `precios` (objeto por tier), usa ese tier.
@@ -42,9 +54,31 @@ const getAddCantidad = (cantNinos) => {
   const r = MULTIPLICADORES.cantidad.find((c) => c.id === cantNinos);
   return r ? r.add : 0;
 };
+
+// Recargo total del cumpleaños compartido según nº de festejados (1/2/3)
+const recargoFestejados = (n) => PRECIOS_EXTRAS.festejados_recargo?.[n] ?? 0;
 // precio_final = base + add_edad + add_cantidad (solo si hay base válida)
 const aplicarMult = (base, edadNino, cantNinos) =>
   base === 0 ? 0 : base + getAddEdad(edadNino) + getAddCantidad(cantNinos);
+
+// Cuenta las fechas reservables (Vie/Sáb/Dom) aún libres en un mes:
+// futuras y no bloqueadas en Google Calendar. Base de la urgencia honesta.
+function contarFechasLibres(disponibilidad, anio, mes) {
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const diasMes = new Date(anio, mes + 1, 0).getDate();
+  const blocked = disponibilidad?.blockedDates || [];
+  let libres = 0;
+  for (let dia = 1; dia <= diasMes; dia++) {
+    const f = new Date(anio, mes, dia);
+    const dow = f.getDay();
+    if (!(dow === 0 || dow === 5 || dow === 6)) continue; // solo Vie/Sáb/Dom
+    if (f < hoy) continue;
+    const str = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+    if (blocked.includes(str)) continue;
+    libres++;
+  }
+  return libres;
+}
 
 const MESES = [
   'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -62,7 +96,7 @@ function Header({ onHome }) {
       <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between">
         <button onClick={onHome} className="group flex-shrink-0">
           <img
-            src="/logo-celebra.png"
+            src="/logo-celebra.webp"
             alt="Celebra Sin Cesar"
             className="h-14 w-auto group-hover:scale-105 transition-transform duration-200"
             loading="eager"
@@ -85,7 +119,16 @@ function Header({ onHome }) {
           </div>
         </button>
         <div className="flex items-center gap-3">
-          <span className="hidden md:block text-sm text-gray-500 font-semibold">📍 Las Condes, Santiago</span>
+          {/* La visita presencial convierte ~100% — CTA siempre visible en desktop */}
+          <a
+            href={`https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Me gustaría agendar una visita para conocer Alce Kids sin compromiso. ¿Qué día de esta semana te acomoda?')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-full transition-all hover:scale-105"
+            style={{ color: '#1565C0', border: '1.5px solid rgba(21,101,192,0.3)', background: 'rgba(21,101,192,0.05)' }}
+          >
+            📍 Agendar visita
+          </a>
           <a
             href="https://wa.me/56944356955"
             target="_blank"
@@ -93,7 +136,7 @@ function Header({ onHome }) {
             className="text-white text-sm font-bold px-5 py-2.5 rounded-full flex items-center gap-1.5 transition-all hover:scale-105 shadow-lg"
             style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 14px rgba(34,197,94,0.35)' }}
           >
-            <span>💬</span> WhatsApp
+            <WaIcon /> WhatsApp
           </a>
         </div>
       </div>
@@ -124,24 +167,29 @@ function HeroStatic({ onVerOpciones }) {
         }}
       />
 
-      {/* Imagen estática de fondo — priority=true para LCP */}
-      <Image
-        src="/foto-home-bg.webp"
-        alt=""
-        fill
-        priority
-        className="object-cover"
-        sizes="100vw"
-        aria-hidden="true"
-        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-      />
+      {/* Imagen de fondo — niños en la piscina de pelotas (celebración real,
+          caras difuminadas = publicable). ART DIRECTION: vertical en móvil
+          (se aprecia la escena completa), horizontal 16:9 en desktop.
+          <picture> descarga SOLO la versión que corresponde al dispositivo. */}
+      <picture>
+        <source media="(max-width: 767px)" srcSet="/hero-celebracion-movil.webp" />
+        <img
+          src="/hero-celebracion.webp"
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        />
+      </picture>
 
-      {/* Overlay oscuro gradiente */}
+      {/* Overlay oscuro gradiente — contraste para logo y texto sobre la foto */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(13,43,110,0.65) 100%)',
+            'linear-gradient(to bottom, rgba(6,15,46,0.55) 0%, rgba(6,15,46,0.45) 40%, rgba(13,43,110,0.82) 100%)',
         }}
       />
 
@@ -151,7 +199,7 @@ function HeroStatic({ onVerOpciones }) {
         {/* Logo principal grande */}
         <div className="mb-6">
           <img
-            src="/logo-celebra.png"
+            src="/logo-celebra.webp"
             alt="Celebra Sin Cesar"
             className="h-36 md:h-48 w-auto mx-auto"
             loading="eager"
@@ -185,19 +233,42 @@ function HeroStatic({ onVerOpciones }) {
           </div>
         </div>
 
-        {/* Tagline */}
-        <p
+        {/* Tagline — h1 de la home (único en la página, clave para SEO) */}
+        <h1
           className="text-white/90 text-xl md:text-2xl font-black mb-2"
           style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
         >
-          El cumpleaños que tu hijo siempre recordará
-        </p>
+          Cumpleaños infantiles en Las Condes que tu hijo siempre recordará
+        </h1>
         <p
-          className="text-white/65 text-sm md:text-base mb-10 max-w-lg"
+          className="text-white/65 text-sm md:text-base mb-6 max-w-lg"
           style={{ textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}
         >
-          La casa de cumpleaños más completa de Las Condes. Piscina de pelotas, tobogán, granja y adultos ilimitados — todo incluido.
+          La casa de cumpleaños más completa de Las Condes. Piscina de pelotas, tobogán, granja, adultos ilimitados —
+          y <span className="text-white/90 font-bold">libertad total</span>: lo armas a tu manera, sin paquetes obligatorios.
         </p>
+
+        {/* ── Franja de confianza — prueba social premium ── */}
+        <div
+          className="flex items-center justify-center flex-wrap gap-x-4 gap-y-2 mb-9 px-5 py-2.5 rounded-2xl"
+          style={{ background: 'rgba(6,15,46,0.4)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.16)', boxShadow: '0 8px 28px rgba(0,0,0,0.28)' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm tracking-tight" style={{ color: '#FBBF24', textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>★★★★★</span>
+            <span className="text-white font-black text-sm">{STATS.rating}</span>
+            <span className="text-white/55 text-xs font-semibold hidden sm:inline">en Google</span>
+          </div>
+          <div className="w-px h-4 hidden sm:block" style={{ background: 'rgba(255,255,255,0.22)' }} />
+          <div className="flex items-center gap-1.5">
+            <span className="text-white font-black text-sm">{STATS.reseñas}</span>
+            <span className="text-white/55 text-xs font-semibold">reseñas reales</span>
+          </div>
+          <div className="w-px h-4 hidden sm:block" style={{ background: 'rgba(255,255,255,0.22)' }} />
+          <div className="flex items-center gap-1.5">
+            <span className="text-white font-black text-sm">{STATS.añosHistoria} años</span>
+            <span className="text-white/55 text-xs font-semibold">en Las Condes</span>
+          </div>
+        </div>
 
         {/* Botón CTA */}
         <button
@@ -233,6 +304,170 @@ function HeroStatic({ onVerOpciones }) {
         </div>
       </div>
     </section>
+  );
+}
+
+// ─────────────────────────────────────────────
+// TESTIMONIOS — prueba social premium (reseñas reales desde data/testimonios.js)
+// ─────────────────────────────────────────────
+function Testimonios() {
+  const tieneQuotes = TESTIMONIOS.length > 0;
+  return (
+    <div style={{ background: 'linear-gradient(160deg, #081529 0%, #0D1B3E 100%)' }}>
+      <div className="max-w-6xl mx-auto px-4 py-20">
+
+        {/* Encabezado */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full"
+            style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)' }}>
+            <span style={{ color: '#FBBF24', letterSpacing: '0.05em' }}>★★★★★</span>
+            <span className="text-white font-black text-sm">{STATS.rating}</span>
+            <span className="text-white/50 text-xs font-semibold">en Google</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-3 leading-tight">
+            Lo que dicen <span style={{ color: '#F97316' }}>las familias</span>
+          </h2>
+          <p className="text-white/45 text-base max-w-xl mx-auto">
+            {STATS.reseñas} reseñas verificadas de familias del sector oriente que ya celebraron con nosotros — y +{STATS.seguidores} nos siguen en Instagram.
+          </p>
+        </div>
+
+        {/* Tarjetas de reseñas reales (aparecen al llenar data/testimonios.js) */}
+        {tieneQuotes && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12 max-w-5xl mx-auto">
+            {TESTIMONIOS.slice(0, 6).map((t, i) => (
+              <div key={i} className="rounded-3xl p-6 flex flex-col"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="mb-3 text-sm" style={{ color: '#FBBF24', letterSpacing: '0.08em' }}>
+                  {'★'.repeat(t.estrellas || 5)}
+                </div>
+                <p className="text-white/80 text-sm leading-relaxed flex-1 mb-5">“{t.texto}”</p>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-white text-sm flex-shrink-0"
+                    style={{ background: 'linear-gradient(135deg,#1565C0,#29B9E8)' }}>
+                    {(t.nombre || '?').charAt(0)}
+                  </div>
+                  <div>
+                    <div className="text-white font-bold text-sm leading-none">{t.nombre}</div>
+                    <div className="text-white/35 text-xs mt-1">Reseña verificada · Google</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* CTA a Google */}
+        <div className="flex justify-center">
+          <a href={GOOGLE_REVIEWS_URL} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2.5 font-black px-7 py-4 rounded-full text-white text-sm transition-all hover:scale-105"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.16)' }}>
+            <span style={{ color: '#FBBF24' }}>★</span>
+            {tieneQuotes ? `Ver las ${STATS.reseñas} reseñas en Google` : `Lee las ${STATS.reseñas} reseñas reales en Google`}
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// PREGUNTAS FRECUENTES — desactiva objeciones, refuerza la libertad
+// Datos en data/faqs.js (compartidos con el schema FAQPage de layout.js)
+// ─────────────────────────────────────────────
+function FAQ() {
+  const [abierto, setAbierto] = useState(0);
+  return (
+    <div id="faq" className="scroll-mt-20" style={{ background: 'linear-gradient(180deg, #0D1B3E 0%, #081529 100%)' }}>
+      <div className="max-w-3xl mx-auto px-4 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-black text-white mb-3 leading-tight">
+            Preguntas <span style={{ color: '#F97316' }}>frecuentes</span>
+          </h2>
+          <p className="text-white/45 text-base">Todo claro antes de reservar — sin letra chica.</p>
+        </div>
+        <div className="space-y-3">
+          {FAQS.map((f, i) => {
+            const open = abierto === i;
+            return (
+              <div key={i} className="rounded-2xl overflow-hidden transition-all"
+                style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${open ? 'rgba(249,115,22,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
+                <button onClick={() => setAbierto(open ? null : i)}
+                  aria-expanded={open}
+                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+                  <span className="text-white font-black text-base leading-snug">{f.q}</span>
+                  <span className="text-2xl flex-shrink-0 font-black transition-transform duration-300"
+                    style={{ color: '#F97316', transform: open ? 'rotate(45deg)' : 'none' }}>+</span>
+                </button>
+                {open && (
+                  <div className="px-6 pb-5 -mt-1">
+                    <p className="text-white/55 text-sm leading-relaxed">{f.a}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// CÓMO FUNCIONA + CIERRE — 3 pasos y doble CTA (reservar / visitar)
+// ─────────────────────────────────────────────
+function ComoFuncionaCTA() {
+  const waVisita = `https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Me gustaría conocer Alce Kids sin compromiso antes de reservar. ¿Cuándo puedo pasar a visitarlo?')}`;
+  const pasos = [
+    { n: '1', t: 'Elige tu fecha y horario', d: 'Ves la disponibilidad real al instante.' },
+    { n: '2', t: 'Arma tu celebración', d: 'A tu manera: trae lo tuyo o suma adicionales.' },
+    { n: '3', t: 'Confirma por WhatsApp', d: 'Coordinas todo directo con César. Listo.' },
+  ];
+  return (
+    <div style={{ background: 'linear-gradient(160deg, #081529 0%, #0D2B6E 100%)' }}>
+      <div className="max-w-5xl mx-auto px-4 py-20 text-center">
+        <h2 className="text-3xl md:text-4xl font-black text-white mb-3 leading-tight">
+          Reservar es <span style={{ color: '#F97316' }}>así de simple</span>
+        </h2>
+        <p className="text-white/45 text-base mb-12">Tres pasos, menos de dos minutos.</p>
+        <div className="grid md:grid-cols-3 gap-5 mb-14">
+          {pasos.map((p) => (
+            <div key={p.n} className="rounded-3xl p-7"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white text-xl mb-4 mx-auto"
+                style={{ background: 'linear-gradient(135deg,#1565C0,#29B9E8)', boxShadow: '0 4px 16px rgba(21,101,192,0.4)' }}>
+                {p.n}
+              </div>
+              <h3 className="text-white font-black text-lg mb-1.5">{p.t}</h3>
+              <p className="text-white/45 text-sm leading-relaxed">{p.d}</p>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <a href="/armar"
+            className="font-black text-base px-8 py-4 rounded-full text-white transition-all hover:scale-105"
+            style={{ background: 'linear-gradient(90deg, #F97316, #29B9E8)', boxShadow: '0 8px 28px rgba(249,115,22,0.4)' }}>
+            ✨ Armar mi celebración →
+          </a>
+          <a href={waVisita} target="_blank" rel="noopener noreferrer"
+            className="font-bold text-sm px-6 py-4 rounded-full text-white/80 transition-all hover:text-white"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.16)' }}>
+            O conoce el lugar sin compromiso →
+          </a>
+        </div>
+        <p className="text-white/40 text-sm mt-7">
+          ¿El cumpleaños es más adelante?{' '}
+          <a
+            href={`https://wa.me/56944356955?text=${encodeURIComponent('¡Hola! 😊 El cumple de mi hij@ es más adelante, pero me gustaría apartar la fecha con anticipación. ¿Me avisan cuando se acerque?')}`}
+            target="_blank" rel="noopener noreferrer"
+            className="font-bold transition-colors hover:text-white"
+            style={{ color: '#29B9E8', textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+            Apártalo con anticipación 🔔
+          </a>
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -317,7 +552,7 @@ function CardInicio({ onSelect }) {
               <div className="p-8 pt-12">
                 <div className="w-28 h-28 mx-auto mb-5 rounded-2xl overflow-hidden group-hover:scale-110 transition-transform duration-300"
                   style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }}>
-                  <img src="/logo-alce.png" alt="Alce Kids" className="w-full h-full object-cover"
+                  <img src="/logo-alce.webp" alt="Alce Kids" className="w-full h-full object-cover"
                     onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
                   <div style={{ display: 'none' }} className="w-full h-full rounded-2xl items-center justify-center text-5xl bg-blue-900">🦌</div>
                 </div>
@@ -343,63 +578,90 @@ function CardInicio({ onSelect }) {
               </div>
             </div>
 
-            {/* ─ CASA +6 — PRÓXIMAMENTE ─ */}
-            <div className="rounded-3xl relative overflow-hidden cursor-default"
+            {/* ─ ALCE ARENA (7+) — PRÓXIMAMENTE + WAITLIST ─ */}
+            <a
+              href={`https://wa.me/56944356955?text=${encodeURIComponent('¡Hola! 🔔 Me interesa Alce Arena (celebraciones 7+ años). Avísenme cuando abra, por favor 😊')}`}
+              target="_blank" rel="noopener noreferrer"
+              className="rounded-3xl relative overflow-hidden block transition-all duration-300 hover:-translate-y-1 group"
               style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <div className="absolute top-4 right-4 z-10 text-xs font-bold px-2.5 py-1 rounded-full"
                 style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
                 PRÓXIMAMENTE
               </div>
-              <div className="p-8" style={{ filter: 'blur(1px) grayscale(1)', opacity: 0.28 }}>
+              <div className="px-8 pt-8 pb-2" style={{ filter: 'blur(0.5px) grayscale(0.6)', opacity: 0.45 }}>
                 <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-5"
                   style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  <span className="text-5xl">🎮</span>
+                  <span className="text-5xl">🏟️</span>
                 </div>
-                <h2 className="text-2xl font-black text-white text-center mb-1">Casa +6</h2>
-                <p className="text-white/50 font-bold text-center text-sm mb-3">Espacio exclusivo · 6+ años</p>
-                <p className="text-white/30 text-sm text-center mb-6">Gaming, realidad virtual y actividades para niños mayores.</p>
-                <div className="py-3 rounded-2xl text-center text-white/30 text-sm"
-                  style={{ background: 'rgba(255,255,255,0.05)' }}>Pronto disponible</div>
+                <h2 className="text-2xl font-black text-white text-center mb-1">Alce Arena</h2>
+                <p className="text-white/50 font-bold text-center text-sm mb-3">Para los más grandes · 7+ años</p>
+                <p className="text-white/40 text-sm text-center">Deportes, gaming, inflables y autos eléctricos pensados para niños mayores.</p>
               </div>
-            </div>
+              <div className="px-8 pb-8 pt-3">
+                <div className="py-3 rounded-2xl text-center text-sm font-black transition-all group-hover:scale-[1.02]"
+                  style={{ background: 'rgba(41,185,232,0.12)', color: '#29B9E8', border: '1px solid rgba(41,185,232,0.3)' }}>
+                  🔔 Avísame cuando abra
+                </div>
+              </div>
+            </a>
 
-            {/* ─ A DOMICILIO — PRÓXIMAMENTE ─ */}
-            <div className="rounded-3xl relative overflow-hidden cursor-default"
+            {/* ─ ALCE GO (a domicilio) — PRÓXIMAMENTE + WAITLIST ─ */}
+            <a
+              href={`https://wa.me/56944356955?text=${encodeURIComponent('¡Hola! 🔔 Me interesa Alce Go (celebraciones a domicilio). Avísenme cuando abra, por favor 😊')}`}
+              target="_blank" rel="noopener noreferrer"
+              className="rounded-3xl relative overflow-hidden block transition-all duration-300 hover:-translate-y-1 group"
               style={{ background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <div className="absolute top-4 right-4 z-10 text-xs font-bold px-2.5 py-1 rounded-full"
                 style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
                 PRÓXIMAMENTE
               </div>
-              <div className="p-8" style={{ filter: 'blur(1px) grayscale(1)', opacity: 0.28 }}>
+              <div className="px-8 pt-8 pb-2" style={{ filter: 'blur(0.5px) grayscale(0.6)', opacity: 0.45 }}>
                 <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-5"
                   style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  <span className="text-5xl">🏠</span>
+                  <span className="text-5xl">🚚</span>
                 </div>
-                <h2 className="text-2xl font-black text-white text-center mb-1">A Domicilio</h2>
-                <p className="text-white/50 font-bold text-center text-sm mb-3">Celebramos en tu casa</p>
-                <p className="text-white/30 text-sm text-center mb-6">Llevamos toda la experiencia Celebra Sin Cesar directamente a tu hogar.</p>
-                <div className="py-3 rounded-2xl text-center text-white/30 text-sm"
-                  style={{ background: 'rgba(255,255,255,0.05)' }}>Pronto disponible</div>
+                <h2 className="text-2xl font-black text-white text-center mb-1">Alce Go</h2>
+                <p className="text-white/50 font-bold text-center text-sm mb-3">Celebramos donde tú quieras</p>
+                <p className="text-white/40 text-sm text-center">Llevamos los inflables, autos eléctricos y juegos a tu casa o el lugar que elijas.</p>
               </div>
-            </div>
+              <div className="px-8 pb-8 pt-3">
+                <div className="py-3 rounded-2xl text-center text-sm font-black transition-all group-hover:scale-[1.02]"
+                  style={{ background: 'rgba(41,185,232,0.12)', color: '#29B9E8', border: '1px solid rgba(41,185,232,0.3)' }}>
+                  🔔 Avísame cuando abra
+                </div>
+              </div>
+            </a>
           </div>
 
-          {/* ── Propuesta de valor — libertad de elección ── */}
-          <div className="flex flex-wrap justify-center gap-3 mt-14 mb-2">
-            {[
-              { icon: '🔓', text: 'Sin paquetes obligatorios' },
-              { icon: '🎒', text: 'Trae lo que quieras de afuera' },
-              { icon: '🛋️', text: 'O lo organizamos por ti' },
-            ].map((chip) => (
-              <div
-                key={chip.text}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
-                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.12)' }}
-              >
-                <span>{chip.icon}</span>
-                <span>{chip.text}</span>
-              </div>
-            ))}
+          {/* ── Libertad — diferenciación premium ── */}
+          <div className="mt-20 mb-2 max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 font-bold text-xs px-4 py-1.5 rounded-full mb-5"
+              style={{ background: 'rgba(249,115,22,0.12)', color: '#F97316', border: '1px solid rgba(249,115,22,0.25)' }}>
+              🔓 La diferencia Alce Kids
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-white leading-tight mb-4">
+              Arriendas el lugar.
+              <br />
+              <span style={{ color: '#F97316' }}>El cumpleaños lo armas tú.</span>
+            </h2>
+            <p className="text-white/50 text-base md:text-lg max-w-2xl mx-auto mb-12">
+              Aquí no hay paquetes obligatorios ni combos cerrados. Reservas el espacio completo y lo celebras a tu manera:
+              trae tu torta, tu decoración y tu comida — o lo organizamos nosotros por ti. Tú tienes el control.
+            </p>
+            <div className="grid md:grid-cols-3 gap-5">
+              {[
+                { icon: '🔓', title: 'Sin paquetes obligatorios', desc: 'Pagas por el espacio, no por un combo que no elegiste.' },
+                { icon: '🎒', title: 'Trae lo que quieras', desc: 'Tu torta, tu banquetería, tu decoración — sin recargo por traer de afuera.' },
+                { icon: '🎀', title: 'O lo armamos por ti', desc: '¿Prefieres no preocuparte de nada? Eliges adicionales y lo dejamos todo listo.' },
+              ].map((p) => (
+                <div key={p.title} className="rounded-3xl p-7 text-left"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="text-3xl mb-3">{p.icon}</div>
+                  <h3 className="text-white font-black text-lg mb-1.5">{p.title}</h3>
+                  <p className="text-white/45 text-sm leading-relaxed">{p.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Stats — números grandes con glow */}
@@ -421,6 +683,15 @@ function CardInicio({ onSelect }) {
           </div>
         </div>
       </div>
+
+      {/* ── TESTIMONIOS — prueba social ──────────────────────── */}
+      <Testimonios />
+
+      {/* ── PREGUNTAS FRECUENTES ─────────────────────────────── */}
+      <FAQ />
+
+      {/* ── CÓMO FUNCIONA + CIERRE ───────────────────────────── */}
+      <ComoFuncionaCTA />
 
       {/* ── INSTAGRAM STRIP ──────────────────────────────────── */}
       <div style={{ background: 'linear-gradient(135deg, #060F2E 0%, #0D1B3E 100%)' }}>
@@ -447,8 +718,21 @@ function CardInicio({ onSelect }) {
 
 function Calendario({ fecha, onFecha, disponibilidad = { blockedDates: [], blockedAM: [], blockedPM: [] } }) {
   const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-  const [mes, setMes] = useState(hoy.getMonth());
-  const [anio, setAnio] = useState(hoy.getFullYear());
+  // Apertura inteligente: si al mes actual ya no le quedan fechas reservables
+  // (Vie/Sáb/Dom futuras), abre el calendario directo en el mes siguiente.
+  const inicio = (() => {
+    let im = hoy.getMonth(), iy = hoy.getFullYear();
+    const diasMes = new Date(iy, im + 1, 0).getDate();
+    let libres = 0;
+    for (let d = hoy.getDate(); d <= diasMes; d++) {
+      const dow = new Date(iy, im, d).getDay();
+      if (dow === 0 || dow === 5 || dow === 6) libres++;
+    }
+    if (libres === 0) { im++; if (im > 11) { im = 0; iy++; } }
+    return { im, iy };
+  })();
+  const [mes, setMes] = useState(inicio.im);
+  const [anio, setAnio] = useState(inicio.iy);
 
   // Semana empieza el LUNES: Sun=0→6, Mon=1→0, Tue=2→1 … Sat=6→5
   const primerDia = new Date(anio, mes, 1).getDay();
@@ -616,7 +900,7 @@ function Calendario({ fecha, onFecha, disponibilidad = { blockedDates: [], block
 }
 
 function Pasos({ actual, total }) {
-  const labels = ['Fecha', 'Festejado', 'Invitados', 'Adicionales', 'Resumen'];
+  const labels = ['Fecha', 'Festejado', 'Invitados', 'Adicionales', 'Confirmar'];
   return (
     <div className="flex items-center justify-center gap-0 mb-10">
       {Array.from({ length: total }).map((_, i) => {
@@ -659,7 +943,7 @@ function Pasos({ actual, total }) {
 }
 
 function ResumenLateral({ estado, total, onWhatsApp }) {
-  const { fecha, hora, nombreNino, edadNino, cantNinos, sector, extras, usaCocina, packCelebra, horaExtra, ninosExtra } = estado;
+  const { fecha, hora, festejados, nombreNino, edadNino, cantNinos, sector, extras, usaCocina, packCelebra, horaExtra, ninosExtra } = estado;
   const esSabado = fecha?.getDay() === 6;
 
   // Precio base — tabla diferenciada viernes/domingo vs sábado + multiplicadores edad/cantidad
@@ -751,6 +1035,14 @@ function ResumenLateral({ estado, total, onWhatsApp }) {
               <span className="font-bold text-white flex-shrink-0">{clp(precioBaseVisible)}</span>
             </div>
 
+            {/* Cumpleaños compartido */}
+            {festejados > 1 && (
+              <div className="flex justify-between items-center">
+                <span style={{ color: 'rgba(255,255,255,0.6)' }}>👯 Festejados ({festejados})</span>
+                <span className="font-bold text-white">{clp(recargoFestejados(festejados))}</span>
+              </div>
+            )}
+
             {/* Pack */}
             {packCelebra && (
               <div className="flex justify-between items-center">
@@ -820,16 +1112,35 @@ function ResumenLateral({ estado, total, onWhatsApp }) {
       </div>
 
       {total > 0 && (
-        <button
-          onClick={onWhatsApp}
-          className="w-full mt-4 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all hover:scale-105 relative"
-          style={{
-            background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-            boxShadow: '0 4px 20px rgba(34,197,94,0.35)',
-          }}
-        >
-          💬 Confirmar por WhatsApp
-        </button>
+        <>
+          <button
+            onClick={onWhatsApp}
+            className="w-full mt-4 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all hover:scale-105 relative"
+            style={{
+              background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+              boxShadow: '0 4px 20px rgba(34,197,94,0.35)',
+            }}
+          >
+            <WaIcon /> Confirmar por WhatsApp
+          </button>
+          {/* Confianza en el momento de decisión — política real de reagendamiento */}
+          <p className="text-xs mt-2.5 text-center relative" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            Reservas con el 50% · Si llueve, reagendas sin costo
+          </p>
+        </>
+      )}
+
+      {/* ── Prueba social en el momento de decisión ── */}
+      {total > 0 && TESTIMONIOS.length > 0 && (
+        <div className="mt-4 pt-4 relative" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="mb-1.5 text-xs" style={{ color: '#FBBF24', letterSpacing: '0.08em' }}>★★★★★</div>
+          <p className="text-xs leading-relaxed mb-2 line-clamp-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            “{TESTIMONIOS[1].texto}”
+          </p>
+          <p className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            — {TESTIMONIOS[1].nombre} · reseña real en Google
+          </p>
+        </div>
       )}
     </div>
   );
@@ -841,7 +1152,7 @@ function ResumenLateral({ estado, total, onWhatsApp }) {
 // Cada extra tiene × para quitarlo sin salir del flujo.
 // ─────────────────────────────────────────────
 function BottomSheetResumen({ estado, total, onWhatsApp, onCerrar, onQuitarExtra }) {
-  const { fecha, hora, nombreNino, edadNino, cantNinos, sector, extras,
+  const { fecha, hora, festejados, nombreNino, edadNino, cantNinos, sector, extras,
           usaCocina, packCelebra, horaExtra, ninosExtra } = estado;
   const esSabado = fecha?.getDay() === 6;
 
@@ -939,6 +1250,14 @@ function BottomSheetResumen({ estado, total, onWhatsApp, onCerrar, onQuitarExtra
                 <span className="font-bold text-white text-sm flex-shrink-0">{clp(precioBase)}</span>
               </div>
 
+              {/* Cumpleaños compartido */}
+              {festejados > 1 && (
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>👯 Festejados ({festejados})</span>
+                  <span className="font-bold text-white text-sm">{clp(recargoFestejados(festejados))}</span>
+                </div>
+              )}
+
               {/* Pack */}
               {packCelebra && (
                 <div className="flex justify-between items-center py-1.5">
@@ -1017,14 +1336,14 @@ function BottomSheetResumen({ estado, total, onWhatsApp, onCerrar, onQuitarExtra
             </span>
           </div>
           <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.2)' }}>
-            Precio referencial · sujeto a disponibilidad
+            Precio referencial · Reservas con el 50% · Si llueve, reagendas sin costo
           </p>
           <button
             onClick={onWhatsApp}
             className="w-full text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}
           >
-            💬 Confirmar por WhatsApp
+            <WaIcon /> Confirmar por WhatsApp
           </button>
         </div>
       </div>
@@ -1146,11 +1465,13 @@ function ModalCarrusel({ grupo, extras, cantNinos, onToggle, onCerrar }) {
           <>
             <button
               onClick={() => setIndice((i) => (i - 1 + total) % total)}
+              aria-label="Opción anterior"
               className="absolute left-2 z-20 w-11 h-11 rounded-full flex items-center justify-center font-black text-2xl text-white transition-all hover:scale-110 active:scale-95"
               style={{ background: 'rgba(249,115,22,0.9)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
             >‹</button>
             <button
               onClick={() => setIndice((i) => (i + 1) % total)}
+              aria-label="Opción siguiente"
               className="absolute right-2 z-20 w-11 h-11 rounded-full flex items-center justify-center font-black text-2xl text-white transition-all hover:scale-110 active:scale-95"
               style={{ background: 'rgba(249,115,22,0.9)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
             >›</button>
@@ -1608,6 +1929,7 @@ function GaleriaInfra() {
           <div className="flex-1 flex items-center justify-center relative px-4 min-h-0">
             <button
               onClick={() => setLightboxIdx((i) => (i - 1 + INFRAS.length) % INFRAS.length)}
+              aria-label="Foto anterior"
               className="absolute left-3 z-20 w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl text-white transition-all hover:scale-110 active:scale-95"
               style={{ background: 'rgba(249,115,22,0.9)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
             >‹</button>
@@ -1634,6 +1956,7 @@ function GaleriaInfra() {
 
             <button
               onClick={() => setLightboxIdx((i) => (i + 1) % INFRAS.length)}
+              aria-label="Foto siguiente"
               className="absolute right-3 z-20 w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl text-white transition-all hover:scale-110 active:scale-95"
               style={{ background: 'rgba(249,115,22,0.9)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
             >›</button>
@@ -1700,14 +2023,14 @@ function PageAlce({ onIniciarWizard }) {
         {/* Fondo degradado base */}
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(135deg, #060F2E 0%, #0D2B6E 45%, #0E6FA8 100%)' }} />
-        {/* Foto de fondo (misma que el hero principal) */}
-        <Image src="/foto-home-bg.webp" alt="" fill aria-hidden="true"
+        {/* Foto de fondo — aérea del recinto completo (vista amplia) */}
+        <Image src="/hero-aerea-recinto.webp" alt="" fill priority aria-hidden="true"
           className="object-cover"
           sizes="100vw"
           onError={(e) => { e.currentTarget.style.display = 'none'; }} />
         {/* Overlay oscuro */}
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg, rgba(6,15,46,0.88) 0%, rgba(13,43,110,0.7) 60%, rgba(14,111,168,0.55) 100%)' }} />
+          style={{ background: 'linear-gradient(135deg, rgba(6,15,46,0.9) 0%, rgba(13,43,110,0.72) 55%, rgba(14,111,168,0.5) 100%)' }} />
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 py-24 w-full">
           <div className="flex flex-col md:flex-row items-center gap-12">
@@ -1716,7 +2039,7 @@ function PageAlce({ onIniciarWizard }) {
             <div className="flex-shrink-0">
               <div className="w-44 h-44 rounded-3xl overflow-hidden relative"
                 style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 0 2px rgba(41,185,232,0.3)' }}>
-                <Image src="/logo-alce.png" alt="Alce Kids"
+                <Image src="/logo-alce.webp" alt="Alce Kids"
                   fill
                   className="object-cover"
                   sizes="176px"
@@ -1773,6 +2096,12 @@ function PageAlce({ onIniciarWizard }) {
                   👀 Visitar sin compromiso
                 </a>
               </div>
+
+              {/* Diferenciador de libertad — visible desde el primer pantallazo */}
+              <p className="text-sm mt-5 text-center md:text-left" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                🔓 <span className="font-bold text-white/75">Libertad total:</span> trae todo por tu cuenta
+                o contrata con nosotros — sin paquetes obligatorios, sin amarres.
+              </p>
             </div>
           </div>
         </div>
@@ -1927,6 +2256,7 @@ function PageAlce({ onIniciarWizard }) {
             {/* Flecha izquierda */}
             <button
               onClick={() => setLightboxIdx((i) => (i - 1 + INFRAS.length) % INFRAS.length)}
+              aria-label="Foto anterior"
               className="absolute left-3 z-20 w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl text-white transition-all hover:scale-110 active:scale-95 flex-shrink-0"
               style={{ background: 'rgba(249,115,22,0.9)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
             >‹</button>
@@ -1963,6 +2293,7 @@ function PageAlce({ onIniciarWizard }) {
             {/* Flecha derecha */}
             <button
               onClick={() => setLightboxIdx((i) => (i + 1) % INFRAS.length)}
+              aria-label="Foto siguiente"
               className="absolute right-3 z-20 w-12 h-12 rounded-full flex items-center justify-center font-black text-2xl text-white transition-all hover:scale-110 active:scale-95 flex-shrink-0"
               style={{ background: 'rgba(249,115,22,0.9)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}
             >›</button>
@@ -2090,7 +2421,7 @@ function PageAlce({ onIniciarWizard }) {
         <div className="max-w-5xl mx-auto px-4 py-20">
           <div className="text-center mb-14">
             <h2 className="text-4xl md:text-5xl font-black text-white mb-2">
-              Precios <span style={{ color: '#F97316' }}>transparentes</span>
+              Precios <span style={{ color: '#F97316' }}>claros y sin sorpresas</span>
             </h2>
             <p className="text-base" style={{ color: 'rgba(255,255,255,0.45)' }}>
               Sin paquetes obligatorios · Adultos siempre incluidos · Reserva con el 50%
@@ -2099,22 +2430,18 @@ function PageAlce({ onIniciarWizard }) {
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
 
-            {/* Sector Independiente */}
+            {/* Sector Independiente — sin cifras: el valor exacto se calcula en el wizard */}
             <div className="rounded-3xl p-8 relative overflow-hidden"
               style={{ background: 'rgba(41,185,232,0.07)', border: '1px solid rgba(41,185,232,0.28)' }}>
               <div className="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none"
                 style={{ background: 'radial-gradient(circle, #29B9E8, transparent)' }} />
-              <div className="text-xs font-black uppercase tracking-widest mb-5" style={{ color: '#29B9E8' }}>
+              <div className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: '#29B9E8' }}>
                 🏡 Sector Independiente
               </div>
-              <div>
-                <span className="font-black text-5xl text-white">${Math.round(PRECIOS_BASE.independiente / 1000)}k</span>
-                <span className="text-white/40 text-sm ml-2">Vie · Dom</span>
-              </div>
-              <div className="mt-1 mb-6">
-                <span className="font-black text-3xl text-white/70">${Math.round(PRECIOS_BASE.independiente_sab / 1000)}k</span>
-                <span className="text-white/40 text-sm ml-2">Sábado</span>
-              </div>
+              <p className="font-black text-2xl text-white mb-6 leading-tight">
+                Más íntimo y privado<br />
+                <span className="text-white/50 text-base font-bold">para grupos de hasta 10 niños</span>
+              </p>
               <ul className="space-y-2.5">
                 {['Piscina de pelotas O tobogán', 'Hasta 10 niños', 'Adultos ilimitados sin costo', '3 horas + 30 min para decorar'].map((item) => (
                   <li key={item} className="flex items-center gap-2.5 text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>
@@ -2131,19 +2458,15 @@ function PageAlce({ onIniciarWizard }) {
                 style={{ background: '#F97316', color: 'white' }}>⭐ POPULAR</div>
               <div className="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none"
                 style={{ background: 'radial-gradient(circle, #F97316, transparent)' }} />
-              <div className="text-xs font-black uppercase tracking-widest mb-5" style={{ color: '#F97316' }}>
+              <div className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: '#F97316' }}>
                 🏰 Recinto Completo
               </div>
-              <div>
-                <span className="font-black text-5xl text-white">desde ${Math.round(PRECIOS_BASE.completo_10 / 1000)}k</span>
-                <span className="text-white/40 text-sm ml-2">Vie · Dom</span>
-              </div>
-              <div className="mt-1 mb-6">
-                <span className="font-black text-3xl text-white/70">desde ${Math.round(PRECIOS_BASE.completo_10_sab / 1000)}k</span>
-                <span className="text-white/40 text-sm ml-2">Sábado</span>
-              </div>
+              <p className="font-black text-2xl text-white mb-6 leading-tight">
+                La experiencia completa<br />
+                <span className="text-white/50 text-base font-bold">todo el jardín exclusivo, hasta 30 niños y más</span>
+              </p>
               <ul className="space-y-2.5">
-                {['Todo el recinto exclusivo para ti', 'Hasta 30 niños (+ extras a $10k c/u)', 'Adultos ilimitados sin costo', '3 horas + 30 min para decorar', 'Cocina y salón con AC incluido'].map((item) => (
+                {['Todo el recinto exclusivo para ti', 'Hasta 30 niños (+ extras)', 'Adultos ilimitados sin costo', '3 horas + 30 min para decorar', 'Cocina y salón con AC incluido'].map((item) => (
                   <li key={item} className="flex items-center gap-2.5 text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>
                     <span className="font-black flex-shrink-0" style={{ color: '#F97316' }}>✓</span> {item}
                   </li>
@@ -2152,15 +2475,32 @@ function PageAlce({ onIniciarWizard }) {
             </div>
           </div>
 
+          {/* Cómo se calcula el valor + CTA calculadora */}
+          <div className="max-w-2xl mx-auto text-center mt-10">
+            <p className="text-base leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              🧮 Tu valor exacto depende de <strong className="text-white">tres cosas</strong>: el día
+              (viernes, sábado o domingo), la <strong className="text-white">cantidad de niños</strong> y
+              la <strong className="text-white">edad del festejado</strong>. Lo calculas al instante,
+              sin compromiso y sin letra chica.
+            </p>
+            <button
+              onClick={onIniciarWizard}
+              className="font-black px-9 py-4 rounded-2xl text-white text-base transition-all hover:scale-105 active:scale-95"
+              style={{ background: 'linear-gradient(90deg, #F97316, #29B9E8)', boxShadow: '0 8px 28px rgba(249,115,22,0.4)' }}
+            >
+              🧮 Calcular mi valor exacto →
+            </button>
+          </div>
+
           {/* Nota libertad */}
-          <div className="flex justify-center mt-8 mb-4">
+          <div className="flex justify-center mt-10 mb-4">
             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold"
               style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}>
               🔓 El precio es por el espacio — los servicios adicionales son siempre opcionales
             </div>
           </div>
           <p className="text-center text-sm" style={{ color: 'rgba(255,255,255,0.28)' }}>
-            Precios referenciales · sujetos a disponibilidad · Reserva con el 50% del arriendo
+            Sujeto a disponibilidad · Reserva con el 50% del arriendo
           </p>
         </div>
       </div>
@@ -2183,34 +2523,10 @@ function PageAlce({ onIniciarWizard }) {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              {
-                texto: 'Muchas gracias César, todo muy bonito. Los niños la pasaron increíble y el lugar es espectacular. Muy recomendado para toda la familia.',
-                autor: 'Nicool H.', mes: 'Noviembre 2024', avatar: 'N',
-              },
-              {
-                texto: 'Nos encantó celebrar con ustedes. Se agradece mucho la buena onda, la organización y que dejaran todo ordenado y limpio.',
-                autor: 'Constanza M.', mes: 'Diciembre 2024', avatar: 'C',
-              },
-              {
-                texto: 'El jardín es precioso. Cuando lo vimos en persona nos enamoramos. Los niños no querían irse. Definitivamente volvemos el próximo año.',
-                autor: 'Francisca S.', mes: 'Abril 2025', avatar: 'F',
-              },
-              {
-                texto: 'Excelente atención de César, muy detallista y pendiente de todo durante la fiesta. El jardín superó todas nuestras expectativas.',
-                autor: 'Valentina R.', mes: 'Octubre 2024', avatar: 'V',
-              },
-              {
-                texto: 'Arrendamos el jardín completo para el cumple de Matías y fue un éxito total. Los espacios son únicos, jamás habíamos visto algo así.',
-                autor: 'Rodrigo P.', mes: 'Enero 2025', avatar: 'R',
-              },
-              {
-                texto: 'Lugar hermoso, cómodo y con todo lo que los niños necesitan para pasarla bien. La piscina de pelotas gigante es espectacular!',
-                autor: 'María José T.', mes: 'Marzo 2025', avatar: 'M',
-              },
-            ].map((t) => (
+            {/* Reseñas REALES desde data/testimonios.js — fuente única de verdad */}
+            {TESTIMONIOS.slice(0, 6).map((t) => (
               <div
-                key={t.autor}
+                key={t.nombre}
                 className="rounded-3xl p-6 relative transition-all hover:-translate-y-1 hover:shadow-xl"
                 style={{ background: 'white', border: '1px solid rgba(21,101,192,0.09)', boxShadow: '0 4px 24px rgba(21,101,192,0.07)' }}
               >
@@ -2218,7 +2534,7 @@ function PageAlce({ onIniciarWizard }) {
                 <div className="absolute top-5 right-5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black"
                   style={{ background: '#4285F4', color: 'white' }}>G</div>
                 <div className="flex gap-0.5 mb-4">
-                  {[...Array(5)].map((_, i) => (
+                  {[...Array(t.estrellas || 5)].map((_, i) => (
                     <span key={i} className="text-sm" style={{ color: '#FBBF24' }}>★</span>
                   ))}
                 </div>
@@ -2226,11 +2542,11 @@ function PageAlce({ onIniciarWizard }) {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center font-black text-white text-sm flex-shrink-0"
                     style={{ background: 'linear-gradient(135deg, #1565C0, #29B9E8)' }}>
-                    {t.avatar}
+                    {(t.nombre || '?').charAt(0)}
                   </div>
                   <div>
-                    <div className="font-black text-gray-800 text-sm">{t.autor}</div>
-                    <div className="text-gray-400 text-xs mt-0.5">{t.mes} · Google</div>
+                    <div className="font-black text-gray-800 text-sm">{t.nombre}</div>
+                    <div className="text-gray-400 text-xs mt-0.5">Reseña verificada · Google</div>
                   </div>
                 </div>
               </div>
@@ -2239,7 +2555,7 @@ function PageAlce({ onIniciarWizard }) {
 
           <div className="text-center mt-10">
             <a
-              href="https://maps.app.goo.gl/7AVak5cVXpFjpNh5A"
+              href={GOOGLE_REVIEWS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 font-bold text-sm px-7 py-3.5 rounded-full transition-all hover:scale-105"
@@ -2283,8 +2599,9 @@ function PageAlce({ onIniciarWizard }) {
                 style={{ background: 'linear-gradient(135deg, #FFF7ED, #FFEDD5)' }}>🏠</div>
               <h3 className="font-black text-xl mb-3" style={{ color: '#0D1B3E' }}>Opción 2: Seguir adelante</h3>
               <p className="text-gray-500 text-sm leading-relaxed">
-                Habilitamos el <strong className="text-gray-700">salón techado con mesas, decoración y juegos
-                cubiertos</strong>. Los niños quedan igual de fascinados — y los papás, tranquilos.
+                Si prefieres no moverla, el <strong className="text-gray-700">salón techado y climatizado</strong> recibe
+                la torta, la comida y a todos cómodos, y preparamos el resto del espacio lo mejor posible.
+                Tú decides con total transparencia — nunca te obligamos.
               </p>
             </div>
           </div>
@@ -2327,7 +2644,7 @@ function PageAlce({ onIniciarWizard }) {
                   sub: 'AM 11:00–14:00 · PM 15:30–18:30', color: 'rgba(249,115,22,0.15)',
                 },
                 {
-                  icon: '💬', title: '+56 9 4435 6955',
+                  icon: <WaIcon />, title: '+56 9 4435 6955',
                   sub: 'WhatsApp · respuesta rápida garantizada', color: 'rgba(34,197,94,0.15)',
                 },
                 {
@@ -2374,7 +2691,7 @@ function PageAlce({ onIniciarWizard }) {
                   className="inline-flex items-center gap-2 font-black px-6 py-3.5 rounded-2xl text-white text-sm transition-all hover:scale-105"
                   style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}
                 >
-                  💬 Consultar por WhatsApp
+                  <WaIcon /> Consultar por WhatsApp
                 </a>
               </div>
             </div>
@@ -2439,6 +2756,39 @@ function PageAlce({ onIniciarWizard }) {
 }
 
 // ─────────────────────────────────────────────
+// FAB WHATSAPP — botón flotante persistente (solo vistas de navegación;
+// el wizard ya tiene su propia barra inferior de confirmación)
+// Aparece tras pasar el hero para no competir con sus CTAs.
+// ─────────────────────────────────────────────
+function WhatsAppFab() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 500);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  return (
+    <a
+      href={`https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Estoy viendo la web de Alce Kids y tengo una consulta 😊')}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Escribir por WhatsApp"
+      className="fixed bottom-5 right-5 z-[90] w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl transition-all duration-300 hover:scale-110 active:scale-95"
+      style={{
+        background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        boxShadow: '0 8px 28px rgba(34,197,94,0.45), 0 2px 8px rgba(0,0,0,0.25)',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(16px)',
+        pointerEvents: visible ? 'auto' : 'none',
+      }}
+    >
+      <WaIcon />
+    </a>
+  );
+}
+
+// ─────────────────────────────────────────────
 // FOOTER
 // ─────────────────────────────────────────────
 function Footer() {
@@ -2447,11 +2797,24 @@ function Footer() {
       <div className="max-w-5xl mx-auto px-4 py-12 grid md:grid-cols-3 gap-8 text-sm">
         <div>
           <div className="font-black text-lg mb-3" style={{ color: '#29B9E8' }}>
-            Celebra Sin César
+            Celebra Sin Cesar
           </div>
           <p className="leading-relaxed text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
             La casa de cumpleaños más completa de Las Condes, Santiago. Niños de 0 a 6 años con 40 años de historia familiar.
           </p>
+          <div className="mt-4 space-y-1.5 text-sm">
+            {[
+              { href: '/armar', label: '✨ Armar mi celebración' },
+              { href: '/catalogo', label: '📖 Catálogo de adicionales' },
+              { href: '/#faq', label: '❓ Preguntas frecuentes' },
+            ].map((l) => (
+              <a key={l.href} href={l.href}
+                className="block font-bold transition-colors hover:text-white"
+                style={{ color: 'rgba(255,255,255,0.55)' }}>
+                {l.label}
+              </a>
+            ))}
+          </div>
           <div className="flex gap-2 mt-4">
             <a
               href="https://www.instagram.com/celebracionesalce/"
@@ -2468,7 +2831,7 @@ function Footer() {
               rel="noopener noreferrer"
               className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center text-sm hover:bg-green-500 transition-colors"
             >
-              💬
+              <WaIcon />
             </a>
           </div>
         </div>
@@ -2499,7 +2862,7 @@ function Footer() {
               className="flex items-center gap-2 hover:text-white transition-colors"
               style={{ color: 'rgba(255,255,255,0.65)' }}
             >
-              <span>💬</span> +56 9 4435 6955
+              <WaIcon /> +56 9 4435 6955
             </a>
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
               Vie · Sáb · Dom
@@ -2524,7 +2887,7 @@ function Footer() {
           color: 'rgba(255,255,255,0.22)',
         }}
       >
-        © 2026 Celebra Sin César · Alce Kids · Las Condes, Santiago
+        © 2026 CELEBRA SIN CESAR SpA · Alce Kids · Las Condes, Santiago
         {' · '}
         <a
           href="/terminos"
@@ -2542,13 +2905,32 @@ function Footer() {
 // APP PRINCIPAL
 // ─────────────────────────────────────────────
 export default function App() {
-  const [vista, setVista] = useState('inicio'); // 'inicio' | 'alce' | 'wizard'
+  const pathname = usePathname();
+  const [vista, setVista] = useState(pathname === '/armar' ? 'wizard' : 'inicio'); // 'inicio' | 'alce' | 'wizard'
   const [paso, setPaso] = useState(0);
 
   // Scroll instantáneo al tope en cada cambio de paso o de vista
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+    setActivoBloqueId(BLOQUES_VITRINA[0]?.id ?? '');
   }, [paso, vista]);
+
+  // Tracking de sección activa en paso 4 (igual que /catalogo)
+  useEffect(() => {
+    if (paso !== 4) return;
+    const onScroll = () => {
+      for (let i = BLOQUES_VITRINA.length - 1; i >= 0; i--) {
+        const el = document.getElementById(BLOQUES_VITRINA[i].id);
+        if (el && el.getBoundingClientRect().top <= 120) {
+          setActivoBloqueId(BLOQUES_VITRINA[i].id);
+          return;
+        }
+      }
+      setActivoBloqueId(BLOQUES_VITRINA[0]?.id ?? '');
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [paso]);
 
   // ── Disponibilidad real desde Google Calendar ──────────────────────────────
   const [disponibilidad, setDisponibilidad] = useState({
@@ -2571,6 +2953,7 @@ export default function App() {
   const [estado, setEstado] = useState({
     fecha: null,
     hora: null,
+    festejados: 1,        // cumpleaños compartido: 2-3 festejados con recargo
     nombreNino: '',
     edadNino: null,
     ninosMayores: null,
@@ -2586,8 +2969,97 @@ export default function App() {
 
   const set = (campo, valor) => setEstado((p) => ({ ...p, [campo]: valor }));
 
+  // ── Persistencia del wizard — el carrito nunca se pierde ─────────────────
+  // Si el papá abandona a medio camino y vuelve (hasta 7 días después),
+  // retoma exactamente donde quedó. Los extras se re-validan contra el
+  // catálogo vigente (precios/ítems frescos, nunca datos obsoletos).
+  const [retomado, setRetomado] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('alce-wizard-v1');
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (!s.ts || Date.now() - s.ts > 7 * 24 * 3600 * 1000) return;
+      const fecha = s.fecha ? new Date(s.fecha) : null;
+      const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+      const fechaValida = fecha && !isNaN(fecha) && fecha >= hoy ? fecha : null;
+      const extras = (s.extras || []).map((e) => ITEM_LOOKUP[e?.id]).filter(Boolean);
+      const hayAvance = fechaValida || s.nombreNino || extras.length > 0;
+      if (!hayAvance) return;
+      setEstado((p) => ({
+        ...p,
+        fecha: fechaValida,
+        hora: fechaValida ? (s.hora ?? null) : null,
+        festejados: s.festejados || 1,
+        nombreNino: s.nombreNino || '',
+        edadNino: s.edadNino ?? null,
+        ninosMayores: s.ninosMayores ?? null,
+        cantNinos: s.cantNinos ?? null,
+        sector: s.sector ?? null,
+        packCelebra: !!s.packCelebra,
+        extras,
+        usaCocina: !!s.usaCocina,
+        notas: s.notas || '',
+        horaExtra: !!s.horaExtra,
+        ninosExtra: s.ninosExtra || 0,
+      }));
+      if (pathname === '/armar' && typeof s.paso === 'number' && s.paso > 0) {
+        setPaso(s.paso);
+        setRetomado(true);
+        setTimeout(() => setRetomado(false), 5000);
+      }
+    } catch {} // storage corrupto o bloqueado: se parte de cero, sin romper nada
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    try {
+      const { fecha, ...rest } = estado;
+      localStorage.setItem('alce-wizard-v1', JSON.stringify({
+        ...rest,
+        fecha: fecha ? fecha.toISOString() : null,
+        paso,
+        ts: Date.now(),
+      }));
+    } catch {}
+  }, [estado, paso]);
+
   const [grupoAbierto, setGrupoAbierto] = useState(null); // grupo resuelto activo
+  const [grupoFicha, setGrupoFicha] = useState(null); // FichaCarrusel paso 4
   const [sheetAbierto, setSheetAbierto] = useState(false); // bottom sheet móvil
+  const [activoBloqueId, setActivoBloqueId] = useState(BLOQUES_VITRINA[0]?.id ?? '');
+  const navCatRef = useRef(null);
+
+  // ── Botón "atrás" del celular: retrocede DENTRO de la página ──────────────
+  // Patrón centinela (no pelea con el router de Next): una entrada neutra en
+  // el historial intercepta el pop; retrocedemos paso/vista internamente y
+  // re-armamos el centinela. Con una ficha abierta, su propio handler la
+  // cierra y aquí lo ignoramos. En vista inicio, el atrás sale del sitio
+  // normalmente (no atrapamos al usuario).
+  const navRef = useRef({ vista, paso });
+  useEffect(() => { navRef.current = { vista, paso }; }, [vista, paso]);
+  const fichaAbiertaRef = useRef(false);
+  useEffect(() => {
+    fichaAbiertaRef.current = grupoFicha !== null || grupoAbierto !== null;
+  }, [grupoFicha, grupoAbierto]);
+
+  useEffect(() => {
+    history.pushState(null, ''); // centinela inicial
+    const onPop = () => {
+      if (fichaAbiertaRef.current) return; // ese atrás cerró una ficha
+      const { vista: v, paso: p } = navRef.current;
+      if (v === 'wizard' && p > 0) {
+        setPaso(p - 1);
+        history.pushState(null, ''); // re-armar centinela
+      } else if (v !== 'inicio') {
+        setVista('inicio');
+        setPaso(0);
+        history.pushState(null, '');
+      }
+      // v === 'inicio': no se re-arma → el siguiente atrás sale del sitio
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Quitar un extra por id (para el bottom sheet)
   const quitarExtra = (itemId) =>
@@ -2629,6 +3101,7 @@ export default function App() {
     else if (estado.cantNinos === 'hasta30' || estado.cantNinos === 'mas30')
       _baseRaw_total = _sab ? PRECIOS_BASE.completo_30_sab : PRECIOS_BASE.completo_30;
     t += aplicarMult(_baseRaw_total, estado.edadNino, estado.cantNinos);
+    t += recargoFestejados(estado.festejados);
     if (estado.packCelebra) t += PRECIOS_EXTRAS.pack_celebra;
     estado.extras.forEach((e) => (t += getPrecio(e, estado.cantNinos)));
     if (estado.usaCocina) t += PRECIOS_EXTRAS.aseo_profundo;
@@ -2650,6 +3123,9 @@ export default function App() {
     const sectorTexto = estado.sector === 'independiente' ? 'Sector Independiente' : 'Recinto Completo';
 
     const adicionales = [
+      estado.festejados > 1
+        ? `• Cumpleaños compartido (${estado.festejados} festejados): ${clp(recargoFestejados(estado.festejados))}`
+        : '',
       estado.packCelebra ? `• Pack Celebra Sin Cesar (Piñata + Decoración): ${clp(PRECIOS_EXTRAS.pack_celebra)}` : '',
       ...estado.extras.map((e) => `• ${e.nombre}: ${e.gratis ? 'INCLUIDO' : clp(getPrecio(e, estado.cantNinos))}`),
       estado.usaCocina ? `• Aseo Profundo: ${clp(PRECIOS_EXTRAS.aseo_profundo)}` : '',
@@ -2696,13 +3172,18 @@ El total estimado es ${clp(total)}.${notasLinea}
     setPaso(0);
   };
 
+  const abrirAlce = () => setVista('alce');
+  const irInicio = () => setVista('inicio');
+  const irAPaso = (n) => setPaso(n);
+
   // ── VISTA INICIO ──────────────────────────────
   if (vista === 'inicio') {
     return (
       <>
-        <Header onHome={() => setVista('inicio')} />
-        <CardInicio onSelect={(tipo) => tipo === 'alce' ? setVista('alce') : irAlWizard()} />
+        <Header onHome={irInicio} />
+        <CardInicio onSelect={(tipo) => tipo === 'alce' ? abrirAlce() : irAlWizard()} />
         <Footer />
+        <WhatsAppFab />
       </>
     );
   }
@@ -2711,9 +3192,10 @@ El total estimado es ${clp(total)}.${notasLinea}
   if (vista === 'alce') {
     return (
       <>
-        <Header onHome={() => setVista('inicio')} />
+        <Header onHome={irInicio} />
         <PageAlce onIniciarWizard={irAlWizard} />
         <Footer />
+        <WhatsAppFab />
       </>
     );
   }
@@ -2721,7 +3203,7 @@ El total estimado es ${clp(total)}.${notasLinea}
   // ── VISTA WIZARD ──────────────────────────────
   return (
     <>
-      <Header onHome={() => setVista('inicio')} />
+      <Header onHome={irInicio} />
       <div className="max-w-6xl mx-auto px-4 py-8 pb-28 lg:pb-8">
 
         {/* Banner Alce Kids */}
@@ -2731,7 +3213,7 @@ El total estimado es ${clp(total)}.${notasLinea}
             style={{ background: 'radial-gradient(circle at 80% 50%, rgba(41,185,232,0.25) 0%, transparent 60%)' }} />
           <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 relative z-10"
             style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
-            <img src="/logo-alce.png" alt="Alce Kids" className="w-full h-full object-cover"
+            <img src="/logo-alce.webp" alt="Alce Kids" className="w-full h-full object-cover"
               onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
             <span style={{ display: 'none' }} className="text-3xl">🦌</span>
           </div>
@@ -2745,7 +3227,7 @@ El total estimado es ${clp(total)}.${notasLinea}
               <span className="text-blue-200/60 text-xs">· {STATS.reseñas} reseñas</span>
             </div>
             <button
-              onClick={() => setVista('alce')}
+              onClick={abrirAlce}
               className="text-xs font-bold px-3 py-1 rounded-full transition-all hover:scale-105"
               style={{ background: 'rgba(41,185,232,0.2)', color: '#93c5fd' }}
             >
@@ -2754,29 +3236,84 @@ El total estimado es ${clp(total)}.${notasLinea}
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8 min-w-0">
           {/* Contenido principal */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 min-w-0">
             <Pasos actual={paso} total={5} />
 
             {/* ─── PASO 0: FECHA Y HORA ─── */}
             {paso === 0 && (
               <div>
-                {/* ── Video — sin bordes, sin texto, sin overlays ── */}
+                {/* ── Video — sin bordes, sin texto, sin overlays.
+                     aspect-video SIEMPRE (= proporción nativa del archivo):
+                     el alto fijo de antes recortaba los costados en desktop ── */}
                 <div
-                  className="overflow-hidden mb-7 aspect-video md:aspect-auto md:h-[450px]"
+                  className="overflow-hidden mb-7 aspect-video"
                   style={{ background: '#0D2B6E' }}
                 >
                   <video
                     className="w-full h-full object-cover"
                     src="/video-home.mp4"
+                    poster="/infra-piscina.webp"
                     autoPlay
                     muted
                     loop
                     playsInline
-                    preload="auto"
+                    preload="metadata"
                   />
                 </div>
+
+                {/* ── Urgencia honesta — fechas libres reales del mes ── */}
+                {(() => {
+                  const ahora = new Date();
+                  const libresEste = contarFechasLibres(disponibilidad, ahora.getFullYear(), ahora.getMonth());
+                  const nextM = ahora.getMonth() === 11 ? 0 : ahora.getMonth() + 1;
+                  const nextY = ahora.getMonth() === 11 ? ahora.getFullYear() + 1 : ahora.getFullYear();
+                  const libresProx = contarFechasLibres(disponibilidad, nextY, nextM);
+                  const usarProx = libresEste === 0;
+                  const n = usarProx ? libresProx : libresEste;
+                  const mesNombre = MESES[usarProx ? nextM : ahora.getMonth()];
+                  if (n === 0) return null; // sin data o sin cupos: no inventamos nada
+                  const pocas = n <= 4;
+                  return (
+                    <div
+                      className="flex items-center gap-3 mb-6 px-4 py-3 rounded-2xl"
+                      style={{
+                        background: pocas
+                          ? 'linear-gradient(135deg,#FFF1E6,#FFE4CC)'
+                          : 'linear-gradient(135deg,#EFF6FF,#DBEAFE)',
+                        border: `1.5px solid ${pocas ? 'rgba(249,115,22,0.35)' : 'rgba(21,101,192,0.2)'}`,
+                      }}
+                    >
+                      <span className="text-xl flex-shrink-0">{pocas ? '🔥' : '📅'}</span>
+                      <p className="text-sm font-bold leading-snug" style={{ color: pocas ? '#9A3412' : '#1E40AF' }}>
+                        {pocas
+                          ? <>{n === 1 ? 'Queda' : 'Quedan'} <span className="font-black">solo {n} {n === 1 ? 'fecha libre' : 'fechas libres'}</span> en {mesNombre} — los fines de semana se agendan rápido.</>
+                          : <><span className="font-black">{n} fechas libres</span> en {mesNombre}. Los fines de semana del sector oriente se reservan con semanas de anticipación.</>}
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* ── Tranquilidad de invierno — responde la objeción #1 de mayo-agosto
+                     en el momento exacto de la decisión (elegir fecha) ── */}
+                {(() => {
+                  const mes = new Date().getMonth(); // 4=may … 7=ago
+                  if (mes < 4 || mes > 7) return null;
+                  return (
+                    <div
+                      className="flex items-center gap-3 mb-6 px-4 py-3 rounded-2xl"
+                      style={{ background: 'linear-gradient(135deg,#EFF8FF,#E0F2FE)', border: '1.5px solid rgba(14,165,233,0.3)' }}
+                    >
+                      <span className="text-xl flex-shrink-0">🌧️</span>
+                      <p className="text-sm font-bold leading-snug" style={{ color: '#0369A1' }}>
+                        ¿Reservando en invierno? Tranquilidad total: si llueve,{' '}
+                        <span className="font-black">reagendas sin costo</span> y tu anticipo queda 100% vigente.
+                        Nunca pierdes tu reserva.
+                      </p>
+                    </div>
+                  );
+                })()}
 
                 {/* ── Dos columnas: Calendario | Horario ── */}
                 <div className="grid md:grid-cols-2 gap-6 items-start">
@@ -2910,7 +3447,7 @@ El total estimado es ${clp(total)}.${notasLinea}
 
                 <button
                   disabled={!estado.fecha || !estado.hora}
-                  onClick={() => setPaso(1)}
+                  onClick={() => irAPaso(1)}
                   className="mt-8 w-full text-white font-black py-4 rounded-2xl transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
                   style={{ background: 'linear-gradient(135deg,#1565C0,#1976D2)', boxShadow: '0 4px 16px rgba(21,101,192,0.3)' }}
                 >
@@ -2922,17 +3459,55 @@ El total estimado es ${clp(total)}.${notasLinea}
             {/* ─── PASO 1: EL FESTEJADO ─── */}
             {paso === 1 && (
               <div>
-                <h2 className="text-2xl font-black mb-1" style={{color:'#1565C0'}}>🎂 El festejado</h2>
+                <h2 className="text-2xl font-black mb-1" style={{color:'#1565C0'}}>🎂 {estado.festejados > 1 ? 'Los festejados' : 'El festejado'}</h2>
                 <p className="text-gray-400 mb-6">Queremos hacer su día inolvidable</p>
 
                 <div className="space-y-5">
+                  {/* ── Cumpleaños compartido — 1 a 3 festejados ── */}
                   <div>
-                    <label className="block text-sm font-black text-gray-600 mb-2">¿Cómo se llama el cumpleañero/a?</label>
+                    <label className="block text-sm font-black text-gray-600 mb-2">¿Cuántos cumpleañeros celebran?</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[1, 2, 3].map((n) => {
+                        const sel = estado.festejados === n;
+                        return (
+                          <button
+                            key={n}
+                            onClick={() => set('festejados', n)}
+                            className="py-3.5 px-2 rounded-2xl transition-all duration-200 text-center"
+                            style={{
+                              border: sel ? '2px solid #F97316' : '2px solid #E5E7EB',
+                              background: sel ? 'linear-gradient(135deg,#FFF7ED,#FFEDD5)' : 'white',
+                              boxShadow: sel ? '0 4px 14px rgba(249,115,22,0.2)' : '0 1px 3px rgba(0,0,0,0.04)',
+                            }}
+                          >
+                            <div className="font-black text-base" style={{ color: sel ? '#EA580C' : '#6B7280' }}>
+                              {n === 1 ? '1 festejado' : `${n} festejados`}
+                            </div>
+                            <div className="text-xs font-bold mt-0.5" style={{ color: sel ? '#F97316' : '#9CA3AF' }}>
+                              {n === 1 ? 'Clásico' : 'Compartido'}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {estado.festejados > 1 && (
+                      <p className="text-xs mt-2 font-semibold leading-relaxed" style={{ color: '#F97316' }}>
+                        🎉 Cumpleaños compartido (hermanos, mellizos o amigos): incluye arco decorativo
+                        con el nombre de cada festejado y su propio momento de torta y cumpleaños feliz.
+                        El recargo se suma automáticamente en el detalle de valores.
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-black text-gray-600 mb-2">
+                      {estado.festejados > 1 ? '¿Cómo se llaman los cumpleañeros?' : '¿Cómo se llama el cumpleañero/a?'}
+                    </label>
                     <input
                       type="text"
                       value={estado.nombreNino}
                       onChange={(e) => set('nombreNino', e.target.value)}
-                      placeholder="Ej: Sofía, Matías, Antonia..."
+                      placeholder={estado.festejados > 1 ? 'Ej: Sofía y Matías' : 'Ej: Sofía, Matías, Antonia...'}
                       className="w-full rounded-2xl px-5 py-4 text-lg outline-none transition-all font-semibold"
                       style={{
                         border: '2px solid #E5E7EB',
@@ -2945,7 +3520,9 @@ El total estimado es ${clp(total)}.${notasLinea}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-black text-gray-600 mb-2">¿Cuántos años cumple?</label>
+                    <label className="block text-sm font-black text-gray-600 mb-2">
+                      {estado.festejados > 1 ? '¿Cuántos años cumple el mayor de los festejados?' : '¿Cuántos años cumple?'}
+                    </label>
                     <div className="grid grid-cols-6 gap-2">
                       {[1, 2, 3, 4, 5, 6].map((edad) => {
                         const sel = estado.edadNino === edad;
@@ -3002,12 +3579,15 @@ El total estimado es ${clp(total)}.${notasLinea}
                       style={{ background: 'linear-gradient(135deg,#FFFBEB,#FEF3C7)', border: '2px solid #FCD34D' }}>
                       <span className="text-2xl flex-shrink-0">⚠️</span>
                       <div>
-                        <p className="font-black text-amber-800">Importante</p>
+                        <p className="font-black text-amber-800">Importante — juegos para su edad</p>
                         <p className="text-amber-700 text-sm mt-1 leading-relaxed">
-                          Los juegos están diseñados para niños de hasta 6 años, por lo que los
-                          mayores tendrán acceso limitado a la infraestructura. Para que lo pasen
-                          igual de bien, te recomendamos contratar un adicional de animación o
-                          actividades para su edad — lo encontrarás en el catálogo de adicionales.
+                          Los juegos del jardín están diseñados y dimensionados para niños de{' '}
+                          <strong>hasta 6 años</strong>, por lo que los mayores no pueden usarlos —
+                          es por la seguridad de todos. Te pedimos que{' '}
+                          <strong>tú te encargues de que los más grandes jueguen con lo que es
+                          para ellos</strong>: en el paso de adicionales encontrarás{' '}
+                          <strong>inflables aptos hasta 12 años</strong>, taca taca, ping pong y
+                          animación pensados justamente para ellos.
                         </p>
                       </div>
                     </div>
@@ -3022,7 +3602,7 @@ El total estimado es ${clp(total)}.${notasLinea}
                   </button>
                   <button
                     disabled={!estado.nombreNino || !estado.edadNino || estado.ninosMayores === null}
-                    onClick={() => setPaso(2)}
+                    onClick={() => irAPaso(2)}
                     className="flex-1 text-white font-black py-4 rounded-2xl transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
                     style={{ background: 'linear-gradient(135deg,#1565C0,#1976D2)', boxShadow: '0 4px 16px rgba(21,101,192,0.3)' }}
                   >
@@ -3039,9 +3619,10 @@ El total estimado es ${clp(total)}.${notasLinea}
                 <p className="text-gray-400 mb-4">¿Cuántos niños asistirán?</p>
 
                 {/* Banner adultos */}
-                <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4 mb-6 flex items-center gap-3">
+                <div className="rounded-2xl p-4 mb-6 flex items-center gap-3"
+                  style={{ background: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)', border: '1.5px solid rgba(21,101,192,0.2)' }}>
                   <span className="text-2xl">🎉</span>
-                  <p className="text-green-700 font-bold text-sm">
+                  <p className="font-bold text-sm" style={{ color: '#1E40AF' }}>
                     <strong>¡Adultos ilimitados incluidos!</strong> No pagas extra por papás, apoderados ni familiares que acompañen.
                   </p>
                 </div>
@@ -3228,7 +3809,7 @@ El total estimado es ${clp(total)}.${notasLinea}
                   </button>
                   <button
                     disabled={!estado.cantNinos || !estado.sector}
-                    onClick={() => setPaso(3)}
+                    onClick={() => irAPaso(3)}
                     className="flex-1 text-white font-black py-4 rounded-2xl transition-all hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
                     style={{ background: 'linear-gradient(135deg,#1565C0,#1976D2)', boxShadow: '0 4px 16px rgba(21,101,192,0.3)' }}
                   >
@@ -3280,7 +3861,7 @@ El total estimado es ${clp(total)}.${notasLinea}
                     ← Volver
                   </button>
                   <button
-                    onClick={() => setPaso(4)}
+                    onClick={() => irAPaso(4)}
                     className="flex-1 text-white font-black py-4 rounded-2xl transition-all hover:scale-[1.02]"
                     style={{ background: 'linear-gradient(135deg,#F97316,#EA580C)', boxShadow: '0 4px 16px rgba(249,115,22,0.3)' }}
                   >
@@ -3293,15 +3874,48 @@ El total estimado es ${clp(total)}.${notasLinea}
             {/* ─── PASO 4: ADICIONALES ─── */}
             {paso === 4 && (
               <div>
-                <h2 className="text-2xl font-black mb-1" style={{color:'#1565C0'}}>Arma tu celebración ideal</h2>
-                <p className="text-gray-400 mb-1 text-sm">¿Traes todo de afuera? Perfecto — el espacio es tuyo y no necesitas contratar nada.</p>
-                <p className="text-gray-400 mb-5 text-sm">¿Prefieres delegar? Elige lo que quieras de aquí. Todo es opcional, sin obligaciones.</p>
+                {/* Nav categorías sticky */}
+                <div className="sticky z-40 flex items-center"
+                  style={{ top: '72px', background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(14px)', borderBottom: '2px solid rgba(21,101,192,0.07)' }}>
+                  <button onClick={() => navCatRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
+                    className="flex-shrink-0 w-8 h-full flex items-center justify-center font-black text-lg"
+                    style={{ color: '#1565C0' }}>‹</button>
+                  <div ref={navCatRef} className="flex gap-1.5 px-2 py-2.5 overflow-x-auto flex-1 min-w-0"
+                    style={{ scrollbarWidth: 'none' }}>
+                    {BLOQUES_VITRINA.map((b) => (
+                      <button key={b.id}
+                        onClick={() => {
+                          setActivoBloqueId(b.id);
+                          document.getElementById(b.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }}
+                        className="flex-shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all"
+                        style={activoBloqueId === b.id
+                          ? { background: '#1565C0', color: 'white', boxShadow: '0 2px 10px rgba(21,101,192,0.35)' }
+                          : { background: 'rgba(21,101,192,0.07)', color: '#1565C0' }}>
+                        {b.titulo}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={() => navCatRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
+                    className="flex-shrink-0 w-8 h-full flex items-center justify-center font-black text-lg"
+                    style={{ color: '#1565C0' }}>›</button>
+                </div>
+
+                {/* ── Libertad total — quita la presión de venta en el momento del upsell.
+                     Diferenciador clave: nada es obligatorio, pueden traer todo de afuera ── */}
+                <div className="rounded-2xl px-4 py-3 mt-5 flex items-center gap-3"
+                  style={{ background: 'linear-gradient(135deg,#F0F9FF,#EFF6FF)', border: '1.5px solid rgba(21,101,192,0.18)' }}>
+                  <span className="text-xl flex-shrink-0">🔓</span>
+                  <p className="text-sm font-bold leading-snug" style={{ color: '#1E40AF' }}>
+                    Todo lo de esta sección es <span className="font-black">100% opcional</span>.
+                    Puedes traer tu torta, comida y decoración por tu cuenta sin ningún recargo —
+                    o dejar que lo armemos nosotros. Tú tienes la libertad.
+                  </p>
+                </div>
 
                 {/* Pack Celebra Sin Cesar */}
-                <div
-                  className="rounded-2xl p-5 mb-10 border-2"
-                  style={{ background: 'linear-gradient(135deg,#FFF8EE,#FFF3E0)', borderColor: '#F97316' }}
-                >
+                <div className="rounded-2xl p-5 mt-5 mb-6 border-2"
+                  style={{ background: 'linear-gradient(135deg,#FFF8EE,#FFF3E0)', borderColor: '#F97316' }}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -3317,215 +3931,72 @@ El total estimado es ${clp(total)}.${notasLinea}
                         className="mt-2 px-4 py-2 rounded-xl font-black text-sm transition-all"
                         style={estado.packCelebra
                           ? { background: '#F97316', color: 'white' }
-                          : { background: 'white', border: '2px solid #F97316', color: '#F97316' }}
-                      >
+                          : { background: 'white', border: '2px solid #F97316', color: '#F97316' }}>
                         {estado.packCelebra ? '✓ Agregado' : '+ Agregar'}
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* ── VITRINA DE BLOQUES ────────────────────────────── */}
+                {/* Vitrina de bloques */}
                 {BLOQUES_VITRINA.map((bloque) => (
-                  <div key={bloque.id} className="mb-10">
-                    {/* Título del bloque */}
-                    <div className="mb-4">
-                      <div className="flex items-baseline gap-3 flex-wrap">
-                        <h3
-                          className="font-black text-xl tracking-tight"
-                          style={{ color: '#1565C0' }}
-                        >
-                          {bloque.titulo}
-                        </h3>
-                        {bloque.subTitulo && (
-                          <span className="text-xs font-semibold text-gray-400">
-                            {bloque.subTitulo}
-                          </span>
-                        )}
-                      </div>
-                      <div className="h-0.5 w-10 rounded-full mt-1.5" style={{ background: '#F97316' }} />
-                    </div>
-
-                    {/* Grid 2×2 (mobile) → 4 columnas (desktop) */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-                      {bloque.grupos.map((grupoRaw) => {
-                        const grupo = resolveGrupo(grupoRaw);
-                        const esClickable = grupo.items.length > 0;
-                        const selCount = grupo.items.filter((item) =>
-                          estado.extras.some((e) => e.id === item.id)
-                        ).length;
-
-                        return (
-                          <button
-                            key={grupo.id}
-                            onClick={() => esClickable && setGrupoAbierto(grupo)}
-                            className="relative overflow-hidden rounded-2xl group transition-all duration-200"
-                            style={{
-                              aspectRatio: '1 / 1',
-                              cursor: esClickable ? 'pointer' : 'default',
-                              boxShadow: selCount > 0
-                                ? '0 0 0 2.5px #F97316, 0 6px 20px rgba(249,115,22,0.22)'
-                                : '0 2px 10px rgba(0,0,0,0.1)',
-                            }}
-                          >
-                            {/* Gradient fallback (visible si no carga la foto) */}
-                            <div
-                              className="absolute inset-0"
-                              style={{
-                                background: selCount > 0
-                                  ? 'linear-gradient(135deg,#0D2B6E,#1565C0)'
-                                  : 'linear-gradient(135deg,#1a1f3c,#2d3561)',
-                              }}
-                            />
-                            {/* Foto real */}
-                            {VITRINA[grupo.carpeta] && (
-                              <Image
-                                src={VITRINA[grupo.carpeta]}
-                                alt={grupo.nombre}
-                                fill
-                                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                sizes="(max-width: 768px) 50vw, 25vw"
-                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                              />
-                            )}
-                            {/* Overlay oscuro gradiente (inferior más oscuro) */}
-                            <div
-                              className="absolute inset-0"
-                              style={{
-                                background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.18) 55%, rgba(0,0,0,0.06) 100%)',
-                              }}
-                            />
-                            {/* Badge de venue feature (top-left) */}
-                            {grupo.badge && (
-                              <div
-                                className="absolute top-2 left-2 text-white text-xs font-black px-2 py-0.5 rounded-lg leading-tight shadow"
-                                style={{
-                                  background: grupo.badgeTipo === 'incluido'
-                                    ? 'rgba(22,163,74,0.92)'
-                                    : 'rgba(249,115,22,0.92)',
-                                  maxWidth: 'calc(100% - 1rem)',
-                                }}
-                              >
-                                {grupo.badge}
-                              </div>
-                            )}
-                            {/* Contador de seleccionados (top-right) */}
-                            {selCount > 0 && (
-                              <div
-                                className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-black shadow"
-                                style={{ background: '#F97316' }}
-                              >
-                                {selCount}
-                              </div>
-                            )}
-                            {/* Nombre + subNombre (abajo) */}
-                            <div className="absolute bottom-0 left-0 right-0 p-2.5">
-                              <div className="text-white font-black text-xs md:text-sm leading-tight">
-                                {grupo.nombre}
-                              </div>
-                              {grupo.subNombre && (
-                                <div className="text-white/60 text-xs leading-tight mt-0.5 hidden md:block">
-                                  {grupo.subNombre}
-                                </div>
-                              )}
-                            </div>
-                            {/* Borde naranja en hover (solo clickeables) */}
-                            {esClickable && (
-                              <div
-                                className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-orange-400 transition-colors duration-200"
-                              />
-                            )}
-                            {/* Icono de "no clickeable" (venue feature puro) */}
-                            {!esClickable && (
-                              <div
-                                className="absolute inset-0 rounded-2xl border-2"
-                                style={{ borderColor: 'rgba(34,197,94,0.5)' }}
-                              />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-                {/* ── FIN VITRINA ─────────────────────────────────── */}
-
-                {/* Uso de cocina */}
-                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-black text-gray-700">🍳 ¿Usarán la cocina para cocinar?</p>
-                      <p className="text-gray-400 text-xs mt-0.5">Se agrega automáticamente un cargo de Aseo Profundo</p>
-                    </div>
-                    <button
-                      onClick={() => set('usaCocina', !estado.usaCocina)}
-                      className={`w-14 h-7 rounded-full transition-colors relative flex-shrink-0 ${
-                        estado.usaCocina ? 'bg-blue-600' : 'bg-gray-300'
-                      }`}
-                    >
-                      <div className={`w-5 h-5 bg-white rounded-full absolute top-1 shadow transition-all ${
-                        estado.usaCocina ? 'right-1' : 'left-1'
-                      }`} />
-                    </button>
-                  </div>
-                  {estado.usaCocina && (
-                    <div className="flex justify-between text-sm mt-3 pt-3 border-t border-gray-200">
-                      <span className="text-gray-500">Cargo Aseo Profundo agregado</span>
-                      <span className="font-black text-gray-800">{clp(PRECIOS_EXTRAS.aseo_profundo)}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Notas especiales */}
-                <div className="mb-4">
-                  <label className="block font-black text-gray-700 text-sm mb-2">
-                    📝 Notas especiales <span className="font-normal text-gray-400">(opcional)</span>
-                  </label>
-                  <textarea
-                    value={estado.notas}
-                    onChange={(e) => set('notas', e.target.value)}
-                    placeholder="Ej: el cumpleañero es alérgico al maní, queremos decoración color verde menta, la abuela usa silla de ruedas..."
-                    rows={3}
-                    className="w-full border-2 border-gray-200 focus:border-blue-300 rounded-2xl px-4 py-3 text-sm outline-none transition-colors resize-none font-medium text-gray-700 bg-white"
-                    style={{ lineHeight: '1.5' }}
+                  <BloqueSection
+                    key={bloque.id}
+                    bloque={bloque}
+                    onTapGrupo={setGrupoFicha}
+                    getSeleccionado={(grupo) => grupo.items.some(i => estado.extras.some(e => e.id === i.id))}
                   />
-                </div>
+                ))}
 
-                <p className="text-xs text-center" style={{ color: '#9CA3AF' }}>
-                  Al confirmar aceptas nuestros{' '}
-                  <a href="/terminos" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-70" style={{ color: '#1565C0' }}>
-                    Términos y Condiciones
-                  </a>
-                </p>
-
-                <div className="flex gap-3">
+                {/* Botones volver + confirmar */}
+                <div className="flex gap-3 mt-6 mb-4">
                   <button onClick={() => setPaso(3)}
                     className="px-6 py-4 rounded-2xl font-bold transition-all hover:scale-105"
                     style={{ border: '2px solid #E5E7EB', color: '#6B7280', background: 'white' }}>
                     ← Volver
                   </button>
-                  <button
-                    onClick={generarWhatsApp}
-                    className="flex-1 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
-                    style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}
-                  >
-                    💬 Confirmar por WhatsApp
-                  </button>
-                </div>
-
-                {/* Opción visita */}
-                <div className="text-center mt-4">
-                  <p className="text-gray-400 text-xs mb-1">¿Todavía no estás seguro/a?</p>
-                  <button
-                    onClick={generarWhatsAppVisita}
-                    className="font-bold text-sm hover:underline transition-colors"
-                    style={{ color: '#1565C0' }}
-                  >
-                    Prefiero conocer el lugar antes de reservar →
+                  <button onClick={generarWhatsApp}
+                    className="flex-1 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }}>
+                    <WaIcon /> Confirmar por WhatsApp
                   </button>
                 </div>
               </div>
             )}
+
+            {/* ── Rescate humano + visita — visible en TODOS los pasos del wizard.
+                 El papá que se complica con el sistema o prefiere ver antes de
+                 decidir tiene siempre una salida cálida, sin perder el lead ── */}
+            <div className="mt-10 pt-6 text-center" style={{ borderTop: '1px solid rgba(21,101,192,0.1)' }}>
+              <p className="text-sm text-gray-400 leading-relaxed max-w-md mx-auto">
+                ¿Te complica el sistema o prefieres armarlo conversando?
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2.5 justify-center items-center mt-3">
+                <a
+                  href={`https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Estoy armando mi celebración en la web pero prefiero que me ayudes tú directamente 😊')}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-black px-5 py-2.5 rounded-full transition-all hover:scale-105"
+                  style={{ color: '#16a34a', border: '1.5px solid rgba(34,197,94,0.35)', background: 'rgba(34,197,94,0.06)' }}
+                >
+                  <WaIcon /> Te ayudo por WhatsApp
+                </a>
+                <a
+                  href={`https://wa.me/56944356955?text=${encodeURIComponent('¡Hola César! Antes de reservar me gustaría visitar el jardín sin compromiso. ¿Qué día te acomoda para coordinar?')}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-full transition-all hover:scale-105"
+                  style={{ color: '#1565C0', border: '1.5px solid rgba(21,101,192,0.25)', background: 'rgba(21,101,192,0.05)' }}
+                >
+                  📍 Visitar antes de decidir
+                </a>
+                <a
+                  href="/#faq"
+                  className="inline-flex items-center gap-1.5 text-sm font-bold px-5 py-2.5 rounded-full transition-all hover:scale-105"
+                  style={{ color: '#6B7280', border: '1.5px solid #E5E7EB', background: 'white' }}
+                >
+                  ❓ Dudas frecuentes
+                </a>
+              </div>
+            </div>
           </div>
 
           {/* ─── SIDEBAR RESUMEN ─── */}
@@ -3543,6 +4014,17 @@ El total estimado es ${clp(total)}.${notasLinea}
           cantNinos={estado.cantNinos}
           onToggle={toggleItemModal}
           onCerrar={() => setGrupoAbierto(null)}
+        />
+      )}
+
+      {/* FichaCarrusel paso 4 — misma lógica que /catalogo pero con botón Agregar */}
+      {grupoFicha && (
+        <FichaCarrusel
+          grupo={grupoFicha}
+          onCerrar={() => setGrupoFicha(null)}
+          onAdd={(item, grupo) => toggleItemModal(item, grupo)}
+          isAdded={(item) => estado.extras.some(e => e.id === item.id)}
+          cantNinos={estado.cantNinos || 'hasta10'}
         />
       )}
 
@@ -3579,7 +4061,7 @@ El total estimado es ${clp(total)}.${notasLinea}
             className="text-white font-black py-3 px-6 rounded-2xl flex items-center gap-2 transition-all active:scale-95"
             style={{ background: 'linear-gradient(135deg,#22c55e,#16a34a)', boxShadow: '0 4px 16px rgba(34,197,94,0.35)' }}
           >
-            💬 Confirmar
+            <WaIcon /> Confirmar
           </button>
         </div>
       )}
@@ -3593,6 +4075,21 @@ El total estimado es ${clp(total)}.${notasLinea}
           onCerrar={() => setSheetAbierto(false)}
           onQuitarExtra={quitarExtra}
         />
+      )}
+
+      {/* Toast — celebración retomada desde donde quedó (persistencia) */}
+      {retomado && (
+        <div
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[95] px-5 py-3 rounded-2xl text-sm font-bold text-white flex items-center gap-2 whitespace-nowrap"
+          style={{
+            background: 'rgba(6,15,46,0.96)',
+            border: '1px solid rgba(41,185,232,0.4)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          ✨ Retomamos tu celebración donde la dejaste
+        </div>
       )}
     </>
   );

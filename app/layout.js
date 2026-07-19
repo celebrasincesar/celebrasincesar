@@ -1,5 +1,7 @@
 import './globals.css';
 import { Nunito } from 'next/font/google';
+import { STATS } from '../data/stats';
+import { FAQS } from '../data/faqs';
 
 // ── Fuente auto-alojada en Vercel (elimina la llamada extra a Google Fonts)
 const nunito = Nunito({
@@ -10,23 +12,29 @@ const nunito = Nunito({
 });
 
 // ── SEO: metadatos completos para Google, WhatsApp y redes sociales ──────────
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata = {
   metadataBase: new URL('https://celebrasincesar.cl'),
   icons: {
     icon: [
-      { url: '/logo-alce.png', type: 'image/png' },
+      { url: '/logo-alce.webp', type: 'image/webp' },
     ],
     apple: [
-      { url: '/logo-alce.png', type: 'image/png' },
+      { url: '/logo-alce.webp', type: 'image/webp' },
     ],
-    shortcut: '/logo-alce.png',
+    shortcut: '/logo-alce.webp',
   },
   title: {
-    default: 'Celebra Sin César | Cumpleaños Infantiles Las Condes',
-    template: '%s | Celebra Sin César',
+    default: 'Celebra Sin Cesar | Cumpleaños Infantiles Las Condes',
+    template: '%s | Celebra Sin Cesar',
   },
   description:
-    'El jardín más completo para cumpleaños infantiles en Las Condes. Piscina de pelotas gigante, tobogán, granja de animales, salón A/C y adultos ilimitados. ¡Reserva online en minutos!',
+    'Cumpleaños infantiles en Las Condes con libertad total: arriendas el jardín y lo armas a tu manera, sin paquetes obligatorios. Piscina de pelotas gigante, tobogán, granja y adultos ilimitados.',
   keywords: [
     'cumpleaños infantiles Las Condes',
     'fiestas infantiles sector oriente Santiago',
@@ -39,28 +47,28 @@ export const metadata = {
     'cumpleaños niños Lo Barnechea',
   ],
   openGraph: {
-    title: 'Celebra Sin César | Cumpleaños Infantiles Las Condes',
+    title: 'Celebra Sin Cesar | Cumpleaños Infantiles Las Condes',
     description:
-      'Piscina de pelotas gigante, tobogán, granja de animales y más. Adultos ilimitados, privacidad total. Reserva online.',
+      'Arriendas el lugar y armas el cumpleaños a tu manera — sin paquetes obligatorios. Piscina de pelotas gigante, tobogán, granja y adultos ilimitados.',
     url: 'https://celebrasincesar.cl',
-    siteName: 'Celebra Sin César',
+    siteName: 'Celebra Sin Cesar',
     locale: 'es_CL',
     type: 'website',
     images: [
       {
-        url: '/logo-celebra.png',
-        width: 1200,
-        height: 630,
-        alt: 'Celebra Sin César - Cumpleaños Infantiles Las Condes',
+        url: '/infra-piscina.webp',
+        width: 800,
+        height: 600,
+        alt: 'Piscina de pelotas gigante de Alce Kids — cumpleaños infantiles en Las Condes',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Celebra Sin César | Cumpleaños Infantiles Las Condes',
+    title: 'Celebra Sin Cesar | Cumpleaños Infantiles Las Condes',
     description:
-      'El jardín más completo para cumpleaños de niños en Las Condes. Reserva online.',
-    images: ['/logo-celebra.png'],
+      'Arriendas el jardín y armas el cumpleaños a tu manera — sin paquetes obligatorios. Reserva online.',
+    images: ['/infra-piscina.webp'],
   },
   robots: {
     index: true,
@@ -91,11 +99,25 @@ export const metadata = {
 const localBusinessSchema = {
   '@context': 'https://schema.org',
   '@type': ['EventVenue', 'LocalBusiness'],
-  name: 'Celebra Sin César',
+  name: 'Celebra Sin Cesar',
   alternateName: 'Alce Kids Las Condes',
+  legalName: 'CELEBRA SIN CESAR SpA',
   description:
-    'Jardín de celebraciones infantiles en Las Condes, Santiago. Piscina de pelotas gigante, tobogán, granja de animales, salón climatizado y adultos ilimitados.',
+    'Jardín de celebraciones infantiles en Las Condes, Santiago, con libertad total para los papás: arriendas el espacio y lo armas a tu manera, sin paquetes obligatorios. Piscina de pelotas gigante, tobogán, granja de animales, salón climatizado y adultos ilimitados.',
   url: 'https://celebrasincesar.cl',
+  telephone: '+56944356955',
+  email: 'celebracionesalce@gmail.com',
+  image: 'https://celebrasincesar.cl/infra-piscina.webp',
+  sameAs: [
+    'https://www.instagram.com/celebracionesalce/',
+    'https://www.google.com/maps?cid=660114253320051799',
+  ],
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: STATS.rating,
+    reviewCount: STATS.reseñas,
+    bestRating: '5',
+  },
   address: {
     '@type': 'PostalAddress',
     streetAddress: 'Talavera de la Reina 380',
@@ -119,9 +141,9 @@ const localBusinessSchema = {
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Saturday', 'Sunday'],
-      opens: '10:00',
-      closes: '20:00',
+      dayOfWeek: ['Friday', 'Saturday', 'Sunday'],
+      opens: '11:00',
+      closes: '18:30',
     },
   ],
   amenityFeature: [
@@ -135,6 +157,17 @@ const localBusinessSchema = {
   ],
 };
 
+// ── Schema.org: FAQPage — habilita rich results de preguntas frecuentes en Google
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="es" className={nunito.variable}>
@@ -142,6 +175,10 @@ export default function RootLayout({ children }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       </head>
       <body className={`${nunito.className} antialiased`}>{children}</body>

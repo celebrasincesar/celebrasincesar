@@ -3,12 +3,9 @@
   "configurations": [
     {
       "name": "celebrasincesar",
-      "runtimeExecutable": "C:\\Program Files\\nodejs\\npm.cmd",
+      "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3000,
-      "env": {
-        "PATH": "C:\\Program Files\\nodejs\\;C:\\Windows\\System32\\;C:\\Windows\\"
-      }
+      "port": 3000
     }
   ]
 }
