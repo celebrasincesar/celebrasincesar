@@ -1,0 +1,41 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.celebrasincesar.cl"
+        }
+      ],
+      "destination": "https://celebrasincesar.cl/",
+      "statusCode": 301
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.celebrasincesar.cl"
+        }
+      ],
+      "destination": "https://celebrasincesar.cl/:path*",
+      "statusCode": 301
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/boletas-pendientes",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/reintentar-email-contractual",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/ciclo-previo-evento",
+      "schedule": "0 15 * * *"
+    }
+  ]
+}

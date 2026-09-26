@@ -27,10 +27,10 @@
 
 | Atajo | Cuándo | Contenido |
 |-------|--------|-----------|
-| `/info` | Tras calificar | Tu bloque de info (sectores, $180/$230, 3h, adultos ilimitados, ubicación, promo) + cierre con visita |
+| `/info` | Tras calificar | Tu bloque de info (sectores, $180/$230, 3h, adultos sin costo adicional, ubicación, promo) + cierre con visita |
 | `/visita` | Siempre que puedas | "Lo mejor es que lo conozcas: te invito a una visita sin compromiso. ¿Te acomoda [día]? 😉" |
 | `/lluvia` | Objeción clima | "Si llueve el mismo día NO te obligamos a celebrar, reagendamos juntos y no pierdes tu reserva 🤗" |
-| `/precio` | Objeción precio | "Incluye exclusividad total, mesas, sillas, salón, autos, 3h y adultos ilimitados gratis. No te obligamos a contratar nada más 😉" |
+| `/precio` | Objeción precio | "Incluye exclusividad total, mesas, sillas, salón, autos, 3h y adultos sin costo adicional. Sumas solo lo que necesitas 😉" |
 | `/reserva` | Cierre | "Para dejar tu fecha tomada se reserva con el 50%. ¿Te la aparto? 😊" + link de pago |
 | `/seg1` `/seg2` `/seg3` | Seguimiento | Los 3 toques de abajo |
 

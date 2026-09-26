@@ -4,7 +4,7 @@
 // 👉 Pega aquí tus reseñas favoritas de Google (texto + nombre). Cada objeto
 //    aparece como una tarjeta premium en la home.
 //    Deja el array vacío [] y la sección muestra solo la prueba social agregada
-//    (★ 5.0 · 35 reseñas) con el botón a Google. NO inventes reseñas.
+//    (★ 5.0 · 45+ reseñas) con el botón a Google. NO inventes reseñas.
 //
 // Formato de cada reseña:
 //   { nombre: 'Nombre Apellido', texto: 'La reseña tal cual...', estrellas: 5 }

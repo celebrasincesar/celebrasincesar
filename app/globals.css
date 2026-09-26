@@ -63,6 +63,21 @@ html {
   outline: none;
 }
 
+/* CTA principal del hero — pulso sutil que atrae la mirada */
+@keyframes cta-pulso {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(249, 115, 22, 0.45), 0 2px 12px rgba(0, 0, 0, 0.25);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 10px 46px rgba(249, 115, 22, 0.8), 0 2px 16px rgba(0, 0, 0, 0.3);
+    transform: scale(1.04);
+  }
+}
+.cta-pulso {
+  animation: cta-pulso 2.6s ease-in-out infinite;
+}
+
 /* Respeta la preferencia de movimiento reducido del usuario */
 @media (prefers-reduced-motion: reduce) {
   *,

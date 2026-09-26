@@ -1,4 +1,17 @@
 import Link from 'next/link';
+import VolverButtons from './volver-buttons';
+import Section from '../legal-section';
+import { TYC_VERSION } from '../../data/master';
+
+// TYC_VERSION ('2026-09', etc.) es la MISMA fecha que queda asociada a cada
+// reserva al aceptar estos términos (data/master.js, tyc_version en
+// Postgres) — se deriva el texto legible de ahí para que esta página nunca
+// pueda mostrar una fecha distinta de la que realmente se guardó.
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+function tycVersionLegible() {
+  const [anio, mes] = TYC_VERSION.split('-').map(Number);
+  return `${MESES[mes - 1] || TYC_VERSION} ${anio}`;
+}
 
 export const metadata = {
   title: 'Términos y Condiciones',
@@ -28,7 +41,7 @@ export default function TerminosPage() {
             Términos y Condiciones de Uso
           </h1>
           <p className="mt-2 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            Alce Kids · Celebra Sin Cesar · Las Condes, Santiago · Vigente desde enero 2024
+            Alce Kids · Celebra Sin Cesar · Las Condes, Santiago · Última actualización: {tycVersionLegible()}
           </p>
         </div>
       </header>
@@ -87,18 +100,20 @@ export default function TerminosPage() {
 
         <Section num="3" titulo="Aceptación de los términos">
           <p>
-            Los presentes Términos y Condiciones se entienden aceptados desde el momento en que
-            ocurre cualquiera de los siguientes actos: (a) el pago total o parcial del valor de la
-            reserva; (b) la confirmación verbal o escrita de la fecha de celebración; (c) el ingreso
-            al recinto el día del evento. Desde ese momento el contratante se compromete a cumplir
-            y hacer cumplir a todos sus invitados el presente reglamento.
+            Los presentes Términos y Condiciones, junto con el aviso de exclusión del derecho a
+            retracto (sección 11), se entienden aceptados electrónicamente al completar el proceso
+            de pago del anticipo a través del sitio web, mediante la aceptación expresa que el
+            propio sistema de reserva exige antes de continuar al pago. Desde ese momento el
+            contratante se compromete a cumplir y hacer cumplir a todos sus invitados el presente
+            reglamento.
           </p>
           <p className="mt-3">
-            Adicionalmente, antes de la celebración el contratante completa un{' '}
-            <strong>formulario de confirmación</strong> en el que ratifica la aceptación de estos
-            términos y formula declaraciones expresas sobre supervisión de los menores, uso
-            correcto de las instalaciones y veracidad de la información entregada. Dichas
-            declaraciones forman parte integrante del presente contrato.
+            Con posterioridad a la reserva, Alce Kids coordina con el contratante, habitualmente
+            por WhatsApp, los detalles operacionales de la celebración — cantidad final de
+            asistentes, información relevante para la seguridad de los niños y el adulto
+            responsable presente el día del evento. Esta coordinación es de carácter operacional:
+            no constituye una nueva aceptación contractual ni sustituye la aceptación electrónica
+            ya prestada conforme al párrafo anterior.
           </p>
         </Section>
 
@@ -110,27 +125,33 @@ export default function TerminosPage() {
           </p>
           <ul>
             <li>
-              Los niños mayores de 6 años son bienvenidos como acompañantes. Sin embargo, por
-              seguridad y diseño estructural, <strong>no pueden usar los juegos e infraestructura
-              del jardín</strong> (piscina de pelotas, tobogán, estructuras, columpios y
-              similares), dimensionados exclusivamente para niños de 0 a 6 años.
+              Los niños mayores de 6 años son muy bienvenidos como acompañantes. Como los juegos e
+              infraestructura del jardín (piscina de pelotas, tobogán, estructuras, columpios y
+              similares) están dimensionados para niños de 0 a 6 años, por su seguridad y la de los
+              más pequeños <strong>se reservan para ese grupo de edad y no son aptos para los
+              mayores</strong>.
             </li>
             <li>
-              Para los mayores de 6 años existen servicios adicionales aptos para su edad —
-              inflables según la edad recomendada de cada modelo, juegos deportivos y animación —
-              disponibles en el catálogo de adicionales.
+              Para que los mayores de 6 años también lo pasen genial, contamos con servicios
+              adicionales pensados para su edad — inflables según la edad recomendada de cada modelo,
+              juegos deportivos, animación y la <strong>sala de videojuegos +7</strong> — disponibles
+              en el catálogo de adicionales.
             </li>
             <li>
               <strong>Velar por el cumplimiento de esta regla corresponde al contratante y al
               adulto a cargo de cada menor</strong>, quienes asumen el deber de impedir de manera
               activa que los niños mayores de 6 años accedan a la infraestructura del jardín. El
-              anfitrión de Alce Kids no ejerce función de vigilancia individual (sección 5). El
-              uso de la infraestructura del jardín por niños mayores de 6 años constituye uso
-              contrario al diseño para los efectos de la sección 16, y las consecuencias que de
-              él deriven serán de cargo del adulto responsable del menor.
+              anfitrión de Alce Kids no ejerce función de vigilancia individual (sección 5). Cuando
+              el uso de la infraestructura del jardín por un niño mayor de 6 años sea imputable al
+              contratante o al adulto a cargo, dicho uso constituye uso contrario al diseño para
+              los efectos de la sección 17, y las consecuencias que de él deriven serán de cargo
+              de ese adulto responsable. Lo anterior no exime a Alce Kids de su propia
+              responsabilidad cuando el hecho sea consecuencia de un incumplimiento que le sea
+              imputable a Alce Kids, ni afecta los derechos irrenunciables que la Ley N.º 19.496
+              reconoce a los consumidores.
             </li>
             <li>
-              Los adultos pueden ingresar en número ilimitado para acompañar a los menores.
+              Los adultos acompañantes no tienen costo adicional, dentro de la capacidad máxima autorizada del recinto.
               Les pedimos que los juegos y estructuras se reserven para los niños, salvo cuando
               sea necesario asistir a un menor.
             </li>
@@ -155,7 +176,7 @@ export default function TerminosPage() {
               durante toda su permanencia en el recinto.
             </li>
             <li>
-              En el formulario de confirmación, el contratante designa a un{' '}
+              Al coordinar los detalles de la celebración, el contratante designa a un{' '}
               <strong>adulto responsable del evento</strong> (que puede ser él mismo), quien deberá
               permanecer en el recinto durante toda la celebración. El contratante se obliga,
               además, a que cada menor asista acompañado de su padre, madre, tutor o de un adulto
@@ -205,9 +226,11 @@ export default function TerminosPage() {
             Por favor evita estacionar sobre el pasto, zonas verdes o accesos del recinto.
           </p>
           <p className="mt-3">
-            El uso indebido de las instalaciones que derive en daños o lesiones será responsabilidad
-            de quien lo provoque, eximiendo a Alce Kids de toda consecuencia legal o económica
-            derivada de dicha conducta.
+            El uso indebido de las instalaciones que derive en daños o lesiones será
+            responsabilidad de quien lo provoque. Lo anterior no exime a Alce Kids de su propia
+            responsabilidad cuando el daño sea consecuencia de un incumplimiento que le sea
+            imputable, ni afecta los derechos irrenunciables que la Ley N.º 19.496 reconoce a los
+            consumidores.
           </p>
         </Section>
 
@@ -236,11 +259,17 @@ export default function TerminosPage() {
 
         <Section num="9" titulo="Horarios y puntualidad">
           <p>
-            Los bloques horarios son inamovibles: <strong>AM 11:00–14:00</strong> y{' '}
-            <strong>PM 15:30–18:30</strong>. El tiempo de uso del recinto corresponde
-            exclusivamente al horario contratado.
+            Los bloques horarios base son: AM 11:00–14:00 y PM 15:00–18:00. El tiempo de uso del
+            recinto corresponde al horario contratado, incluyendo las horas adicionales que se
+            hayan sumado al reservar.
           </p>
           <ul>
+            <li>
+              El bloque AM puede extenderse hacia atrás hasta 1 hora (10:00–14:00), con un cargo
+              de $50.000. El bloque PM puede extenderse hacia adelante hasta 2 horas
+              (15:00–19:00 por $50.000, o 15:00–20:00 por $100.000). Las horas adicionales se
+              contratan al elegir el horario, junto con el resto de la celebración.
+            </li>
             <li>
               Puedes iniciar la preparación del espacio hasta 30 minutos antes del comienzo del
               bloque, previa coordinación con el equipo.
@@ -250,10 +279,9 @@ export default function TerminosPage() {
               ni se compensa económicamente.
             </li>
             <li>
-              La permanencia en el recinto más allá del horario contratado generará un cargo
-              adicional de <strong>$15.000 CLP por cada 15 minutos de exceso</strong> o fracción.
-              Si prefieres más tiempo, la hora adicional contratada con anticipación tiene un
-              valor preferente — pídela al reservar.
+              La permanencia en el recinto más allá del horario contratado (incluidas las horas
+              adicionales, si se contrataron) generará un cargo adicional de{' '}
+              <strong>$15.000 CLP por cada 15 minutos de exceso</strong> o fracción.
             </li>
           </ul>
         </Section>
@@ -266,22 +294,64 @@ export default function TerminosPage() {
           </p>
           <ul>
             <li>
-              Los precios publicados en el sitio web son referenciales y pueden variar según
-              temporada, disponibilidad y extras contratados. El precio definitivo es el confirmado
-              al momento de formalizar la reserva.
+              El precio que ves y aceptas al armar tu celebración es el precio final de tu reserva:
+              queda fijado en ese momento y no cambia después, aunque los precios publicados en el
+              sitio se actualicen más adelante.
             </li>
             <li>
               El anticipo no es reembolsable, salvo en los casos contemplados en la cláusula de
-              fuerza mayor (sección 20).
+              fuerza mayor (sección 21).
             </li>
             <li>
               El no pago del saldo antes del plazo establecido faculta a Alce Kids a liberar la
               fecha reservada, sin derecho a devolución del anticipo.
             </li>
           </ul>
+          <p className="mt-3">
+            Los pagos, devoluciones, cancelaciones y reprogramaciones se rigen por las
+            disposiciones aplicables de estos Términos y Condiciones, incluidas la política de
+            cancelación y reprogramación (sección 12), la regulación del derecho a retracto
+            (sección 11) y las disposiciones sobre fuerza mayor (sección 21).
+          </p>
         </Section>
 
-        <Section num="11" titulo="Cancelación y reagendamiento">
+        <Section num="11" titulo="Derecho a retracto">
+          <p>
+            De conformidad con el artículo 3° bis de la Ley N.º 19.496 y el Decreto N.º 52 de
+            2024, CELEBRA SIN CESAR SpA, bajo su marca Alce Kids, informa de manera previa, clara,
+            inequívoca, destacada y fácilmente accesible que ha dispuesto expresamente la
+            exclusión del derecho a retracto respecto de los servicios de celebración infantil
+            contratados a través de este sitio web.
+          </p>
+          <p className="mt-3">
+            Esta exclusión se informa al contratante antes de la aceptación del contrato y del
+            pago, dentro del mismo proceso en que se presentan las características esenciales y
+            el precio del servicio.
+          </p>
+          <p className="mt-3">
+            La celebración contratada se encuentra asociada a una fecha y bloque horario
+            determinados que, una vez reservados, dejan de estar disponibles para otros clientes.
+            Esta circunstancia forma parte de las características comerciales del servicio
+            reservado.
+          </p>
+          <p className="mt-3">
+            La exclusión del derecho a retracto es distinta e independiente de la política
+            comercial de cancelación y reprogramación de Alce Kids, que se aplica conforme a sus
+            propias condiciones.
+          </p>
+          <p className="mt-3">
+            Lo anterior no limita, restringe ni sustituye los derechos irrenunciables que la Ley
+            N.º 19.496 y demás normativa aplicable reconocen a los consumidores, incluidos
+            aquellos que correspondan frente a un incumplimiento imputable a CELEBRA SIN CESAR
+            SpA.
+          </p>
+        </Section>
+
+        <Section num="12" titulo="Cancelación y reagendamiento">
+          <p>
+            Esta es una política comercial de Alce Kids, distinta e independiente de la
+            regulación del derecho a retracto y de su exclusión informada en la sección 11.
+          </p>
           <ul>
             <li>
               <strong>Cancelación con 7 o más días de anticipación:</strong> el anticipo se
@@ -303,7 +373,7 @@ export default function TerminosPage() {
           </p>
         </Section>
 
-        <Section num="12" titulo="Lo que pedimos no ingresar">
+        <Section num="13" titulo="Lo que pedimos no ingresar">
           <p>
             Para proteger a los niños y mantener el espacio en las mejores condiciones, te pedimos
             no ingresar los siguientes elementos:
@@ -327,7 +397,7 @@ export default function TerminosPage() {
           </p>
         </Section>
 
-        <Section num="13" titulo="Alimentos y bebidas">
+        <Section num="14" titulo="Alimentos y bebidas">
           <p>
             Puedes traer libremente alimentos y bebidas para la celebración, respetando estas
             condiciones:
@@ -354,7 +424,7 @@ export default function TerminosPage() {
           </ul>
         </Section>
 
-        <Section num="14" titulo="Decoración y montaje">
+        <Section num="15" titulo="Decoración y montaje">
           <p>
             Puedes ingresar toda la decoración temática que quieras. Te pedimos seguir estas
             indicaciones para cuidar el espacio:
@@ -381,7 +451,7 @@ export default function TerminosPage() {
           </ul>
         </Section>
 
-        <Section num="15" titulo="Daños a las instalaciones">
+        <Section num="16" titulo="Daños a las instalaciones">
           <p>
             El contratante es responsable de los daños que se produzcan en el recinto, su
             mobiliario, equipos y elementos decorativos durante el tiempo de uso.
@@ -396,13 +466,15 @@ export default function TerminosPage() {
               contratante o de la familia del menor responsable, según corresponda.
             </li>
             <li>
-              Alce Kids puede retener el saldo pendiente de pago como garantía provisional
-              ante daños constatados al término del evento.
+              El saldo de la reserva se paga siempre antes del evento (sección 10), por lo que no
+              queda saldo pendiente que retener al término de la celebración. Ante daños
+              constatados, Alce Kids notificará al contratante dentro del plazo indicado arriba y
+              podrá cobrar el valor correspondiente de forma independiente al pago de la reserva.
             </li>
           </ul>
         </Section>
 
-        <Section num="16" titulo="Responsabilidad y seguridad">
+        <Section num="17" titulo="Responsabilidad y seguridad">
           <p>
             Alce Kids ha diseñado sus instalaciones con estándares de seguridad apropiados para la
             primera infancia: dimensiones, alturas, materiales y superficies pensados para niños
@@ -440,7 +512,7 @@ export default function TerminosPage() {
           </p>
         </Section>
 
-        <Section num="17" titulo="Derecho de admisión">
+        <Section num="18" titulo="Derecho de admisión">
           <p>
             Alce Kids se reserva el derecho de admisión y permanencia en el recinto. Podremos
             pedir el retiro de cualquier persona — adulto o menor — cuya conducta:
@@ -457,45 +529,29 @@ export default function TerminosPage() {
           </p>
         </Section>
 
-        <Section num="18" titulo="Privacidad e imagen">
+        <Section num="19" titulo="Privacidad e imagen">
           <p>
-            Alce Kids solo captará y utilizará imágenes de las celebraciones con fines
-            promocionales (redes sociales y sitio web) cuando el contratante lo{' '}
-            <strong>autorice expresamente</strong> en el formulario de confirmación. Sin esa
-            autorización, no se publicarán imágenes del evento.
-          </p>
-          <p className="mt-3">
-            La autorización del contratante alcanza únicamente a su propia imagen y a la de los
-            menores a su cargo. En fotografías donde aparezcan otros asistentes, Alce Kids evitará
-            publicar rostros identificables de menores cuyos padres o tutores no hayan autorizado
-            su difusión. La autorización es siempre revocable: basta comunicarlo por escrito y las
-            imágenes serán retiradas de los canales administrados por Alce Kids.
-          </p>
-          <p className="mt-3">
-            Los datos personales proporcionados serán tratados conforme a la Ley N.º 19.628 sobre
-            Protección de la Vida Privada y a la Ley N.º 21.719 según su entrada en vigencia, y se
-            utilizarán exclusivamente para la gestión de la reserva y comunicaciones relacionadas
-            con el servicio. La información de salud entregada (como alergias o necesidades
-            especiales) es un <strong>dato sensible</strong>: se usa únicamente para resguardar el
-            bienestar de los asistentes durante el evento, no se comparte con terceros y se elimina
-            una vez realizada la celebración.
+            Los datos personales que nos entregas se tratan conforme a nuestra Política de
+            Privacidad, disponible en{' '}
+            <Link href="/privacidad" style={{ color: '#1565C0' }}>celebrasincesar.cl/privacidad</Link>, que forma parte integrante de estos Términos y Condiciones. Ahí se describe, entre
+            otras cosas, el tratamiento de imágenes de las celebraciones y de las grabaciones de
+            las cámaras de seguridad del recinto.
           </p>
         </Section>
 
-        <Section num="19" titulo="Recinto privado y seguridad">
+        <Section num="20" titulo="Recinto privado y seguridad">
           <p>
             Alce Kids es un recinto privado y cerrado. El ingreso está reservado para los
             asistentes de la celebración confirmada. No se permite el acceso a personas ajenas
             al evento durante su realización.
           </p>
           <p className="mt-3">
-            El recinto cuenta con cámaras de seguridad en áreas comunes para velar por la
-            integridad de las personas y las instalaciones. Las grabaciones podrán ponerse a
-            disposición de la autoridad competente en caso de incidentes que lo ameriten.
+            El tratamiento de las imágenes captadas por las cámaras de seguridad del recinto se
+            describe en nuestra Política de Privacidad (<Link href="/privacidad" style={{ color: '#1565C0' }}>celebrasincesar.cl/privacidad</Link>).
           </p>
         </Section>
 
-        <Section num="20" titulo="Caso fortuito y fuerza mayor">
+        <Section num="21" titulo="Caso fortuito y fuerza mayor">
           <p>
             Ninguna de las partes será responsable por el incumplimiento de sus obligaciones cuando
             dicho incumplimiento sea consecuencia de un caso fortuito o fuerza mayor en los términos
@@ -519,7 +575,7 @@ export default function TerminosPage() {
           </p>
         </Section>
 
-        <Section num="21" titulo="Marco legal aplicable">
+        <Section num="22" titulo="Marco legal aplicable">
           <p>
             Los presentes Términos y Condiciones se rigen íntegramente por la legislación chilena,
             en particular por el Código Civil, la Ley N.º 19.496 sobre Protección de los Derechos
@@ -553,55 +609,12 @@ export default function TerminosPage() {
             </a>
           </p>
           <p className="mt-3 text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            Última actualización: julio 2026 · Versión 3.2
+            Última actualización: {tycVersionLegible()} · Versión {TYC_VERSION}
           </p>
         </div>
 
-        <div className="mt-8 text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 font-black py-3 px-8 rounded-2xl text-white transition-all hover:scale-[1.03]"
-            style={{
-              background: 'linear-gradient(135deg,#1565C0,#1976D2)',
-              boxShadow: '0 4px 16px rgba(21,101,192,0.3)',
-            }}
-          >
-            ← Volver y reservar mi fecha
-          </Link>
-        </div>
+        <VolverButtons />
       </article>
     </main>
-  );
-}
-
-/* ─── Componente auxiliar ─── */
-function Section({ num, titulo, children }) {
-  return (
-    <section className="mb-8">
-      <h2
-        className="text-lg font-black mb-3 pb-2"
-        style={{
-          color: '#1565C0',
-          borderBottom: '2px solid #DBEAFE',
-          display: 'flex',
-          gap: '8px',
-          alignItems: 'baseline',
-        }}
-      >
-        <span
-          className="text-xs font-black rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0"
-          style={{ background: '#1565C0', color: 'white', lineHeight: 1, paddingTop: '1px' }}
-        >
-          {num}
-        </span>
-        {titulo}
-      </h2>
-      <div
-        className="text-sm leading-relaxed space-y-2"
-        style={{ color: '#374151' }}
-      >
-        {children}
-      </div>
-    </section>
   );
 }

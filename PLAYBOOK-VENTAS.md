@@ -45,7 +45,7 @@ Es la objeción que más te manda a la competencia, sobre todo en otoño-inviern
 Califica SIEMPRE primero: **fecha + edad + AM/PM + nº niños**.
 
 ### B) Bloque de info (el tuyo actual sirve — afinado)
-Espacios, valores ($180 sector / $230 completo), 3h+30min, capacidad, adultos ilimitados, ubicación, promo del mes, + **cierre con CTA de visita**. Adjunta video + lugar.
+Espacios, valores ($180 sector / $230 completo), 3h+30min, capacidad, adultos sin costo adicional, ubicación, promo del mes, + **cierre con CTA de visita**. Adjunta video + lugar.
 
 ### C) ⭐ EL EMPUJE A LA VISITA (tu cierre real) — hazlo SIEMPRE, no esperes
 > *"Lo mejor es que lo conozcas: te invito a una visita sin compromiso para que lo veas con tus propios ojos. ¿Te acomoda [día] o prefieres el fin de semana? 😉"*
@@ -53,12 +53,12 @@ Ofrece día/hora concretos. La visita = casi cierre seguro.
 
 ### D) Manejo de objeciones
 - **🌧️ Lluvia/aire libre (la clave):** *"Tranquila: si llueve el mismo día NO te obligamos a celebrar — reagendamos juntos a una fecha que les acomode y no pierdes tu reserva. Nos ponemos del lado de los papás 🤗"*. Para guaguas: *"podemos acomodar parte adentro, el jardín es grande"*. (Y cuando esté el techado, súmalo.)
-- **💰 Precio:** anclar en valor → *"incluye exclusividad total, mesas, sillas, salón, autos, 3 horas y adultos ilimitados sin costo. No te obligamos a contratar adicionales: armas tu celebración a tu manera"*.
+- **💰 Precio:** anclar en valor → *"incluye exclusividad total, mesas, sillas, salón, autos, 3 horas y adultos sin costo adicional. Sumas solo los adicionales que necesitas: armas tu celebración a tu manera"*.
 - **👧 Edad/mayores de 7:** *"el lugar está pensado para disfrute máximo hasta 6 años; para más grandes sumamos pimpón, tacataca, animación o inflables"*.
 - **📅 Falta mucho para el cumple:** *"te cuido la fecha desde ya con el 50%; las fechas buenas se agotan rápido"*.
 
 ### E) Cierre
-> *"Para dejar tu fecha tomada se reserva con el 50% del arriendo. ¿Te la aparto? 😊"*
+> *"Para dejar tu fecha tomada se reserva con el 50% del valor total de la celebración. ¿Te la aparto? 😊"*
 Apenas confirma → enviar link de pago (NO cuenta personal), agendar en Google Calendar.
 
 ### F) 🔁 SISTEMA DE SEGUIMIENTO (lo que te falta — arregla el 59%)
@@ -74,22 +74,33 @@ Para todo lead que recibió info y no respondió:
 *(extraído de tus mensajes recientes — César confirma vigencia)*
 
 **Espacios:** 2 sectores. (1) Piscina de pelotas gigante + columpios. (2) Autopista gigante + pozo de arena + tobogán + modular. Salón grande techado, 4 salas, 600 m².
-**Precios:** sector $180.000 · jardín completo (exclusivo) $230.000. Niño sobre 30: +$10.000 c/u.
-**Incluye:** 3 horas celebración + 30 min decoración, mesas, sillas, salón, autos para la autopista, exclusividad. **Adultos ilimitados sin costo.**
-**Capacidad:** 15/sector · 30 completo · hasta 40 con extras.
-**Reserva:** 50% del arriendo. (Política flexible: si cancelan, devolución total.)
-**Adicionales (opcionales — no obligatorios):**
-- Decoración $40.000 · Decoración + ambientación $60.000.
-- Comida $2.500/niño (varias opciones: papas/suflés/ramitas con bebidas; pancitos; cóctel). Mínimo 20 personas. Torta la pueden llevar.
-- Animación 2h (3 animadoras, mic, parlante, títeres, pintacaritas, globoflexia, concursos, opción K-pop) $120.000.
-- Pintacaritas 2h desde $30.000.
-- Cama saltarina gigante $60.000 · Mesa pimpón $30.000 · Tacataca $30.000 · Inflables $60.000–$130.000 · Toro mecánico/reloj demoledor/tabla surf $160.000.
-- Promo del mes: personaje (Rumi/Marshall/Sonic/Stitch).
+**Precios (base, festejado de 1 a 3 años):** Sector Independiente $150.000 Vie/Dom · $165.000 Sáb. Recinto Completo $195.000 Vie/Dom · $210.000 Sáb.
+  · 11 a 20 niños: $220.000 Vie/Dom · 21 a 30: $245.000 Vie/Dom · sobre 30: +$10.000 por niño.
+  · Cada año del festejado sobre los 3 suma $15.000 (4 años +$15.000 · 5 años +$30.000 · 6 años +$45.000).
+  · El valor exacto lo calcula el armador: **celebrasincesar.cl/valores**
+**Sector Independiente:** solo hasta 10 niños Y sin invitados mayores de 6. Desde ahí, Recinto Completo.
+**Incluye:** 3 horas celebración + 30 min decoración, mesas, sillas, salón, autos para la autopista, exclusividad, limpieza profunda. **Adultos sin costo adicional.**
+**Capacidad:** hasta 10 niños en sector independiente · hasta 40 en recinto completo. Nunca más de 40.
+**Reserva:** 50% de anticipo. Saldo hasta 48 horas antes del evento.
+**Adicionales (opcionales — catálogo completo en celebrasincesar.cl/catalogo):**
+- Inflables: $40.000 a $70.000 (gigantes, medianos y pequeños).
+- Animación: desde $65.000 hasta $125.000 según el show y la cantidad de niños.
+- Decoración: $35.000 a $75.000 (genérica o temática, simple o full).
+- Juegos y autos eléctricos: $15.000 a $35.000.
+- Pack Celebra Sin Cesar (piñata + decoración + arco de globos): $60.000.
+- Hermanos mayores de 6: $30.000 (1 a 3) · $60.000 (4 a 6) · $80.000 (7+, más $10.000
+  por cada uno sobre 7). Nunca lo llames "recargo": son bienvenidos y se suman a la fiesta.
+  Su entretención (mesas, inflable o animación) va aparte, a precio de catálogo.
+- Hora adicional: $50.000 cada una, se contrata al reservar y se suma al total.
+  Sábado y domingo: AM admite 1 (parte a las 10:00) · PM admite hasta 2 (termina 19:00 o 20:00).
+  Viernes: solo PM, admite máximo 1 (termina 20:00).
+- Banquetería: se cotiza sin compromiso, no tiene precio de lista.
 **Cocina:** refrigerar/guardar gratis; calentar/cocinar = costo adicional.
-**Edades:** ideal 0–6. Mayores de 7: se ofrecen extras pero supervisión difícil.
-**Lluvia:** no obligan a celebrar; reagendan sin perder reserva. Hoy es al aire libre (techado en evaluación).
+**Edades:** el recinto y sus juegos fijos son para 0 a 6 años.
+**Mayores de 6:** se les arma automáticamente una configuración de entretención adecuada (inflable gigante, animación y/o mesas deportivas) según cuántos vengan y el total de invitados. No usan los juegos fijos del jardín. Explicación completa: **celebrasincesar.cl/mayores-de-6**
+**Lluvia:** si llueve, reagendan sin costo y el anticipo queda 100% vigente. Nunca pierden la reserva.
 **Modalidad:** desde solo arriendo hasta organización completa. **No obligan a contratar nada.**
-**Horario:** Viernes a Domingo, AM (parte 9–10, 3h) y PM. (Jardín infantil L–V 8–15.)
+**Horario:** Viernes solo PM (16:00–19:00, o hasta 20:00 con hora adicional). Sábado y domingo AM (11:00–14:00) y PM (15:00–18:00). (Jardín infantil L–V 8–15.)
 **Ubicación:** Las Condes, al lado del Metro Los Dominicos. 600 m².
 **Pago:** ⚠️ hoy a cuenta PERSONAL (César Giménez, Banco de Chile) → migrar a cuenta SpA + link de pago.
 
