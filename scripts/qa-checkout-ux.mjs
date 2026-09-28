@@ -85,6 +85,24 @@ T('el botón de pago queda disabled cuando aceptaTyc es false', () => {
   yes(/disabled=\{[^}]*!aceptaTyc[^}]*\}/.test(confirmar), 'el botón de pago debe depender de aceptaTyc');
 });
 
+T('bug real 28-sep-2026: la sesión restaurada de localStorage trae de vuelta `tematica`, no solo `extras`', () => {
+  const wizard = fs.readFileSync(path.join(DIR_ARMAR, 'wizard.js'), 'utf8');
+  // El bloque de restauración vive en el useEffect que lee 'alce-wizard-v3':
+  // si a ese setEstado(...) le falta la clave `tematica`, un papá que eligió
+  // decoración temática y escribió el texto puede recargar la página, volver
+  // con el adicional "Temática …" elegido pero el texto perdido — y recién
+  // se entera al fallar el pago, con un mensaje que no dice qué falta.
+  const inicio = wizard.indexOf("localStorage.getItem('alce-wizard-v3')");
+  yes(inicio >= 0, 'no se encontró el bloque de restauración de localStorage');
+  const bloque = wizard.slice(inicio, wizard.indexOf('}));', inicio));
+  yes(/tematica:\s*s\.tematica/.test(bloque), 'la restauración debe traer de vuelta estado.tematica desde la sesión guardada');
+});
+
+T('el error de "configuración inválida" al pagar muestra el motivo específico del servidor, no solo el genérico', () => {
+  const confirmar = fs.readFileSync(path.join(DIR_ARMAR, 'confirmar-reserva.js'), 'utf8');
+  yes(/j\.errores/.test(confirmar), 'confirmar-reserva.js debe leer errores[] del servidor para mostrar el motivo real');
+});
+
 console.log('\n  QA UX del checkout (candados estáticos) — celebrasincesar.cl');
 console.log('  ' + '─'.repeat(52));
 if (fallos.length) {

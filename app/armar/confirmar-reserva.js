@@ -95,7 +95,12 @@ export function ConfirmarReserva({ estado, total, anticipo, cliente, onCerrar, o
         window.location.href = j.checkoutUrl;
         return; // se sale de la página: no hace falta reabrir el botón
       }
-      setError(MOTIVOS[j.motivo] || 'No pudimos iniciar el pago. Inténtalo de nuevo.');
+      // Cuando el servidor manda el motivo semántico exacto (errores[0]),
+      // se muestra ese texto en vez del genérico de MOTIVOS — evita que un
+      // papá se quede sin saber QUÉ falta (bug real 28-sep-2026: veía
+      // "revisa que todo esté completo" sin ninguna pista de qué revisar).
+      const motivoEspecifico = j.motivo === 'configuracion_invalida' && j.errores?.[0];
+      setError(motivoEspecifico || MOTIVOS[j.motivo] || 'No pudimos iniciar el pago. Inténtalo de nuevo.');
       enviandoRef.current = false;
       setEnviando(false);
     } catch {

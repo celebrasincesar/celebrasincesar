@@ -363,6 +363,12 @@ export default function CelebrationWizard() {
         codigo: s.codigo || '',
         usaCocina: !!s.usaCocina,
         notas: s.notas || '',
+        // Bug real detectado 28-sep-2026: faltaba acá, así que una sesión
+        // restaurada (recarga, pestaña en segundo plano) traía de vuelta el
+        // adicional "Temática …" elegido pero perdía el texto que el papá
+        // había escrito — la reserva llegaba a "Revisa" con el extra puesto
+        // y el campo vacío por dentro, sin que nada en pantalla lo avisara.
+        tematica: s.tematica || '',
         horasAdicionales: Math.min(migrarHoraExtra(s), maxHorasAdicionales(s.hora, s.fecha)),
       }));
       if (typeof s.paso === 'number' && s.paso > 0) {
