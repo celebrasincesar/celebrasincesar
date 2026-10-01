@@ -11,7 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { dbConfigurada } from '../../../lib/db';
-import { disponibilidadVisitas, crearVisita, enviarConfirmacionVisita } from '../../../lib/visitas';
+import { disponibilidadVisitas, crearVisita, enviarConfirmacionVisita, notificarVisitaAdmin } from '../../../lib/visitas';
 import { sincronizarCalendarioVisita } from '../../../lib/calendario-visita';
 import { fechaISO } from '../../../lib/reservas';
 import { json, demasiadasPeticiones, ipDe, cuerpoDe } from '../../../lib/http';
@@ -51,6 +51,12 @@ export async function POST(req) {
     await enviarConfirmacionVisita(visita);
   } catch (err) {
     console.error('[api/visitas] Correo de confirmación falló:', err.message);
+  }
+
+  try {
+    await notificarVisitaAdmin(visita);
+  } catch (err) {
+    console.error('[api/visitas] Aviso a administración falló:', err.message);
   }
 
   return json({

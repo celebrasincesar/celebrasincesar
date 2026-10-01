@@ -367,6 +367,8 @@ try {
   // permitido. Fecha fresca, distinta de todas las de arriba.
   // ══════════════════════════════════════════════════════════════════
   const FECHA_VIERNES_GUARD = '2027-04-02'; // viernes
+  const FECHA_VIERNES_GUARD2 = '2027-04-09'; // viernes — distinto del de arriba, para no chocar turno_hold con el PM+1 que también usa FECHA_VIERNES_GUARD
+  const FECHA_VIERNES_GUARD3 = '2027-04-16'; // viernes — ídem, para crearReservaManual
 
   await T('crearReserva(): viernes AM rechazado server-side, con el mensaje semántico específico (no el genérico AM/PM)', async () => {
     const r = await crearReserva({
@@ -395,31 +397,46 @@ try {
     );
   });
 
-  await T('crearReserva(): viernes PM +2 rechazado server-side — NO se acota a +1 en silencio (recalcular()/normalizarConfiguracion() no puede ser la autoridad)', async () => {
+  // Fase 5 Bloque 1 (01-oct-2026): viernes PM ya no tiene un tope distinto
+  // — las mismas 2 extensiones que sábado/domingo. Lo que antes probaba el
+  // rechazo de "+2" ahora prueba justo lo contrario: que se acepta de
+  // verdad, server-side, con el precio no lineal correcto ($100.000 por
+  // 90 min, no $100.000 por "2 horas").
+  await T('crearReserva(): viernes PM +2 YA NO se rechaza — se crea con 16:00–20:30 y $100.000', async () => {
     const r = await crearReserva({
-      configuracion: { ...CONFIG_BASE, fecha: `${FECHA_VIERNES_GUARD}T12:00:00.000Z`, hora: 'PM', horasAdicionales: 2 },
+      configuracion: { ...CONFIG_BASE, fecha: `${FECHA_VIERNES_GUARD2}T12:00:00.000Z`, hora: 'PM', horasAdicionales: 2 },
       cliente: CLIENTE, aceptaTyc: true,
     });
-    eq(r.ok, false, 'debe rechazarse, nunca crear la reserva con 1 hora en vez de la solicitud original');
-    yes(
-      r.errores?.includes('Los viernes se permite máximo 1 hora adicional.'),
-      `debe rechazar con el mensaje específico, no acotar en silencio: ${JSON.stringify(r.errores)}`
-    );
+    yes(r.ok, `debió crearse: ${r.motivo} ${JSON.stringify(r.errores || '')}`);
+    filasCreadas.push({ tabla: 'reserva', columna: 'codigo', valor: r.reserva.codigo });
+    eq(r.reserva.hora_inicio, '16:00');
+    eq(r.reserva.hora_termino, '20:30');
+    eq(r.reserva.turno, 'PM');
   });
 
-  await T('crearReservaManual(): viernes PM +2 rechazado server-side', async () => {
+  await T('crearReserva(): viernes PM +3 (nivel inexistente) SÍ se rechaza server-side — NO se acota en silencio', async () => {
+    const r = await crearReserva({
+      configuracion: { ...CONFIG_BASE, fecha: `${FECHA_VIERNES_GUARD3}T12:00:00.000Z`, hora: 'PM', horasAdicionales: 3 },
+      cliente: CLIENTE, aceptaTyc: true,
+    });
+    eq(r.ok, false, 'debe rechazarse, nunca crear la reserva con un nivel acotado en vez de la solicitud original');
+    yes(r.errores?.some((e) => /máximo 2 nivel/.test(e)), `debe rechazar con el mensaje genérico de exceso: ${JSON.stringify(r.errores)}`);
+  });
+
+  // El "+3" de arriba se rechazó en FECHA_VIERNES_GUARD3 sin tomar el
+  // turno (nunca se escribe nada en una petición rechazada) — por eso ese
+  // mismo día sigue libre para esta prueba.
+  await T('crearReservaManual(): viernes PM +2 YA NO se rechaza — mismo tope que sábado/domingo', async () => {
     const r = await crearReservaManual({
       referencia: '', nombreNino: 'X', apoderado: 'Y',
       email: 'qatest@celebrasincesar.cl', telefono: '+56900000010',
-      fecha: FECHA_VIERNES_GUARD, turno: 'PM', horasAdicionales: 2, tramoInvitados: 'hasta10', tramoMayores: 'no',
+      fecha: FECHA_VIERNES_GUARD3, turno: 'PM', horasAdicionales: 2, tramoInvitados: 'hasta10', tramoMayores: 'no',
       total: 100000, anticipo: 50000, notas: '',
     });
-    eq(r.ok, false);
-    eq(r.motivo, 'datos_invalidos');
-    yes(
-      r.errores?.includes('Los viernes se permite máximo 1 hora adicional.'),
-      `debe rechazar con el mensaje específico, no acotar en silencio: ${JSON.stringify(r.errores)}`
-    );
+    yes(r.ok, `debió crearse: ${r.motivo} ${JSON.stringify(r.errores || '')}`);
+    filasCreadas.push({ tabla: 'reserva', columna: 'codigo', valor: r.reserva.codigo });
+    eq(r.reserva.hora_inicio, '16:00');
+    eq(r.reserva.hora_termino, '20:30');
   });
 
   await T('crearReserva(): viernes PM +1 (dentro de lo permitido) se crea con normalidad — 16:00–20:00', async () => {

@@ -330,10 +330,16 @@ T('precios: un total manipulado en el navegador no existe para este motor', () =
   eq(r.total, 195000, 'el campo total ajeno al cálculo no debe alterar el resultado');
 });
 
-T('precios: horas adicionales se cobran, no se regalan', () => {
-  const sin = calcularTotal({ fecha: '2026-09-04', sector: 'completo', tramoInvitados: 'hasta10', edadNino: 1, festejados: 1, tramoMayores: 'no', extras: [], horasAdicionales: 0 });
-  const con = calcularTotal({ fecha: '2026-09-04', sector: 'completo', tramoInvitados: 'hasta10', edadNino: 1, festejados: 1, tramoMayores: 'no', extras: [], horasAdicionales: 1 });
+T('precios: extensión de horario se cobra, no se regala (Fase 5 Bloque 1: el precio sale de horarioEfectivo, necesita `hora`)', () => {
+  const sin = calcularTotal({ fecha: '2026-09-04', hora: 'PM', sector: 'completo', tramoInvitados: 'hasta10', edadNino: 1, festejados: 1, tramoMayores: 'no', extras: [], horasAdicionales: 0 });
+  const con = calcularTotal({ fecha: '2026-09-04', hora: 'PM', sector: 'completo', tramoInvitados: 'hasta10', edadNino: 1, festejados: 1, tramoMayores: 'no', extras: [], horasAdicionales: 1 });
   eq(con.total - sin.total, 50000);
+});
+
+T('precios: la 2ª extensión del PM cobra $100.000 — no lineal (90 min, no 2×$50.000)', () => {
+  const sin = calcularTotal({ fecha: '2026-09-04', hora: 'PM', sector: 'completo', tramoInvitados: 'hasta10', edadNino: 1, festejados: 1, tramoMayores: 'no', extras: [], horasAdicionales: 0 });
+  const con = calcularTotal({ fecha: '2026-09-04', hora: 'PM', sector: 'completo', tramoInvitados: 'hasta10', edadNino: 1, festejados: 1, tramoMayores: 'no', extras: [], horasAdicionales: 2 });
+  eq(con.total - sin.total, 100000);
 });
 
 // ══════════════════════════════════════════════════════════════════════
@@ -547,6 +553,25 @@ T('construirResumenReserva: pago por transferencia muestra la alerta de BVE pend
   yes(r.texto.includes('Pendiente emitir Boleta Electrónica'));
 });
 
+// Bug real 01-oct-2026: César registró el SALDO de Clemente por Súper
+// Compraquí y le llegó un correo titulado "Nueva reserva confirmada" —
+// el asunto estaba fijo sin importar pago.tipo, aunque el cuerpo ya decía
+// "Saldo recibido" correctamente. El titular ahora depende del tipo real.
+T('construirResumenReserva: un SALDO nunca dice "Nueva reserva confirmada" — ni en el asunto ni en el encabezado', () => {
+  const r = construirResumenReserva(RESERVA_FIXTURE, { ...PAGO_FIXTURE, tipo: 'BALANCE' });
+  yes(!r.asunto.includes('Nueva reserva confirmada'), r.asunto);
+  yes(!r.texto.includes('NUEVA RESERVA CONFIRMADA'), r.texto.slice(0, 60));
+  yes(!r.html.includes('Nueva reserva confirmada'));
+  eq(r.asunto, '💰 Saldo recibido · ALCE KIDS · Clemente · CSC-2026-000005');
+  yes(r.texto.includes('Saldo recibido'));
+});
+
+T('construirResumenReserva: un ADICIONAL dice "Adicional pagado", no "Nueva reserva confirmada"', () => {
+  const r = construirResumenReserva(RESERVA_FIXTURE, { ...PAGO_FIXTURE, tipo: 'EXTRA' });
+  eq(r.asunto, '✨ Adicional pagado · ALCE KIDS · Clemente · CSC-2026-000005');
+  yes(r.texto.includes('Adicional recibido'));
+});
+
 // ══════════════════════════════════════════════════════════════════════
 // CORREO DE CONFIRMACIÓN AL CLIENTE (documento "Fase de consolidación
 // final", 12-sep-2026, §9). Mismo fixture CSC-2026-000005 — branded ALCE
@@ -705,10 +730,11 @@ T('CASO MAESTRO: sector, pack, inflables, horario y precio — todo junto, un so
   const gigantes = opcionesPack('inflable_gigante', ctx);
   yes(gigantes.length > 0, 'debe existir al menos un inflable gigante disponible para el pack');
 
-  // 4 · Horario: PM +1 en sábado real → 15:00–19:00, +$50.000. Guard server-side también OK.
+  // 4 · Horario: PM +1 en sábado real → 16:00–20:00, +$50.000 (Fase 5
+  // Bloque 1: PM unificado 16:00–19:00). Guard server-side también OK.
   const horario = horarioEfectivo('PM', 1, FECHA);
-  eq(horario.horaInicio, '15:00');
-  eq(horario.horaTermino, '19:00');
+  eq(horario.horaInicio, '16:00');
+  eq(horario.horaTermino, '20:00');
   eq(horario.precioAdicional, 50000);
   yes(validarTurnoFecha('PM', 1, FECHA).ok, 'sábado PM+1 debe ser válido para el guard server-side');
 

@@ -397,19 +397,21 @@ T('QA10 · AM +2 es imposible: se acota a 1', () => {
   eq(R.horarioEfectivo('AM', 2).horaInicio, '10:00');
 });
 
-T('QA11 · PM sin horas: 15:00-18:00 y $0', () => {
+T('QA11 · PM sin horas: 16:00-19:00 y $0 (Fase 5 Bloque 1: PM unificado)', () => {
   const h = R.horarioEfectivo('PM', 0);
-  eq([h.horaInicio, h.horaTermino, h.precioAdicional], ['15:00', '18:00', 0]);
+  eq([h.horaInicio, h.horaTermino, h.precioAdicional], ['16:00', '19:00', 0]);
 });
 
-T('QA12 · PM +1 crece HACIA ADELANTE: 15:00-19:00 y $50.000', () => {
+T('QA12 · PM +1 crece HACIA ADELANTE: 16:00-20:00 y $50.000 (60 min)', () => {
   const h = R.horarioEfectivo('PM', 1);
-  eq([h.horaInicio, h.horaTermino, h.precioAdicional], ['15:00', '19:00', 50000]);
+  eq([h.horaInicio, h.horaTermino, h.precioAdicional], ['16:00', '20:00', 50000]);
+  eq(h.etiquetaExtension, 'Extensión hasta las 20:00');
 });
 
-T('QA13 · PM +2: 15:00-20:00 y $100.000', () => {
+T('QA13 · PM +2: 16:00-20:30 y $100.000 — NO lineal (90 min, no 120)', () => {
   const h = R.horarioEfectivo('PM', 2);
-  eq([h.horaInicio, h.horaTermino, h.precioAdicional], ['15:00', '20:00', 100000]);
+  eq([h.horaInicio, h.horaTermino, h.precioAdicional], ['16:00', '20:30', 100000]);
+  eq(h.etiquetaExtension, 'Extensión hasta las 20:30');
 });
 
 T('QA14 · PM +3 es imposible: se acota a 2', () => {
@@ -437,7 +439,7 @@ T('migración: horaExtra true se convierte en 1 hora', () => {
 
 T('el selector ofrece exactamente las duraciones contratables', () => {
   eq(R.opcionesHorario('AM').map((o) => o.texto), ['11:00–14:00', '10:00–14:00']);
-  eq(R.opcionesHorario('PM').map((o) => o.texto), ['15:00–18:00', '15:00–19:00', '15:00–20:00']);
+  eq(R.opcionesHorario('PM').map((o) => o.texto), ['16:00–19:00', '16:00–20:00', '16:00–20:30']);
 });
 
 // ══════════════════════════════════════════════════════════════════════
@@ -480,35 +482,41 @@ T('viernes PM +1: 16:00–20:00 y $50.000', () => {
   eq([h.horaInicio, h.horaTermino, h.precioAdicional], ['16:00', '20:00', 50000]);
 });
 
-T('viernes PM +2: RECHAZADO por validarTurnoFecha — NO clamp silencioso', () => {
+T('Fase 5 Bloque 1: viernes PM +2 ya NO se rechaza — mismas 2 extensiones que sábado/domingo', () => {
   const v = R.validarTurnoFecha('PM', 2, VIERNES);
-  no(v.ok);
-  eq(v.motivo, 'viernes_exceso_horas');
-  eq(v.mensaje, 'Los viernes se permite máximo 1 hora adicional.');
+  yes(v.ok);
+  const h = R.horarioEfectivo('PM', 2, VIERNES);
+  eq([h.horaInicio, h.horaTermino, h.precioAdicional], ['16:00', '20:30', 100000]);
 });
 
-T('maxHorasAdicionales(PM, viernes) es 1, no 2', () => {
-  eq(R.maxHorasAdicionales('PM', VIERNES), 1);
+T('maxHorasAdicionales(PM, viernes) es 2 — igual que sábado/domingo (Fase 5 Bloque 1)', () => {
+  eq(R.maxHorasAdicionales('PM', VIERNES), 2);
 });
 
-T('el selector de viernes solo ofrece PM base y PM+1 — nunca PM+2', () => {
+T('el selector de viernes ofrece PM base, PM+1 y PM+2 — igual que sábado/domingo', () => {
   eq(R.opcionesHorario('AM', VIERNES), []);
-  eq(R.opcionesHorario('PM', VIERNES).map((o) => o.texto), ['16:00–19:00', '16:00–20:00']);
+  eq(R.opcionesHorario('PM', VIERNES).map((o) => o.texto), ['16:00–19:00', '16:00–20:00', '16:00–20:30']);
 });
 
-T('sábado sin regresión: AM y PM siguen igual con fecha explícita', () => {
+T('validarTurnoFecha: un nivel fuera de rango da el motivo genérico "exceso_horas"', () => {
+  const v = R.validarTurnoFecha('AM', 2, SABADO);
+  no(v.ok);
+  eq(v.motivo, 'exceso_horas');
+});
+
+T('sábado sin regresión: AM y PM siguen igual con fecha explícita (Fase 5 Bloque 1: PM 16:00–20:30)', () => {
   eq(R.horarioEfectivo('AM', 0, SABADO).texto, '11:00–14:00');
   eq(R.horarioEfectivo('AM', 1, SABADO).texto, '10:00–14:00');
-  eq(R.horarioEfectivo('PM', 2, SABADO).texto, '15:00–20:00');
+  eq(R.horarioEfectivo('PM', 2, SABADO).texto, '16:00–20:30');
   eq(R.maxHorasAdicionales('AM', SABADO), 1);
   eq(R.maxHorasAdicionales('PM', SABADO), 2);
   yes(R.validarTurnoFecha('AM', 0, SABADO).ok);
   yes(R.validarTurnoFecha('PM', 2, SABADO).ok);
 });
 
-T('domingo sin regresión: AM y PM siguen igual con fecha explícita', () => {
+T('domingo sin regresión: AM y PM siguen igual con fecha explícita (Fase 5 Bloque 1: PM 16:00–20:30)', () => {
   eq(R.horarioEfectivo('AM', 0, DOMINGO).texto, '11:00–14:00');
-  eq(R.horarioEfectivo('PM', 2, DOMINGO).texto, '15:00–20:00');
+  eq(R.horarioEfectivo('PM', 2, DOMINGO).texto, '16:00–20:30');
   eq(R.maxHorasAdicionales('AM', DOMINGO), 1);
   eq(R.maxHorasAdicionales('PM', DOMINGO), 2);
   yes(R.validarTurnoFecha('AM', 0, DOMINGO).ok);
@@ -529,7 +537,7 @@ T('llamadas sin fecha (compatibilidad hacia atrás) siguen resolviendo la tabla 
   // (2026-09-27) es domingo, no viernes, así que tampoco lo alcanza esta
   // regla aunque se recalculara.
   eq(R.horarioEfectivo('AM', 0).texto, '11:00–14:00');
-  eq(R.horarioEfectivo('PM', 2).texto, '15:00–20:00');
+  eq(R.horarioEfectivo('PM', 2).texto, '16:00–20:30');
 });
 
 // ══════════════════════════════════════════════════════════════════════

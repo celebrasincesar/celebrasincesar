@@ -43,13 +43,23 @@ const fechaViernes = (semanasOffset = 0) => {
   d.setDate(d.getDate() + semanasOffset * 7);
   return fechaStr(d);
 };
+const MARTES_BASE = proximoDiaSemana(HOY, 2);
+const fechaMartes = (semanasOffset = 0) => {
+  const d = new Date(MARTES_BASE);
+  d.setDate(d.getDate() + semanasOffset * 7);
+  return fechaStr(d);
+};
 
 // ══════════════════════════════════════════════════════════════════════
-// DÍAS — solo viernes (§20 "Disponibilidad": viernes sí; sábado/domingo/
-// lunes-jueves no)
+// DÍAS — Fase 5 Bloque 2 (01-oct-2026): martes Y viernes; sábado/domingo/
+// lunes/miércoles/jueves no.
 // ══════════════════════════════════════════════════════════════════════
 T('validarSlotVisita: viernes con horario válido → ok', () => {
   const r = validarSlotVisita(fechaViernes(1), '10:00', HOY);
+  yes(r.ok, JSON.stringify(r));
+});
+T('validarSlotVisita: martes con horario válido → ok', () => {
+  const r = validarSlotVisita(fechaMartes(1), '10:00', HOY);
   yes(r.ok, JSON.stringify(r));
 });
 T('validarSlotVisita: sábado → dia_no_disponible', () => {
@@ -64,7 +74,7 @@ T('validarSlotVisita: domingo → dia_no_disponible', () => {
   eq(r.ok, false);
   eq(r.motivo, 'dia_no_disponible');
 });
-for (const [nombre, dia] of [['lunes', 1], ['martes', 2], ['miércoles', 3], ['jueves', 4]]) {
+for (const [nombre, dia] of [['lunes', 1], ['miércoles', 3], ['jueves', 4]]) {
   T(`validarSlotVisita: ${nombre} → dia_no_disponible`, () => {
     const f = fechaStr(proximoDiaSemana(HOY, dia));
     const r = validarSlotVisita(f, '10:00', HOY);
@@ -74,14 +84,22 @@ for (const [nombre, dia] of [['lunes', 1], ['martes', 2], ['miércoles', 3], ['j
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// HORARIOS — exactamente los cuatro configurados (§3, §20)
+// HORARIOS — Fase 5 Bloque 2: solo 10:00 y 10:30 (ventana 10:00–11:00)
 // ══════════════════════════════════════════════════════════════════════
-for (const h of ['10:00', '10:30', '11:00', '11:30']) {
+for (const h of ['10:00', '10:30']) {
   T(`validarSlotVisita: viernes ${h} → ok`, () => {
     yes(validarSlotVisita(fechaViernes(1), h, HOY).ok);
   });
+  T(`validarSlotVisita: martes ${h} → ok`, () => {
+    yes(validarSlotVisita(fechaMartes(1), h, HOY).ok);
+  });
 }
-T('validarSlotVisita: horario fuera de los cuatro permitidos → horario_invalido', () => {
+T('validarSlotVisita: 11:00 ya NO está permitido (Fase 5 Bloque 2 redujo la ventana)', () => {
+  const r = validarSlotVisita(fechaViernes(1), '11:00', HOY);
+  eq(r.ok, false);
+  eq(r.motivo, 'horario_invalido');
+});
+T('validarSlotVisita: horario fuera de los permitidos → horario_invalido', () => {
   const r = validarSlotVisita(fechaViernes(1), '12:00', HOY);
   eq(r.ok, false);
   eq(r.motivo, 'horario_invalido');

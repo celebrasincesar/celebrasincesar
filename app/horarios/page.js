@@ -1,11 +1,11 @@
-import { NEGOCIO, PRECIOS_EXTRAS } from '../../data/master';
+import { NEGOCIO } from '../../data/master';
 import { opcionesHorario, clp } from '../../data/reglas';
 import { Pagina, Tarjeta, CtaArmar, metaRespuesta } from '../paginas-respuesta';
 
 export const metadata = metaRespuesta(
   'horarios',
   'Días y horarios',
-  'Celebramos viernes (PM 16:00-19:00), sábados y domingos (AM 11:00-14:00 y PM 15:00-18:00). Puedes llegar 30 minutos antes a decorar.'
+  'Celebramos viernes, sábados y domingos: AM 11:00-14:00 (solo sábado y domingo) y PM 16:00-19:00 todos los días. Puedes llegar 30 minutos antes a decorar.'
 );
 
 // Fecha de referencia solo para resolver qué tabla de turnos corresponde a
@@ -54,9 +54,9 @@ export default function HorariosPage() {
         </div>
 
         <p className="text-xs text-gray-400 mt-3">
-          Son tres horas completas de celebración (el viernes PM son tres horas también, de
-          16:00 a 19:00). Los bloques no se mueven: así el equipo alcanza a dejar todo impecable
-          entre una celebración y la siguiente.
+          Son tres horas completas de celebración, el mismo horario los tres días: el PM siempre
+          es de 16:00 a 19:00. Los bloques no se mueven: así el equipo alcanza a dejar todo
+          impecable entre una celebración y la siguiente.
         </p>
       </Tarjeta>
 
@@ -66,8 +66,8 @@ export default function HorariosPage() {
 
       <Tarjeta titulo="¿Necesitas más tiempo?" acento="#F97316">
         <p>
-          Puedes contratar <strong>horas adicionales</strong> al elegir tu horario, con precio
-          cerrado: {clp(PRECIOS_EXTRAS.hora_adicional)} cada una, ya sumadas a tu total.
+          Puedes contratar una <strong>extensión de horario</strong> al elegir tu horario, con
+          precio cerrado según hasta qué hora la quieras — ya sumado a tu total, sin sorpresas.
         </p>
         <p className="text-sm font-bold mb-1 mt-3" style={{ color: '#1565C0' }}>Sábados y domingos</p>
         <ul className="space-y-1.5">

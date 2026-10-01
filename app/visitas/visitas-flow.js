@@ -14,6 +14,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { NEGOCIO } from '../../data/master';
+import { EVENTOS, track } from '../../data/analytics';
 
 const WA = (texto) =>
   `https://wa.me/${NEGOCIO.telefonoE164.replace('+', '')}?text=${encodeURIComponent(texto)}`;
@@ -66,6 +67,7 @@ export default function VisitasFlow() {
         return;
       }
       setConfirmacion(d.visita);
+      track(EVENTOS.visitCreated);
     } catch {
       setErrorEnvio('No pudimos agendar tu visita. Intenta de nuevo.');
     }
@@ -119,6 +121,7 @@ export default function VisitasFlow() {
         <div className="text-4xl mb-3">🎈</div>
         <h1 className="text-3xl font-black leading-tight" style={{ color: '#0D1B3E' }}>Conoce Alce Kids</h1>
         <p className="text-gray-500 mt-2">Agenda una visita para conocer nuestro espacio antes de reservar.</p>
+        <p className="text-sm font-bold mt-1" style={{ color: '#1565C0' }}>Visitas martes y viernes por la mañana. 10:00 o 10:30.</p>
 
         {error && <p className="mt-6 text-sm font-bold" style={{ color: '#EA580C' }}>{error}</p>}
 

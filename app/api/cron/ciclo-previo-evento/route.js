@@ -9,6 +9,7 @@
 import { dbConfigurada } from '../../../../lib/db';
 import { ejecutarCicloPrevio } from '../../../../lib/ciclo-previo';
 import { ejecutarPostevento } from '../../../../lib/postevento';
+import { ejecutarRecordatoriosSaldo } from '../../../../lib/saldo-recordatorio';
 import { json } from '../../../../lib/http';
 
 export const dynamic = 'force-dynamic';
@@ -33,5 +34,15 @@ export async function GET(req) {
     postevento = { ok: false, error: err.message };
   }
 
-  return json({ ...resultado, postevento });
+  // Recordatorio suave de saldo T-7 (Fase 5 Bloque 3, 01-oct-2026): mismo
+  // cron, mismo criterio de aislamiento que postevento — un fallo acá
+  // nunca afecta al ciclo previo ni al postevento.
+  let saldo;
+  try {
+    saldo = await ejecutarRecordatoriosSaldo();
+  } catch (err) {
+    saldo = { ok: false, error: err.message };
+  }
+
+  return json({ ...resultado, postevento, saldo });
 }

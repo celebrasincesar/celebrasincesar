@@ -17,10 +17,11 @@
 // para el resumen lateral — nada se inventa ni se vuelve a pedir.
 // ══════════════════════════════════════════════════════════════════════
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { clp } from '../celebra-ui';
 import { horarioEfectivo, labelInvitados, labelMayores } from '../../data/reglas';
 import { NEGOCIO, MARCA } from '../../data/master';
+import { EVENTOS, track, propsCelebracion } from '../../data/analytics';
 
 const AZUL = '#1565C0';
 const NARANJA = '#F97316';
@@ -69,6 +70,11 @@ export function ConfirmarReserva({ estado, total, anticipo, cliente, onCerrar, o
   // doble reserva, pero igual eran 3 invocaciones desperdiciadas).
   const enviandoRef = useRef(false);
 
+  useEffect(() => {
+    track(EVENTOS.checkoutReached, propsCelebracion(estado, {}, { anticipo, total }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const saldo = Math.max(0, total - anticipo);
   const horario = horarioEfectivo(estado.hora, estado.horasAdicionales || 0, estado.fecha);
   const sectorLabel = estado.sector === 'independiente' ? 'Sector Independiente' : 'Recinto Completo';
@@ -84,6 +90,7 @@ export function ConfirmarReserva({ estado, total, anticipo, cliente, onCerrar, o
     enviandoRef.current = true;
     setEnviando(true);
     setError('');
+    track(EVENTOS.flowStarted, propsCelebracion(estado, {}, { anticipo, total }));
     try {
       const res = await fetch('/api/pagos/crear', {
         method: 'POST',

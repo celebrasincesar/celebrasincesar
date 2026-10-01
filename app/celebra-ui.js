@@ -1349,7 +1349,7 @@ export function ResumenLateral({ estado, total, onWhatsApp, onModificar = null, 
             {horario?.horas > 0 && (
               <div className="flex justify-between items-center">
                 <span style={{ color: 'rgba(255,255,255,0.5)' }}>
-                  ⏰ {horario.horas} hora{horario.horas > 1 ? 's' : ''} adicional{horario.horas > 1 ? 'es' : ''}
+                  ⏰ {horario.etiquetaExtension}
                 </span>
                 <span className="font-bold text-white">{clp(horario.precioAdicional)}</span>
               </div>
@@ -1655,7 +1655,7 @@ export function BottomSheetResumen({ estado, total, onWhatsApp, onCerrar, onQuit
               {horario?.horas > 0 && (
                 <div className="flex justify-between items-center py-1.5">
                   <span className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                    ⏰ {horario.horas} hora{horario.horas > 1 ? 's' : ''} adicional{horario.horas > 1 ? 'es' : ''}
+                    ⏰ {horario.etiquetaExtension}
                   </span>
                   <span className="font-bold text-white text-sm">{clp(horario.precioAdicional)}</span>
                 </div>
@@ -2609,6 +2609,7 @@ export function GaleriaInfra() {
 
 export function PageAlce({ onIniciarWizard }) {
   const [lightboxIdx, setLightboxIdx] = useState(null);
+  const [videoReproduciendo, setVideoReproduciendo] = useState(false);
 
   // Teclado para el lightbox
   useEffect(() => {
@@ -2950,6 +2951,73 @@ export function PageAlce({ onIniciarWizard }) {
       )}
 
       {/* ══════════════════════════════════════════
+          VIDEO DEL LUGAR — recorrido real del recinto.
+          Reproducción manual (nunca autoplay): el archivo
+          (public/video-home.mp4) no se descarga hasta que el
+          papá hace click — no afecta el peso de la página.
+      ══════════════════════════════════════════ */}
+      <div style={{ background: '#0D1B3E' }}>
+        <div className="max-w-5xl mx-auto px-4 py-20">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-5"
+              style={{ background: 'rgba(41,185,232,0.14)', color: '#7DD4F5', border: '1px solid rgba(41,185,232,0.3)' }}>
+              🎬 Recorrido en video
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black mb-3 text-white">
+              Conoce el lugar<br />
+              <span style={{ color: '#29B9E8' }}>antes de reservar</span>
+            </h2>
+            <p className="text-base max-w-lg mx-auto" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              Un recorrido real del recinto, para que sepas exactamente dónde va a celebrar tu hijo.
+            </p>
+          </div>
+
+          <div className="max-w-3xl mx-auto rounded-3xl overflow-hidden relative"
+            style={{ boxShadow: '0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)' }}>
+            <div className="relative w-full aspect-video" style={{ background: '#060F2E' }}>
+              {videoReproduciendo ? (
+                <video
+                  src="/video-home.mp4"
+                  poster="/hero-alce.webp"
+                  controls
+                  autoPlay
+                  playsInline
+                  preload="none"
+                  className="absolute inset-0 w-full h-full object-cover"
+                >
+                  Tu navegador no soporta la reproducción de video.
+                </video>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setVideoReproduciendo(true)}
+                  aria-label="Reproducir video del recinto"
+                  className="absolute inset-0 w-full h-full group"
+                >
+                  <img
+                    src="/hero-alce.webp"
+                    alt="Vista del recinto Alce Kids"
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                  <div className="absolute inset-0 transition-colors"
+                    style={{ background: 'rgba(6,15,46,0.38)' }} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
+                      style={{ background: 'rgba(255,255,255,0.95)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+                      <span className="text-3xl md:text-4xl ml-1" style={{ color: '#1565C0' }}>▶</span>
+                    </div>
+                  </div>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════
           TU MANERA — Flexibilidad total
       ══════════════════════════════════════════ */}
       <div style={{ background: 'linear-gradient(180deg, #F8FBFF 0%, #EFF6FF 100%)' }}>
@@ -3252,7 +3320,7 @@ export function PageAlce({ onIniciarWizard }) {
                 },
                 {
                   icon: '🕐', title: 'Viernes · Sábado · Domingo',
-                  sub: 'Vie PM 16:00–19:00 · Sáb/Dom AM 11:00–14:00 · PM 15:00–18:00', color: 'rgba(249,115,22,0.15)',
+                  sub: 'AM 11:00–14:00 (sáb/dom) · PM 16:00–19:00 (todos los días)', color: 'rgba(249,115,22,0.15)',
                 },
                 {
                   icon: <WaIcon />, title: '+56 9 4435 6955',
@@ -3485,7 +3553,7 @@ export function Footer() {
               Vie PM 16:00–19:00
             </p>
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Sáb/Dom AM 11:00–14:00 · PM 15:00–18:00
+              PM 16:00–19:00 (todos los días) · Sáb/Dom también AM 11:00–14:00
             </p>
           </div>
           <div

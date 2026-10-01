@@ -60,34 +60,48 @@ const tablaTurnos = (fecha) => (esViernes(fecha) ? NEGOCIO.turnosViernes : NEGOC
 
 export const turnoPorId = (id, fecha) => tablaTurnos(fecha).find((t) => t.id === id) || null;
 
-// Cuántas horas se pueden contratar en ese turno (AM 1 · PM 2 · PM viernes 1).
-export const maxHorasAdicionales = (turno, fecha) => turnoPorId(turno, fecha)?.maxAdicionales ?? 0;
+// Cuántos NIVELES de extensión se pueden contratar en ese turno — el
+// índice máximo válido de `t.extensiones` (antes era "cuántas horas",
+// Fase 5 Bloque 1: ya no son horas literales, son niveles con su propio
+// precio y duración, ver data/master.js).
+export const maxHorasAdicionales = (turno, fecha) => turnoPorId(turno, fecha)?.extensiones?.length ?? 0;
 
-const sumarHoras = (hhmm, horas) => {
+// Generaliza sumarHoras() a minutos — la segunda extensión del PM es de
+// 90 minutos, no una hora exacta (Fase 5 Bloque 1).
+const sumarMinutos = (hhmm, minutos) => {
   const [h, m] = hhmm.split(':').map(Number);
-  return `${String(h + horas).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  const total = h * 60 + m + minutos;
+  const hh = Math.floor(((total % 1440) + 1440) % 1440 / 60);
+  const mm = ((total % 60) + 60) % 60;
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 };
 
-// Calcula el horario efectivo para un turno+horas YA VALIDADOS. Sigue
+// Calcula el horario efectivo para un turno+nivel YA VALIDADOS. Sigue
 // acotando internamente por seguridad de despliegue (una sesión vieja
-// guardada con más horas de las que hoy correspondan no debe romper el
+// guardada con más nivel del que hoy corresponda no debe romper el
 // render) — pero esto NUNCA es la puerta de entrada de una reserva nueva:
 // esa puerta es validarTurnoFecha(), más abajo, que rechaza en vez de
 // acotar (§2: "NO hacer clamp silencioso").
 export function horarioEfectivo(turno, horasAdicionales = 0, fecha) {
   const t = turnoPorId(turno, fecha);
   if (!t) return null;
-  const horas = acotar(horasAdicionales, 0, t.maxAdicionales);
-  const horaInicio  = t.crece === 'atras'    ? sumarHoras(t.desde, -horas) : t.desde;
-  const horaTermino = t.crece === 'adelante' ? sumarHoras(t.hasta,  horas) : t.hasta;
+  const nivel = acotar(horasAdicionales, 0, t.extensiones.length);
+  const ext = nivel > 0 ? t.extensiones[nivel - 1] : null;
+  const minutos = ext?.minutos ?? 0;
+  const horaInicio  = t.crece === 'atras'    ? sumarMinutos(t.desde, -minutos) : t.desde;
+  const horaTermino = t.crece === 'adelante' ? sumarMinutos(t.hasta,  minutos) : t.hasta;
+  // Copy público (Fase 5 Bloque 1, §68): nunca "N horas adicionales" para
+  // el PM — "Extensión hasta las HH:MM", apuntando al borde que cambió.
+  const horaQueCambia = t.crece === 'atras' ? horaInicio : horaTermino;
   return {
     turno: t.id,
-    horas,
+    horas: nivel,
     horaInicio,
     horaTermino,
     texto: `${horaInicio}–${horaTermino}`,
     textoLargo: `${t.label} · ${horaInicio}–${horaTermino}`,
-    precioAdicional: horas * PRECIOS_EXTRAS.hora_adicional,
+    precioAdicional: ext?.precio ?? 0,
+    etiquetaExtension: nivel > 0 ? `Extensión hasta las ${horaQueCambia}` : null,
   };
 }
 
@@ -113,11 +127,11 @@ export function validarTurnoFecha(turnoId, horasAdicionales, fecha) {
     return { ok: false, motivo: 'turno_invalido', mensaje: 'El turno debe ser AM o PM.' };
   }
   const horas = Number.isInteger(horasAdicionales) ? horasAdicionales : Number(horasAdicionales) || 0;
-  if (horas < 0 || horas > t.maxAdicionales) {
-    if (esViernes(fecha) && t.id === 'PM') {
-      return { ok: false, motivo: 'viernes_exceso_horas', mensaje: 'Los viernes se permite máximo 1 hora adicional.' };
-    }
-    return { ok: false, motivo: 'exceso_horas', mensaje: `Este turno admite hasta ${t.maxAdicionales} hora(s) adicional(es).` };
+  // Fase 5 Bloque 1: viernes PM ya no tiene un tope distinto — las mismas
+  // dos extensiones que sábado/domingo (data/master.js). El mensaje ahora
+  // sale del nivel máximo real de ESTE turno, sea cual sea.
+  if (horas < 0 || horas > t.extensiones.length) {
+    return { ok: false, motivo: 'exceso_horas', mensaje: `Este turno admite como máximo ${t.extensiones.length} nivel(es) de extensión.` };
   }
   return { ok: true, turno: t, horas };
 }
@@ -134,7 +148,7 @@ export function migrarHoraExtra(estado = {}) {
 export function opcionesHorario(turno, fecha) {
   const t = turnoPorId(turno, fecha);
   if (!t) return [];
-  return Array.from({ length: t.maxAdicionales + 1 }, (_, horas) => horarioEfectivo(t.id, horas, fecha));
+  return Array.from({ length: t.extensiones.length + 1 }, (_, horas) => horarioEfectivo(t.id, horas, fecha));
 }
 
 

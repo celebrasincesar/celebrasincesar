@@ -71,21 +71,60 @@ export const NEGOCIO = {
   diasSchema: ['Friday', 'Saturday', 'Sunday'],
   // Los dos turnos y cuánto se puede estirar cada uno. La hora adicional NO
   // es una consulta: es parte del producto y se contrata al elegir el horario.
-  //   AM crece HACIA ATRÁS  (10:00–14:00), máximo 1 hora.
-  //   PM crece HACIA ADELANTE (15:00–19:00 / 15:00–20:00), máximo 2 horas.
+  //   AM crece HACIA ATRÁS  (10:00–14:00).
+  //   PM crece HACIA ADELANTE (16:00–20:00 / 16:00–20:30).
+  //
+  // FASE 5 — BLOQUE 1 (01-oct-2026): horario único y simple. Antes el PM
+  // de sábado/domingo era 15:00–18:00 y el de viernes 16:00–19:00, cada
+  // uno con su propio tope de extensión. Ahora TODO PM (viernes, sábado y
+  // domingo) es exactamente 16:00–19:00, con las mismas dos extensiones
+  // disponibles. El motivo es operacional: deja 1 hora real entre el
+  // bloque AM y el PM para limpiar/reponer/ordenar, y el cliente PM puede
+  // llegar hasta 30 min antes (15:30) sin quitarle tiempo a su celebración
+  // — que sigue teniendo exactamente 3 horas completas.
+  //
+  // `extensiones` reemplaza `maxAdicionales` + un precio lineal por hora:
+  // la segunda extensión del PM es de 90 minutos por $100.000 (NO 2×$50.000
+  // — no es lineal, es una tarifa propia por tramo). `horasAdicionales` en
+  // la reserva/snapshot sigue siendo un entero (0, 1, 2…) pero ahora es un
+  // NIVEL — el índice (1-based) dentro de este arreglo — no una cantidad
+  // literal de horas. Esto es exactamente lo que horarioEfectivo()
+  // calculaba igual antes (el nivel 2 del PM sábado/domingo YA eran
+  // $100.000) — el único cambio real es que ahora el nivel 2 son 90
+  // minutos en vez de 120, y queda declarado explícito en vez de
+  // calculado con una multiplicación que ya no es cierta.
+  //
+  // IMPORTANTE (§ reservas existentes, Fase 5 Bloque 1): esta tabla define
+  // el horario para reservas NUEVAS. Una reserva ya creada tiene su
+  // hora_inicio/hora_termino escritos como columnas fijas en Postgres al
+  // momento de reservar — nunca se recalculan desde acá después. Cambiar
+  // esta tabla NO modifica ni reinterpreta ninguna reserva ya existente.
   turnos: [
-    { id: 'AM', label: 'AM', desde: '11:00', hasta: '14:00', maxAdicionales: 1, crece: 'atras' },
-    { id: 'PM', label: 'PM', desde: '15:00', hasta: '18:00', maxAdicionales: 2, crece: 'adelante' },
+    { id: 'AM', label: 'AM', desde: '11:00', hasta: '14:00', crece: 'atras',
+      extensiones: [
+        { minutos: 60, precio: 50000 },
+      ] },
+    { id: 'PM', label: 'PM', desde: '16:00', hasta: '19:00', crece: 'adelante',
+      extensiones: [
+        { minutos: 60, precio: 50000 },
+        { minutos: 90, precio: 100000 },
+      ] },
   ],
-  // Viernes tiene su propia tabla de turnos — NO existe AM, y el PM tiene
-  // su propio bloque base y su propio tope de horas adicionales (documento
-  // "Autorización Fase 1A", 13-sep-2026, §1). Mismo `id:'PM'` que sáb/dom
-  // a propósito: sigue siendo el turno "PM" en reserva.turno, Calendar,
-  // tributario y snapshot — solo cambia CUÁL tabla resuelve sus horarios.
-  // El precio base NO cambia (§1: "NO crear tarifa viernes especial") —
-  // eso vive en data/precios.js y no se toca acá.
+  // Viernes tiene su propia tabla de turnos — NO existe AM. Desde Fase 5
+  // Bloque 1, el PM de viernes es IDÉNTICO al de sábado/domingo (mismo
+  // bloque base, mismas extensiones) — antes solo admitía una extensión de
+  // 1 hora; ahora admite las mismas dos que el resto de la semana. Mismo
+  // `id:'PM'` que sáb/dom a propósito: sigue siendo el turno "PM" en
+  // reserva.turno, Calendar, tributario y snapshot — solo cambia CUÁL
+  // tabla resuelve sus horarios. El precio base NO cambia (§1 de Fase 1A:
+  // "NO crear tarifa viernes especial") — eso vive en data/precios.js y no
+  // se toca acá.
   turnosViernes: [
-    { id: 'PM', label: 'PM', desde: '16:00', hasta: '19:00', maxAdicionales: 1, crece: 'adelante' },
+    { id: 'PM', label: 'PM', desde: '16:00', hasta: '19:00', crece: 'adelante',
+      extensiones: [
+        { minutos: 60, precio: 50000 },
+        { minutos: 90, precio: 100000 },
+      ] },
   ],
   preparacion: 'Puedes llegar 30 minutos antes de tu horario para decorar. Están incluidos y no se descuentan de tu celebración.',
 
@@ -113,10 +152,17 @@ export const NEGOCIO = {
   // archivo. SIN exclusividad de cupos a propósito (§4, §8): no existe
   // "capacidad máxima" en este objeto porque no existe ese input comercial
   // todavía — cuando exista, se agrega ACÁ, no en lib/visitas.js.
+  // Fase 5 Bloque 2 (01-oct-2026): agenda de visitas nueva — martes y
+  // viernes en la mañana, ventana 10:00–11:00. Se mantiene todo lo demás
+  // igual: horizonte de 8 semanas, anticipación mínima, token seguro,
+  // cancelación, reagenda y Calendar. Las visitas SIGUEN sin cupo — varias
+  // familias pueden agendar exactamente el mismo horario (nunca se crea
+  // un hold ni una restricción de unicidad para visitas).
   visitas: {
-    dias: ['Viernes'],
-    diasSchema: ['Friday'],
-    horarios: ['10:00', '10:30', '11:00', '11:30'],
+    dias: ['Martes', 'Viernes'],
+    diasSemana: [2, 5], // getDay(): 2 = martes, 5 = viernes
+    diasSchema: ['Tuesday', 'Friday'],
+    horarios: ['10:00', '10:30'],
     duracionMinutos: 20,
     anticipacionMinMinutos: 60,
     horizonteSemanas: 8,
@@ -156,7 +202,16 @@ export const POSTEVENTO_ACTIVO_DESDE = '2026-09-24';
 // sección 11, Ley 19.496 art. 3° bis + Decreto 52/2024) y las correcciones
 // contractuales de Fase 1B (secciones 3, 4, 5, 6, 10, 12, 19, 20). Ver
 // data/tyc-propuesta-2026-09-v3.js para el detalle completo del diff.
-export const TYC_VERSION = '2026-09-v3';
+//
+// '2026-09-v3' → '2026-10' el 01-oct-2026 (documento "FASE 5 — CIERRE
+// LEGAL + GATE MANUAL FINAL"): corrección factual de la Sección 9
+// ("Horarios y puntualidad") por el horario único Fase 5 — PM pasa de
+// 15:00–18:00 a 16:00–19:00 (viernes/sábado/domingo), con extensiones no
+// lineales hasta las 20:00 (+$50.000) o hasta las 20:30 (+$100.000).
+// Cambio de mes sin otra revisión previa dentro de octubre — sin sufijo
+// -v1 (regla de este mismo comentario: el sufijo solo se usa para una
+// segunda revisión dentro del mismo mes). Ninguna otra cláusula cambió.
+export const TYC_VERSION = '2026-10';
 
 // ══════════════════════════════════════════════════════════════════
 // DECLARACIONES DE /confirmacion
@@ -263,7 +318,9 @@ export const MULTIPLICADORES = {
 export const PRECIOS_EXTRAS = {
   pack_celebra:   60000,  // $60.000 · Pack Celebra Sin Cesar (Piñata + Decoración)
   aseo_profundo:  30000,  // legacy — la Limpieza Profunda hoy va SIEMPRE incluida gratis
-  hora_adicional: 50000,  // $50.000 · Hora extra (4 horas en total)
+  // El precio de la extensión de horario ya NO vive acá — Fase 5 Bloque 1:
+  // cada turno tiene su propia tabla `extensiones` (arriba, en NEGOCIO.turnos
+  // / turnosViernes), porque dejó de ser un precio lineal por hora.
 
   // Sumar hermanos mayores a la celebración. Es un valor por tramo, cerrado:
   // no incluye productos — la entretención que elijan se cobra aparte, a

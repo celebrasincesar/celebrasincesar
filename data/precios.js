@@ -24,7 +24,7 @@
 import {
   PRECIOS_BASE, PRECIOS_EXTRAS, MULTIPLICADORES, CATEGORIAS_ADICIONALES, NEGOCIO,
 } from './master';
-import { contextoDesde, valorMayores, getItem } from './reglas';
+import { contextoDesde, valorMayores, getItem, horarioEfectivo } from './reglas';
 
 // ── Precio de un adicional según el tramo de niños ────────────────────
 // Los ítems con `precios` cobran por tramo (animación); el resto es plano.
@@ -148,13 +148,17 @@ export function calcularTotal(estado = {}, promo = null) {
 
   if (estado.usaCocina) total += sumar('Aseo profundo', PRECIOS_EXTRAS.aseo_profundo);
 
-  // Horas adicionales: se contratan al elegir el horario, no se consultan.
+  // Extensión de horario: se contrata al elegir el horario, no se
+  // consulta. Fase 5 Bloque 1: el precio sale SIEMPRE de horarioEfectivo()
+  // — la única fuente de verdad del horario — nunca se vuelve a calcular
+  // acá con una multiplicación lineal (la 2ª extensión del PM ya no es
+  // lineal: 90 min por $100.000, no 2×$50.000).
   const horas = Number(estado.horasAdicionales) || 0;
   if (horas > 0) {
-    total += sumar(
-      `${horas} hora${horas > 1 ? 's' : ''} adicional${horas > 1 ? 'es' : ''}`,
-      horas * PRECIOS_EXTRAS.hora_adicional
-    );
+    const horario = horarioEfectivo(estado.hora, horas, estado.fecha);
+    if (horario?.precioAdicional > 0) {
+      total += sumar(horario.etiquetaExtension || `Extensión de horario`, horario.precioAdicional);
+    }
   }
 
   if (cantNinos === 'mas30') {

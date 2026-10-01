@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "qa": "node scripts/qa-reglas.mjs && node scripts/qa-precios.mjs && node scripts/qa-cotizacion.mjs && node scripts/qa-emoji.mjs && node scripts/qa-tyc.mjs && node scripts/qa-checkout-ux.mjs && node scripts/qa-pagos.mjs && node scripts/qa-mi-celebracion.mjs && node scripts/qa-pagos-integracion.mjs && node scripts/qa-bloque1-integracion.mjs && node scripts/qa-bloque2.mjs && node scripts/qa-bloque2-integracion.mjs && node scripts/qa-bloque3.mjs && node scripts/qa-bloque3-integracion.mjs && node scripts/qa-visitas.mjs && node scripts/qa-visitas-integracion.mjs && node scripts/qa-postevento.mjs && node scripts/qa-postevento-integracion.mjs && node scripts/qa-postevento-b.mjs && node scripts/qa-ux-publico.mjs"
+    "qa": "node scripts/qa-reglas.mjs && node scripts/qa-precios.mjs && node scripts/qa-cotizacion.mjs && node scripts/qa-emoji.mjs && node scripts/qa-tyc.mjs && node scripts/qa-checkout-ux.mjs && node scripts/qa-pagos.mjs && node scripts/qa-mi-celebracion.mjs && node scripts/qa-pagos-integracion.mjs && node scripts/qa-bloque1-integracion.mjs && node scripts/qa-bloque2.mjs && node scripts/qa-bloque2-integracion.mjs && node scripts/qa-bloque3.mjs && node scripts/qa-bloque3-integracion.mjs && node scripts/qa-visitas.mjs && node scripts/qa-visitas-integracion.mjs && node scripts/qa-postevento.mjs && node scripts/qa-postevento-integracion.mjs && node scripts/qa-postevento-b.mjs && node scripts/qa-ux-publico.mjs && node scripts/qa-operativo-cadena.mjs && node scripts/qa-horario-unico.mjs && node scripts/qa-saldo-amable.mjs && node scripts/qa-tyc-2026-10-integracion.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

@@ -35,7 +35,7 @@ export default function ValoresPage() {
     >
       <Tarjeta titulo="1 · Cuántos niños vienen">
         <div className="overflow-x-auto -mx-1 px-1" tabIndex={0} role="region" aria-label="Tabla de valores por cantidad de niños">
-          <table className="w-full text-sm" style={{ minWidth: '340px' }}>
+          <table className="w-full text-sm" style={{ minWidth: '300px' }}>
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-gray-500">
                 <th className="pb-2 font-black">Niños</th>

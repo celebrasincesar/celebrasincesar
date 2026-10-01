@@ -18,7 +18,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
-  reservaEstaFirme, festejadoDeReserva,
+  reservaEstaFirme, festejadoDeReserva, pagosDeReserva,
   crearPagoPendiente, marcarPagoEnCheckout, siguienteCommerceOrder, montoQueCorresponde,
 } from '../../../lib/reservas';
 import { resumenMiCelebracion } from '../../../lib/mi-celebracion';
@@ -43,12 +43,13 @@ export async function GET(req) {
   const reserva = await reservaDesdeParams(id, t);
   if (!reserva) return json({ ok: false, motivo: 'sin_acceso' }, 403);
 
-  const [datosFinales, pendientes] = await Promise.all([
+  const [datosFinales, pendientes, pagos] = await Promise.all([
     datosFinalesVigentes(reserva.id),
     pendientesDeReserva(reserva.id),
+    pagosDeReserva(reserva.id),
   ]);
 
-  return json(resumenMiCelebracion(reserva, { datosFinales, pendientes }));
+  return json(resumenMiCelebracion(reserva, { datosFinales, pendientes, pagos }));
 }
 
 export async function POST(req) {
@@ -68,6 +69,16 @@ export async function POST(req) {
 
   if (!reservaEstaFirme(reserva.estado)) {
     return json({ ok: false, motivo: 'reserva_no_confirmada' }, 400);
+  }
+
+  // Fase 5 Bloque 3: "deshabilitar repetición accidental" — si ya hay un
+  // pago de saldo verificándose (una transferencia todavía procesándose),
+  // no se abre un segundo checkout. Guardado server-side, no solo
+  // ocultando el botón: un doble clic o un segundo tab no debe poder
+  // generar una segunda orden de Flow para el mismo saldo.
+  const pagosExistentes = await pagosDeReserva(reserva.id);
+  if (pagosExistentes.some((p) => p.tipo === 'BALANCE' && p.estado === 'PENDING')) {
+    return json({ ok: false, motivo: 'saldo_verificandose' }, 409);
   }
 
   const monto = montoQueCorresponde(reserva, 'BALANCE');

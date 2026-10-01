@@ -9,7 +9,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { q, dbConfigurada } from '../../../../lib/db';
-import { barrerVencidos, detalleDeReserva, fechaISO } from '../../../../lib/reservas';
+import { barrerVencidos, detalleDeReserva, configuracionVigente, fechaISO, ESTADOS_FIRMES } from '../../../../lib/reservas';
 import { resumenOperacional } from '../../../../lib/resumen-operacional';
 import { json, texto } from '../../../../lib/http';
 
@@ -51,7 +51,7 @@ export async function GET(req) {
     `SELECT
        r.id, r.codigo, r.fecha_evento, r.turno, r.hora_inicio, r.hora_termino, r.cliente_nombre,
        r.cliente_email, r.cliente_telefono, r.sector, r.ninos, r.mayores,
-       r.total, r.anticipo, r.saldo, r.pagado, r.estado,
+       r.total, r.anticipo, r.saldo, r.pagado, r.estado, r.invitacion_enviada_en, r.acceso_token,
        r.calendar_estado, r.creada, r.snapshot, r.snapshot_vigente, r.tyc_version, r.tyc_hash,
        COALESCE(
          (SELECT json_agg(json_build_object(
@@ -106,12 +106,24 @@ export async function GET(req) {
   // recalcula con el catálogo vigente-del-sitio. El snapshot crudo no sale
   // de acá: el panel consume `detalle`, ya extraído, nunca el JSON entero.
   const reservas = filas.map((r) => {
-    const { snapshot, snapshot_vigente, datos_finales, pendientes_proveedor, ...resto } = r;
+    const { snapshot, snapshot_vigente, datos_finales, pendientes_proveedor, invitacion_enviada_en, ...resto } = r;
     const detalle = detalleDeReserva(r);
     return {
       ...resto,
       festejado: detalle.festejado,
       detalle,
+      // Invitación Digital (hallazgo real 30-sep-2026, §ver lib/reservas.js
+      // invitacionesPendientes): solo importa en reservas firmes — una
+      // reserva PENDING_PAYMENT/EXPIRED no tiene nada que "enviar" todavía.
+      invitacionEnviadaEn: invitacion_enviada_en || null,
+      necesitaInvitacion: ESTADOS_FIRMES.includes(r.estado) && !invitacion_enviada_en
+        && detalle.incluidos.some((i) => i.id === 'invitacion-digital'),
+      // Una reserva manual (+ Crear reserva manual) tiene un total
+      // negociado fuera del motor de precios — el editor de adicionales
+      // (cambio comercial) no aplica: recalcularía y pisaría ese precio.
+      // configuracionVigente() ya resuelve JSONB-como-string vs objeto;
+      // nunca se lee `snapshot`/`snapshot_vigente` crudo para esto.
+      esManual: !!configuracionVigente(r)?.manual,
       // Política vigente (NEGOCIO.saldoVence, §D): 48 horas antes del
       // evento. Es aritmética sobre la fecha real, no un precio — no toca
       // el motor de precios ni la conciliación.

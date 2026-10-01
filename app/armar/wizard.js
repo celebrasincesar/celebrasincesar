@@ -618,8 +618,12 @@ export default function CelebrationWizard() {
     if (estado.packCelebra) t += PRECIOS_EXTRAS.pack_celebra;
     estado.extras.forEach((e) => (t += getPrecio(e, estado.cantNinos)));
     if (estado.usaCocina) t += PRECIOS_EXTRAS.aseo_profundo;
-    // Horas adicionales: se contratan al elegir el horario, así que se suman.
-    t += (estado.horasAdicionales || 0) * PRECIOS_EXTRAS.hora_adicional;
+    // Extensión de horario: se contrata al elegir el horario, así que se
+    // suma. Fase 5 Bloque 1: el precio sale de horarioEfectivo() — la
+    // segunda extensión del PM ya no es lineal (90 min por $100.000).
+    if (estado.horasAdicionales > 0) {
+      t += horarioEfectivo(estado.hora, estado.horasAdicionales, estado.fecha)?.precioAdicional || 0;
+    }
     if (estado.cantNinos === 'mas30') t += (estado.ninosExtra || 0) * PRECIOS_EXTRAS.nino_extra;
     // Sumar hermanos mayores tiene un valor cerrado por tramo. Su entretención
     // ya viene contada en `extras`, como cualquier otro adicional.
@@ -782,8 +786,8 @@ export default function CelebrationWizard() {
       ...(estado.packCelebra ? [`• Pack Celebra Sin Cesar: ${clp(PRECIOS_EXTRAS.pack_celebra)}`] : []),
       ...estado.extras.filter((e) => !e.gratis).map((e) => `• ${e.nombre}: ${clp(getPrecio(e, estado.cantNinos))}`),
       ...estado.cotizar.map((c) => `• ${c.nombre}: quiero cotizarlo`),
-      ...(estado.horasAdicionales > 0
-        ? [`• ${estado.horasAdicionales} hora${estado.horasAdicionales > 1 ? 's' : ''} adicional${estado.horasAdicionales > 1 ? 'es' : ''}: ${clp(horario.precioAdicional)}`]
+      ...(estado.horasAdicionales > 0 && horario?.etiquetaExtension
+        ? [`• ${horario.etiquetaExtension}: ${clp(horario.precioAdicional)}`]
         : []),
     ];
     const bloqueAdicionales = pagados.length ? `\n✨ Adicionales:\n${pagados.join('\n')}\n` : '';
@@ -885,7 +889,7 @@ ${bloquePack}${bloqueAdicionales}${tematicaLinea}${bloquePreparado}${descuentoLi
                     ¿Cuándo quieres celebrar?
                   </h2>
                   <div className="flex items-baseline justify-between gap-3 flex-wrap mt-1">
-                    <p className="text-gray-500">Viernes PM 16:00–19:00 · Sábados y domingos AM 11:00–14:00 · PM 15:00–18:00</p>
+                    <p className="text-gray-500">Viernes, sábado y domingo PM 16:00–19:00 · Sábado y domingo también AM 11:00–14:00</p>
                     <a href="/alce-kids"
                       className="text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-70"
                       style={{ color: '#0E7FA8' }}>
@@ -1109,9 +1113,7 @@ ${bloquePack}${bloqueAdicionales}${tematicaLinea}${bloquePreparado}${descuentoLi
                                         {op.texto}
                                       </span>
                                       <span className="block text-xs mt-0.5 text-gray-500">
-                                        {op.horas === 0
-                                          ? '3 horas · incluidas'
-                                          : `${3 + op.horas} horas · ${op.horas} adicional${op.horas > 1 ? 'es' : ''}`}
+                                        {op.horas === 0 ? '3 horas · incluidas' : op.etiquetaExtension}
                                       </span>
                                     </span>
                                     <span className="font-black text-sm flex-shrink-0"

@@ -30,7 +30,11 @@ export const FAQS = [
   },
   {
     q: '¿Qué días y en qué horarios celebran?',
-    a: 'Viernes, sábados y domingos. Los sábados y domingos hay dos bloques: mañana (11:00 a 14:00) y tarde (15:00 a 18:00). Los viernes es solo en bloque tarde, de 16:00 a 19:00. Cada celebración es privada: el recinto es solo para tu familia.',
+    a: 'Viernes, sábados y domingos. El bloque de tarde (PM) es el mismo horario los tres días: de 16:00 a 19:00. Los sábados y domingos además hay bloque de mañana (AM), de 11:00 a 14:00 — los viernes es solo en bloque de tarde. Cada celebración es privada: el recinto es solo para tu familia.',
+  },
+  {
+    q: '¿Puedo extender el horario de mi celebración?',
+    a: 'Sí. En el bloque de tarde (viernes, sábado y domingo) puedes sumar una Extensión hasta las 20:00 por $50.000, o una Extensión hasta las 20:30 por $100.000. En el bloque de mañana (sábado y domingo) puedes partir antes, desde las 10:00, por $50.000. Lo eliges al armar tu celebración y el precio se ajusta al instante.',
   },
   {
     q: '¿Qué pasa si llueve el día de mi celebración?',

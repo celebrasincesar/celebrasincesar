@@ -34,6 +34,18 @@ export const EVENTOS = {
   reviewReached:        'review_reached',
   summaryOpened:        'summary_opened',
   whatsappRequestClicked:'whatsapp_request_clicked',
+  // Fase 5 — Bloque 8: resto del embudo, desde el checkout hasta el
+  // postevento. Mismas reglas (§BT): nunca nombre, email, teléfono, fecha,
+  // código de reserva ni ningún identificador privado.
+  checkoutReached:      'checkout_reached',
+  flowStarted:          'flow_started',
+  paymentApproved:      'payment_approved',
+  visitCreated:         'visit_created',
+  miCelebracionOpened:  'mi_celebracion_opened',
+  balancePayClicked:    'balance_pay_clicked',
+  balancePaid:          'balance_paid',
+  reviewClicked:        'review_clicked',
+  shareClicked:         'share_clicked',
 };
 
 // Campos que jamás deben salir del navegador, por si alguien los pasa sin querer.

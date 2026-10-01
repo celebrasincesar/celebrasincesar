@@ -15,6 +15,7 @@ import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { NEGOCIO, CATEGORIAS_ADICIONALES } from '../../data/master';
 import { compartirAlceKids } from '../../lib/compartir';
+import { EVENTOS, track } from '../../data/analytics';
 
 const AZUL = '#1565C0';
 const NARANJA = '#F97316';
@@ -74,6 +75,7 @@ function MiCelebracion() {
       const r = await fetch(`/api/mi-celebracion?id=${encodeURIComponent(id)}&t=${encodeURIComponent(t)}`, { cache: 'no-store' });
       const j = await r.json();
       setDatos(j.ok ? j : null);
+      if (j.ok) track(EVENTOS.miCelebracionOpened);
     } catch {
       setDatos(null);
     }
@@ -98,6 +100,7 @@ function MiCelebracion() {
     pagandoRef.current = true;
     setPagando(true);
     setErrorPago('');
+    track(EVENTOS.balancePayClicked);
     try {
       const r = await fetch('/api/mi-celebracion', {
         method: 'POST',
@@ -109,7 +112,11 @@ function MiCelebracion() {
         window.location.href = j.checkoutUrl;
         return;
       }
-      setErrorPago('No pudimos iniciar el pago del saldo. Inténtalo de nuevo o escríbenos por WhatsApp.');
+      setErrorPago(
+        j.motivo === 'saldo_verificandose'
+          ? 'Ya estamos verificando un pago de tu saldo — no necesitas volver a pagar.'
+          : 'No pudimos iniciar el pago del saldo. Inténtalo de nuevo o escríbenos por WhatsApp.'
+      );
       pagandoRef.current = false;
       setPagando(false);
     } catch {
@@ -172,7 +179,7 @@ function MiCelebracion() {
   const {
     festejado, edad, fecha, horaInicio, horaTermino, direccion,
     sectorLabel, ninosLabel, mayoresLabel, adicionales, incluidos, extrasIds,
-    total, pagado, saldoPendiente, puedePagarSaldo, proximoPaso, codigo,
+    total, pagado, saldoPendiente, saldoVerificando, puedePagarSaldo, proximoPaso, codigo,
     contratado, datosFinales, pendientesProveedor, postevento,
   } = datos;
   const enPostevento = !!postevento?.activo;
@@ -216,12 +223,31 @@ function MiCelebracion() {
         <p className="text-sm mt-1" style={{ color: '#6B7A99' }}>{direccion}</p>
       </div>
 
-      {/* PAGOS */}
+      {/* PAGOS — Fase 5 Bloque 3 "saldo amable": nunca presiona, solo
+          facilita. Tres estados posibles, mutuamente excluyentes. */}
       <Seccion titulo="Pagos">
         <Fila k="Total" v={clp(total)} />
         <Fila k="Pagado" v={clp(pagado)} color={VERDE} />
-        {saldoPendiente > 0 && <Fila k="Saldo pendiente" v={clp(saldoPendiente)} color={NARANJA} />}
-        {puedePagarSaldo && botonSaldo}
+        {saldoVerificando ? (
+          <div className="mt-3 rounded-xl p-3 text-sm" style={{ background: 'rgba(21,101,192,0.06)', color: AZUL }}>
+            ⏳ Estamos verificando tu pago. No necesitas volver a pagar.
+          </div>
+        ) : saldoPendiente > 0 ? (
+          <>
+            <Fila k="Saldo pendiente" v={clp(saldoPendiente)} color={NARANJA} />
+            <p className="text-sm mt-2" style={{ color: '#6B7A99' }}>
+              Si quieres dejar todo listo, puedes pagar tu saldo desde aquí cuando te acomode.
+            </p>
+            {puedePagarSaldo && botonSaldo}
+          </>
+        ) : (
+          <div className="mt-3 rounded-xl p-3 text-sm font-bold" style={{ background: 'rgba(34,197,94,0.08)', color: VERDE }}>
+            Pagos al día ✓
+            <span className="block font-normal mt-0.5" style={{ color: '#6B7A99' }}>
+              Tu celebración no tiene saldo pendiente.
+            </span>
+          </div>
+        )}
         {errorPago && <p className="text-sm mt-2" style={{ color: '#DC2626' }}>{errorPago}</p>}
       </Seccion>
 
@@ -296,12 +322,14 @@ function MiCelebracion() {
 // 24-sep-2026, §5-§10). Reseña y compartir son acciones DISTINTAS: la
 // reseña abre el enlace directo de Google que entrega el servidor; compartir
 // solo comparte información pública de Alce Kids (lib/compartir.js), nunca
-// este enlace seguro ni datos de la reserva. Nada de esto registra eventos.
+// este enlace seguro ni datos de la reserva. Fase 5, Bloque 8: ambos clics
+// registran un evento anónimo (sin reseñaUrl, sin código de reserva).
 function BloquePostevento({ titulo, texto, resenaUrl }) {
   const [fallback, setFallback] = useState(null);
   const [copiado, setCopiado] = useState(false);
 
   const compartir = async () => {
+    track(EVENTOS.shareClicked);
     const r = await compartirAlceKids({ nav: typeof navigator !== 'undefined' ? navigator : null });
     if (r.via === 'fallback') setFallback(r);
   };
@@ -325,6 +353,7 @@ function BloquePostevento({ titulo, texto, resenaUrl }) {
 
       {resenaUrl && (
         <a href={resenaUrl} target="_blank" rel="noopener noreferrer"
+          onClick={() => track(EVENTOS.reviewClicked)}
           className="block w-full font-black text-white py-4 rounded-2xl mb-3 text-center"
           style={{ background: 'linear-gradient(135deg,#F97316,#EA580C)', fontSize: 16, boxShadow: '0 4px 20px rgba(249,115,22,0.3)' }}>
           ⭐ Dejar una reseña en Google

@@ -147,7 +147,7 @@ try {
   // ══════════════════════════════════════════════════════════════════
   await T('crearVisita: tres visitas simultáneas al mismo viernes+hora se crean TODAS, sin pisarse', async () => {
     const fecha = proximoViernesEnSemanas(2);
-    const hora = '11:00';
+    const hora = '10:30';
     const [a, b, c] = await Promise.all([
       crearVisita({ fecha, hora, ...datosPrueba() }),
       crearVisita({ fecha, hora, ...datosPrueba() }),
@@ -193,7 +193,7 @@ try {
   await T('visitaDesdeParams: el token de una visita no sirve para acceder a otra', async () => {
     const fecha = proximoViernesEnSemanas(1);
     const rA = await crearVisita({ fecha, hora: '10:30', ...datosPrueba() });
-    const rB = await crearVisita({ fecha, hora: '11:00', ...datosPrueba() });
+    const rB = await crearVisita({ fecha, hora: '10:00', ...datosPrueba() });
     codigosCreados.push(rA.visita.codigo, rB.visita.codigo);
 
     const cruzado = await visitaDesdeParams(rA.visita.codigo, rB.visita.acceso_token);
@@ -218,7 +218,7 @@ try {
 
   await T('sincronizarCalendarioVisita: dos visitas del mismo horario se sincronizan de forma independiente, cada una con su propio resultado', async () => {
     const fecha = proximoViernesEnSemanas(1);
-    const hora = '11:30';
+    const hora = '10:00';
     const a = await crearVisita({ fecha, hora, ...datosPrueba() });
     const b = await crearVisita({ fecha, hora, ...datosPrueba() });
     codigosCreados.push(a.visita.codigo, b.visita.codigo);
@@ -305,7 +305,7 @@ try {
 
   await T('visitasProximas: una visita CANCELADA desaparece de la lista de próximas', async () => {
     const fecha = proximoViernesEnSemanas(1);
-    const r = await crearVisita({ fecha, hora: '11:00', ...datosPrueba() });
+    const r = await crearVisita({ fecha, hora: '10:00', ...datosPrueba() });
     codigosCreados.push(r.visita.codigo);
 
     let proximas = await visitasProximas();
@@ -318,7 +318,7 @@ try {
 
   await T('eliminarEventoCalendarioVisita: nunca lanza al cancelar, fuera de Production', async () => {
     const fecha = proximoViernesEnSemanas(1);
-    const r = await crearVisita({ fecha, hora: '11:30', ...datosPrueba() });
+    const r = await crearVisita({ fecha, hora: '10:00', ...datosPrueba() });
     codigosCreados.push(r.visita.codigo);
     const cancelada = await cancelarVisita(r.visita);
     const resultado = await eliminarEventoCalendarioVisita(cancelada.visita);
@@ -334,7 +334,7 @@ try {
     const r = await crearVisita({ fecha: fechaOriginal, hora: '10:00', ...datosPrueba() });
     codigosCreados.push(r.visita.codigo);
 
-    const resultado = await reagendarVisita(r.visita, { fecha: fechaNueva, hora: '11:30' });
+    const resultado = await reagendarVisita(r.visita, { fecha: fechaNueva, hora: '10:30' });
     yes(resultado.ok, JSON.stringify(resultado));
     eq(resultado.sinCambios, false);
     eq(resultado.visita.id, r.visita.id, 'mismo id');
@@ -342,7 +342,7 @@ try {
     eq(resultado.visita.acceso_token, r.visita.acceso_token, 'mismo token');
     eq(resultado.visita.estado, 'AGENDADA', 'sigue AGENDADA');
     eq(fechaISO(resultado.visita.fecha_visita), fechaNueva);
-    eq(resultado.visita.hora_inicio, '11:30');
+    eq(resultado.visita.hora_inicio, '10:30');
 
     const totalConEseCodigo = await q(`SELECT count(*)::int AS n FROM visita WHERE codigo = $1`, [r.visita.codigo]);
     eq(totalConEseCodigo[0].n, 1, 'reagendar nunca debe crear una segunda fila');
@@ -415,7 +415,7 @@ try {
     const fechaDestino = proximoViernesEnSemanas(6);
     const familiaA = await crearVisita({ fecha: fechaDestino, hora: '10:00', ...datosPrueba() });
     const familiaB = await crearVisita({ fecha: fechaDestino, hora: '10:00', ...datosPrueba() });
-    const familiaC = await crearVisita({ fecha: proximoViernesEnSemanas(1), hora: '11:00', ...datosPrueba() });
+    const familiaC = await crearVisita({ fecha: proximoViernesEnSemanas(1), hora: '10:30', ...datosPrueba() });
     codigosCreados.push(familiaA.visita.codigo, familiaB.visita.codigo, familiaC.visita.codigo);
 
     const reagendaC = await reagendarVisita(familiaC.visita, { fecha: fechaDestino, hora: '10:00' });
@@ -469,7 +469,7 @@ try {
     const fecha = proximoViernesEnSemanas(1);
     const agendada = await crearVisita({ fecha, hora: '10:00', ...datosPrueba() });
     const paraCancelar = await crearVisita({ fecha, hora: '10:30', ...datosPrueba() });
-    const paraRealizar = await crearVisita({ fecha, hora: '11:00', ...datosPrueba() });
+    const paraRealizar = await crearVisita({ fecha, hora: '10:00', ...datosPrueba() });
     codigosCreados.push(agendada.visita.codigo, paraCancelar.visita.codigo, paraRealizar.visita.codigo);
 
     await cancelarVisita(paraCancelar.visita);

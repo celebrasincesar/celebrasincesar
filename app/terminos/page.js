@@ -259,15 +259,15 @@ export default function TerminosPage() {
 
         <Section num="9" titulo="Horarios y puntualidad">
           <p>
-            Los bloques horarios base son: AM 11:00–14:00 y PM 15:00–18:00. El tiempo de uso del
-            recinto corresponde al horario contratado, incluyendo las horas adicionales que se
-            hayan sumado al reservar.
+            Los bloques horarios base son: AM 11:00–14:00 (sábado y domingo) y PM 16:00–19:00
+            (viernes, sábado y domingo). El tiempo de uso del recinto corresponde al horario
+            contratado, incluyendo las horas adicionales que se hayan sumado al reservar.
           </p>
           <ul>
             <li>
-              El bloque AM puede extenderse hacia atrás hasta 1 hora (10:00–14:00), con un cargo
-              de $50.000. El bloque PM puede extenderse hacia adelante hasta 2 horas
-              (15:00–19:00 por $50.000, o 15:00–20:00 por $100.000). Las horas adicionales se
+              El bloque AM puede extenderse hacia atrás hasta las 10:00 (10:00–14:00), con un
+              cargo de $50.000. El bloque PM puede extenderse hasta las 20:00, con un cargo de
+              $50.000, o hasta las 20:30, con un cargo de $100.000. Las horas adicionales se
               contratan al elegir el horario, junto con el resto de la celebración.
             </li>
             <li>

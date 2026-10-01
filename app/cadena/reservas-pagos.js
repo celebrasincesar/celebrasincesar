@@ -12,7 +12,8 @@
 // ══════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { clp, opcionesHorario, TRAMOS_MAYORES } from '../../data/reglas';
+import { clp, opcionesHorario, TRAMOS_MAYORES, ITEMS, CATEGORIA_DE_ITEM } from '../../data/reglas';
+import { NEGOCIO } from '../../data/master';
 
 const AZUL = '#1565C0';
 
@@ -175,15 +176,32 @@ export function ReservasPagos() {
   const lista = (reservas || []).filter((r) => !estadosFiltro || estadosFiltro.includes(r.estado));
   const boletasPendientes = (reservas || [])
     .flatMap((r) => (r.pagos || []).filter((p) => p.tributario === 'PENDING_BVE').map((p) => ({ ...p, reserva: r })));
+  // Hallazgo real 30-sep-2026: antes de esto, una invitación solicitada no
+  // dejaba ningún rastro. Mismo criterio de "pendiente real" que las
+  // boletas — se calcula en el servidor (necesitaInvitacion), acá solo se
+  // filtra y se pinta.
+  const invitacionesPendientes = (reservas || []).filter((r) => r.necesitaInvitacion);
 
   return (
     <>
-      {boletasPendientes.length > 0 && (
-        <div className="rounded-2xl px-4 py-3 mb-4 flex items-center gap-2"
-          style={{ background: '#FEF3E2', border: '1.5px solid #FDBA74' }}>
-          <span className="font-black text-sm" style={{ color: '#C2410C' }}>
-            📋 {boletasPendientes.length} boleta{boletasPendientes.length === 1 ? '' : 's'} SII pendiente{boletasPendientes.length === 1 ? '' : 's'}
-          </span>
+      {(boletasPendientes.length > 0 || invitacionesPendientes.length > 0) && (
+        <div className="flex gap-2 flex-wrap mb-4">
+          {boletasPendientes.length > 0 && (
+            <div className="rounded-2xl px-4 py-3 flex items-center gap-2"
+              style={{ background: '#FEF3E2', border: '1.5px solid #FDBA74' }}>
+              <span className="font-black text-sm" style={{ color: '#C2410C' }}>
+                📋 {boletasPendientes.length} boleta{boletasPendientes.length === 1 ? '' : 's'} SII pendiente{boletasPendientes.length === 1 ? '' : 's'}
+              </span>
+            </div>
+          )}
+          {invitacionesPendientes.length > 0 && (
+            <div className="rounded-2xl px-4 py-3 flex items-center gap-2"
+              style={{ background: '#FCE7F3', border: '1.5px solid #F9A8D4' }}>
+              <span className="font-black text-sm" style={{ color: '#BE185D' }}>
+                💌 {invitacionesPendientes.length} {invitacionesPendientes.length === 1 ? 'invitación digital pendiente' : 'invitaciones digitales pendientes'}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -192,6 +210,16 @@ export function ReservasPagos() {
           <div className="space-y-3">
             {boletasPendientes.map((p) => (
               <FilaBoletaPendiente key={p.id} pago={p} onListo={cargar} />
+            ))}
+          </div>
+        </SeccionPagos>
+      )}
+
+      {invitacionesPendientes.length > 0 && (
+        <SeccionPagos titulo="💌 Invitaciones digitales pendientes">
+          <div className="space-y-3">
+            {invitacionesPendientes.map((r) => (
+              <FilaInvitacionPendiente key={r.id} reserva={r} onListo={cargar} />
             ))}
           </div>
         </SeccionPagos>
@@ -372,7 +400,9 @@ function FilaReserva({ reserva: r, onCambio }) {
         <div className="flex gap-4 mt-2 text-xs flex-wrap items-center">
           <span className="text-gray-400">Total <b className="text-gray-700">{clp(r.total)}</b></span>
           <span className="text-gray-400">Pagado <b style={{ color: '#16a34a' }}>{clp(r.pagado)}</b></span>
-          {saldo > 0 && <span className="text-gray-400">Saldo <b style={{ color: '#F97316' }}>{clp(saldo)}</b></span>}
+          {/* Saldo pendiente es un estado normal, no una alarma (Fase 5
+              Bloque 3) — mismo tono informativo que el resto de la fila. */}
+          {saldo > 0 && <span className="text-gray-400">Saldo <b style={{ color: AZUL }}>{clp(saldo)}</b></span>}
           {sobrepago > 0 && (
             <span className="font-black px-2 py-0.5 rounded-full" style={{ background: '#FEE2E2', color: '#DC2626' }}>
               ⚠ Sobrepago {clp(sobrepago)}
@@ -409,9 +439,6 @@ function FilaReserva({ reserva: r, onCambio }) {
               <FichaDato k="Tramo de niños" v={tramoNinosLabel || '—'} />
               {d.totalNinos != null && <FichaDato k="Total niños" v={`${d.totalNinos}`} />}
               <FichaDato k="Mayores de 6" v={tramoMayoresLabel || '—'} />
-              {d.horasAdicionales > 0 && (
-                <FichaDato k="Horas adicionales" v={`+${d.horasAdicionales} hora${d.horasAdicionales === 1 ? '' : 's'}`} />
-              )}
             </FichaGrid>
           </FichaSeccion>
 
@@ -448,12 +475,24 @@ function FilaReserva({ reserva: r, onCambio }) {
             </FichaSeccion>
           )}
 
+          <FichaSeccion titulo="✏️ Editar adicionales">
+            {r.esManual ? (
+              <p className="text-xs text-gray-400">
+                Esta reserva se cargó manualmente con un total negociado aparte — este editor no aplica acá
+                (recalcularía el precio con la tabla vigente y pisaría lo acordado). Usa "Link de adicional" o
+                "Registrar pago manual" más abajo, dejando la referencia de qué se agregó.
+              </p>
+            ) : (
+              <EditorAdicionales reserva={r} onCambio={onCambio} />
+            )}
+          </FichaSeccion>
+
           <FichaSeccion titulo="💰 Pago">
             <FichaGrid>
               <FichaDato k="Total" v={clp(r.total)} />
               <FichaDato k="Anticipo" v={clp(r.anticipo)} />
               <FichaDato k="Pagado" v={clp(r.pagado)} color="#16a34a" />
-              <FichaDato k="Saldo" v={clp(saldo)} color={saldo > 0 ? '#F97316' : undefined} />
+              <FichaDato k="Saldo" v={clp(saldo)} color={saldo > 0 ? AZUL : undefined} />
               {r.saldoVenceEn && <FichaDato k="Fecha límite del saldo" v={fmtFecha(r.saldoVenceEn)} />}
             </FichaGrid>
 
@@ -501,6 +540,10 @@ function FilaReserva({ reserva: r, onCambio }) {
                 {copiado ? '✓ Link copiado' : 'Generar link de saldo'}
               </button>
             )}
+            {/* Fase 5 Bloque 3: solo copia el texto — César decide cuándo
+                (o si) lo manda. Nunca se envía solo ni se marca como
+                enviado — esto es ayuda, no cobranza automática. */}
+            {saldo > 0 && <BotonCopiarMensajeSaldo reserva={r} festejado={d.festejado} saldo={saldo} />}
             <button onClick={() => generarLink('EXTRA')} disabled={generando}
               className="text-xs font-black px-3 py-2 rounded-xl disabled:opacity-50"
               style={{ background: 'rgba(21,101,192,0.08)', color: AZUL }}>
@@ -520,6 +563,150 @@ function FilaReserva({ reserva: r, onCambio }) {
         </div>
       )}
     </div>
+  );
+}
+
+const IDS_TEMATICA_EDITOR = new Set(['deco-tematica-simple', 'deco-tematica-full']);
+
+// Editor de adicionales de una reserva YA confirmada (hallazgo real
+// 30-sep-2026): cuando el papá le pide a César por teléfono agregar o
+// quitar algo, en vez de hacerlo él mismo desde Mi Celebración. Llama a
+// /api/cadena/cambio-comercial, que reutiliza el mismo motor
+// (aplicarCambioComercial) que ya usa el papá — nunca un segundo camino
+// de reglas propio. Cada acción (agregar o quitar) se aplica de
+// inmediato, una a la vez, igual que ya hace Mi Celebración.
+function EditorAdicionales({ reserva: r, onCambio }) {
+  const d = r.detalle || {};
+  const [tematicaTexto, setTematicaTexto] = useState(d.tematica || '');
+  const [porAgregar, setPorAgregar] = useState('');
+  const [aplicando, setAplicando] = useState(false);
+  const [aviso, setAviso] = useState('');
+
+  // La temática vigente puede cambiar tras aplicar un cambio (onCambio
+  // recarga las reservas) — sin esto, el campo se quedaría mostrando lo
+  // que había al abrir la ficha, no lo que quedó guardado.
+  useEffect(() => { setTematicaTexto(d.tematica || ''); }, [d.tematica]);
+
+  const idsActuales = [
+    ...(d.adicionales || []).map((a) => a.id),
+    ...(d.incluidos || []).map((i) => i.id),
+  ];
+
+  const disponibles = Object.values(ITEMS)
+    .filter((it) => !idsActuales.includes(it.id))
+    .sort((a, b) =>
+      (CATEGORIA_DE_ITEM[a.id]?.label || '').localeCompare(CATEGORIA_DE_ITEM[b.id]?.label || '')
+      || a.nombre.localeCompare(b.nombre));
+
+  const aplicar = async (idsNuevos, tematicaParaEnviar) => {
+    setAplicando(true);
+    setAviso('');
+    try {
+      const res = await fetch('/api/cadena/cambio-comercial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reservationCode: r.codigo, extras: idsNuevos, tematica: tematicaParaEnviar || undefined }),
+      });
+      const j = await res.json();
+      if (j.ok) onCambio();
+      else setAviso(`No se pudo aplicar (${j.motivo || 'error'}).`);
+    } catch {
+      setAviso('No se pudo conectar con el servidor.');
+    } finally {
+      setAplicando(false);
+    }
+  };
+
+  const agregar = () => {
+    if (!porAgregar) return;
+    if (IDS_TEMATICA_EDITOR.has(porAgregar) && !tematicaTexto.trim()) {
+      setAviso('Escribe la temática antes de agregarla.');
+      return;
+    }
+    aplicar([...idsActuales, porAgregar], tematicaTexto.trim() || null);
+    setPorAgregar('');
+  };
+
+  const quitar = (id) => aplicar(idsActuales.filter((x) => x !== id), tematicaTexto.trim() || null);
+
+  return (
+    <div>
+      {idsActuales.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {idsActuales.map((id) => {
+            const item = ITEMS[id];
+            return (
+              <span key={id} className="text-xs font-bold pl-2.5 pr-1.5 py-1 rounded-full flex items-center gap-1.5"
+                style={{ background: 'rgba(21,101,192,0.08)', color: AZUL }}>
+                {item?.emoji ? `${item.emoji} ` : ''}{item?.nombre || id}
+                <button onClick={() => quitar(id)} disabled={aplicando} aria-label={`Quitar ${item?.nombre || id}`}
+                  className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] disabled:opacity-50"
+                  style={{ background: 'rgba(21,101,192,0.18)' }}>
+                  ×
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="flex gap-2 flex-wrap items-end">
+        <label className="text-xs">
+          <span className="block text-[11px] text-gray-500 mb-0.5">Agregar ítem</span>
+          <select value={porAgregar} onChange={(e) => setPorAgregar(e.target.value)}
+            className="text-xs px-3 py-2 rounded-xl" style={{ border: '1.5px solid #E5E7EB' }}>
+            <option value="">Elegir…</option>
+            {disponibles.map((it) => (
+              <option key={it.id} value={it.id}>
+                {CATEGORIA_DE_ITEM[it.id]?.label ? `${CATEGORIA_DE_ITEM[it.id].label} · ` : ''}{it.nombre}{it.gratis ? ' (gratis)' : ''}
+              </option>
+            ))}
+          </select>
+        </label>
+        {IDS_TEMATICA_EDITOR.has(porAgregar) && (
+          <label className="text-xs">
+            <span className="block text-[11px] text-gray-500 mb-0.5">Temática</span>
+            <input value={tematicaTexto} onChange={(e) => setTematicaTexto(e.target.value)} placeholder="Ej: Bluey"
+              className="text-xs px-3 py-2 rounded-xl" style={{ border: '1.5px solid #E5E7EB' }} />
+          </label>
+        )}
+        <button onClick={agregar} disabled={!porAgregar || aplicando}
+          className="text-xs font-black px-3.5 py-2 rounded-xl text-white disabled:opacity-50"
+          style={{ background: AZUL }}>
+          {aplicando ? 'Aplicando…' : '+ Agregar'}
+        </button>
+      </div>
+      {aviso && <p className="text-xs text-red-500 mt-2">{aviso}</p>}
+    </div>
+  );
+}
+
+// "Copiar mensaje de saldo" (Fase 5 Bloque 3, §364): mismo texto exacto
+// del documento, con el nombre, festejado y el link PRIVADO de Mi
+// Celebración (nunca una URL de Flow estática — ahí el saldo se calcula
+// vigente, incluso si el papá agregó algo después). Solo copia al
+// portapapeles: César decide cuándo mandarlo, no se envía nada solo ni se
+// registra como enviado.
+function BotonCopiarMensajeSaldo({ reserva: r, festejado, saldo }) {
+  const [copiado, setCopiado] = useState(false);
+  const nombre = (r.cliente_nombre || '').split(' ')[0] || r.cliente_nombre;
+  const link = `${NEGOCIO.sitio}/mi-celebracion?id=${encodeURIComponent(r.codigo)}&t=${encodeURIComponent(r.acceso_token || '')}`;
+  const mensaje = `Hola, ${nombre} 😊 Ya se acerca la celebración de ${festejado || r.cliente_nombre}. Te dejo también tu enlace de Mi Celebración por si quieres revisar los detalles o dejar pagado el saldo antes de venir: ${link}`;
+
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(mensaje);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2500);
+    } catch {}
+  };
+
+  return (
+    <button onClick={copiar} disabled={!r.acceso_token}
+      className="text-xs font-black px-3 py-2 rounded-xl disabled:opacity-50"
+      style={{ background: copiado ? '#22c55e' : 'rgba(21,101,192,0.08)', color: copiado ? 'white' : AZUL }}>
+      {copiado ? '✓ Mensaje copiado' : 'Copiar mensaje de saldo'}
+    </button>
   );
 }
 
@@ -718,6 +905,63 @@ function FilaBoletaPendiente({ pago, onListo }) {
   );
 }
 
+// Tarjeta de "Invitaciones digitales pendientes" (hallazgo real
+// 30-sep-2026, §ver lib/reservas.js invitacionesPendientes): mismo
+// formato visual que las boletas SII pendientes, pero sin campos — acá
+// solo hay una acción, "ya la mandé".
+function FilaInvitacionPendiente({ reserva: r, onListo }) {
+  const [enviando, setEnviando] = useState(false);
+  const [aviso, setAviso] = useState('');
+  const d = r.detalle || {};
+
+  const marcarEnviada = async () => {
+    setEnviando(true);
+    setAviso('');
+    try {
+      const res = await fetch('/api/cadena/invitacion-enviada', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reservaId: r.id }),
+      });
+      const j = await res.json();
+      if (j.ok) onListo();
+      else setAviso(`No se pudo guardar (${j.motivo || 'error'}).`);
+    } catch {
+      setAviso('No se pudo conectar con el servidor.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const waHref = `https://wa.me/${(r.cliente_telefono || '').replace(/[^\d]/g, '')}`;
+
+  return (
+    <div className="rounded-2xl p-4" style={{ background: 'rgba(219,39,119,0.06)', border: '1px solid rgba(219,39,119,0.18)' }}>
+      <p className="font-black text-sm" style={{ color: '#0D1B3E' }}>
+        {r.codigo} · {[d.festejado, r.cliente_nombre].filter(Boolean).join(' — ')}
+      </p>
+      <p className="text-xs text-gray-400 mt-0.5">
+        Celebración {fmtFecha(r.fecha_evento)} · {r.cliente_telefono} · {r.cliente_email}
+      </p>
+      <p className="text-xs font-bold mt-1" style={{ color: '#BE185D' }}>💌 Invitación digital por mandar</p>
+
+      <div className="flex gap-2 flex-wrap items-center pt-2 mt-2" style={{ borderTop: '1px solid rgba(219,39,119,0.18)' }}>
+        <a href={waHref} target="_blank" rel="noopener noreferrer"
+          className="text-xs font-black px-3 py-2 rounded-xl"
+          style={{ background: 'rgba(34,197,94,0.1)', color: '#16a34a' }}>
+          Abrir WhatsApp ↗
+        </a>
+        <button onClick={marcarEnviada} disabled={enviando}
+          className="text-xs font-black px-3.5 py-2 rounded-xl text-white disabled:opacity-50"
+          style={{ background: '#DB2777' }}>
+          {enviando ? 'Guardando…' : 'Marcar enviada'}
+        </button>
+      </div>
+      {aviso && <p className="text-xs text-red-500 mt-2">{aviso}</p>}
+    </div>
+  );
+}
+
 // ── "Primera prueba" de la Fase Sandbox ──────────────────────────────
 // Crea UNA orden Flow de $1.000 sin tocar Postgres ni ninguna reserva
 // (/api/cadena/flow-ping): sirve para confirmar que la firma y las
@@ -783,10 +1027,14 @@ function BotonFlowPing() {
 // máximo distinto (documento "Autorización Fase 1A", 13-sep-2026, §9). El
 // formulario manual no inventa un horario nuevo ni mantiene su propia tabla,
 // consume la misma fuente de verdad que el armador público.
+// `op.texto` ya trae el rango horario exacto resultante (ej. "16:00–20:30")
+// — ahí vive el dato real; "op.horas" acá es solo el NIVEL de extensión,
+// no una cantidad de horas literal (Fase 5 Bloque 1), así que no se
+// nombra en el label para no decir "+2 horas" cuando son 90 minutos.
 const horaLabel = (op) =>
   op.horas === 0
     ? `${op.turno} · ${op.texto}`
-    : `${op.turno} + ${op.horas} hora${op.horas > 1 ? 's' : ''} adicional${op.horas > 1 ? 'es' : ''} · ${op.texto}`;
+    : `${op.turno} · ${op.texto}${op.precioAdicional ? ` (+${clp(op.precioAdicional)})` : ''}`;
 
 const horariosManualParaFecha = (fecha) =>
   !fecha ? [] : [...opcionesHorario('AM', fecha), ...opcionesHorario('PM', fecha)]

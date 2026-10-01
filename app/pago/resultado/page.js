@@ -23,6 +23,7 @@ import { clp, recomendados, tramoInvitadosPorId, tramoMayoresPorId } from '../..
 import { NEGOCIO, BLOQUES_VITRINA } from '../../../data/master';
 import { CARRUSEL } from '../../../data/imagenes';
 import { getPrecio } from '../../celebra-ui';
+import { EVENTOS, track } from '../../../data/analytics';
 
 const AZUL = '#1565C0';
 const NARANJA = '#F97316';
@@ -67,6 +68,8 @@ function ResultadoPago() {
   const [cargando, setCargando] = useState(true);
   const [intentos, setIntentos] = useState(0);
   const detenido = useRef(false);
+  const eventoAprobadoEnviado = useRef(false);
+  const eventoSaldoEnviado = useRef(false);
 
   useEffect(() => {
     if (!id || !token) { setCargando(false); return; }
@@ -102,6 +105,22 @@ function ResultadoPago() {
     if (datos?.estado && ESTADOS_FINALES.has(datos.estado)) detenido.current = true;
     if (intentos >= 45) detenido.current = true;
   }, [datos, intentos]);
+
+  // Embudo (Fase 5, Bloque 8): "pago aprobado" la primera vez que la
+  // reserva queda firme, "saldo pagado" solo cuando llega a PAID (ese
+  // estado únicamente se alcanza tras pagar el saldo, nunca con el
+  // anticipo). Sin PII: ningún código, fecha ni dato de contacto viaja.
+  useEffect(() => {
+    if (!datos?.estado) return;
+    if (!eventoAprobadoEnviado.current && ['CONFIRMED', 'BALANCE_PENDING', 'PAID'].includes(datos.estado)) {
+      eventoAprobadoEnviado.current = true;
+      track(EVENTOS.paymentApproved);
+    }
+    if (!eventoSaldoEnviado.current && datos.estado === 'PAID') {
+      eventoSaldoEnviado.current = true;
+      track(EVENTOS.balancePaid);
+    }
+  }, [datos]);
 
   const irWhatsApp = (texto) =>
     `https://wa.me/${NEGOCIO.telefonoE164.replace('+', '')}?text=${encodeURIComponent(texto)}`;
