@@ -1076,9 +1076,9 @@ ${bloquePack}${bloqueAdicionales}${tematicaLinea}${bloquePreparado}${descuentoLi
                         {!estado.hora && (
                           <div className="flex justify-center mb-3">
                             <img
-                              src="/elige-tu-horario.webp" width="560" height="560" decoding="async"
+                              src="/elige-tu-horario.webp" width="600" height="279" decoding="async"
                               alt="Elige tu horario"
-                              className="w-full max-w-[260px]"
+                              className="w-full max-w-[340px]"
                               style={{ filter: 'drop-shadow(0 8px 24px rgba(21,101,192,0.18))' }}
                             />
                           </div>

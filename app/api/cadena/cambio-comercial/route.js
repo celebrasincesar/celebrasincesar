@@ -14,7 +14,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { reservaPorCodigo, configuracionVigente } from '../../../../lib/reservas';
-import { aplicarCambioComercial } from '../../../../lib/cambio-comercial';
+import { aplicarCambioComercial, aplicarCambioComercialManual } from '../../../../lib/cambio-comercial';
 import { sincronizarCalendario } from '../../../../lib/calendario';
 import { IDS_DECORACION_TEMATICA } from '../../../../lib/pendientes-proveedor';
 import { getItem, itemVisible, contextoDesde, CATEGORIA_DE_ITEM } from '../../../../data/reglas';
@@ -39,19 +39,18 @@ export async function POST(req) {
 
   const vigente = configuracionVigente(reserva);
 
-  // Candado real: una reserva manual (+ Crear reserva manual) guarda un
-  // total NEGOCIADO por César, fuera del motor de precios, y su snapshot
-  // no tiene `.configuracion` anidada (ni fecha/hora adentro). Si se
-  // dejara pasar, aplicarCambioComercial() recalcularía un total nuevo con
-  // la tabla de precios vigente y pisaría en silencio el precio acordado.
-  // Nunca se confía solo en que la pantalla no muestre el botón — se
-  // rechaza acá también.
-  if (!vigente?.configuracion) {
-    return json({ ok: false, motivo: 'reserva_manual_no_editable' }, 400);
+  // Reserva manual (+ Crear reserva manual): total NEGOCIADO por César,
+  // fuera del motor de precios. Recalcularla con aplicarCambioComercial()
+  // pisaría ese precio, así que tiene su propio camino ADITIVO: el total
+  // negociado queda de base y cada adicional se suma a su precio de
+  // catálogo (aplicarCambioComercialManual).
+  const esManual = !!vigente?.manual && !vigente?.configuracion;
+  if (!esManual && !vigente?.configuracion) {
+    return json({ ok: false, motivo: 'reserva_no_editable' }, 400);
   }
 
-  const config = vigente.configuracion;
-  const ctx = vigente.ctx || contextoDesde(config);
+  const config = vigente.configuracion || {};
+  const ctx = vigente.ctx || (esManual ? null : contextoDesde(config));
 
   // Resuelve cada id contra el catálogo vigente y valida compatibilidad —
   // misma regla que ya usa el papá desde Mi Celebración (itemVisible):
@@ -65,7 +64,9 @@ export async function POST(req) {
     const itemId = texto(id, 60);
     const item = getItem(itemId);
     if (!item) return json({ ok: false, motivo: 'item_no_existe', item: itemId }, 400);
-    if (!itemVisible(item, ctx)) return json({ ok: false, motivo: 'item_no_compatible', item: itemId }, 400);
+    // En una reserva manual no hay edad/sector estructurados contra los
+    // cuales validar — César es la autoridad (ya acordó esto con el papá).
+    if (!esManual && !itemVisible(item, ctx)) return json({ ok: false, motivo: 'item_no_compatible', item: itemId }, 400);
 
     const categoria = CATEGORIA_DE_ITEM[itemId];
     if (categoria && categoria.seleccionMultiple === false) porCategoria.set(categoria.id, item);
@@ -79,11 +80,15 @@ export async function POST(req) {
     return json({ ok: false, motivo: 'falta_tematica' }, 400);
   }
 
-  const resultado = await aplicarCambioComercial({
-    reservaId: reserva.id,
-    configuracionPropuesta: { extras: extrasFinales, tematica: tematicaFinal },
-    motivo: 'editado_desde_cadena',
-  });
+  const resultado = esManual
+    ? await aplicarCambioComercialManual({
+        reservaId: reserva.id, items: extrasFinales, tematica: tematicaFinal, motivo: 'editado_desde_cadena',
+      })
+    : await aplicarCambioComercial({
+        reservaId: reserva.id,
+        configuracionPropuesta: { extras: extrasFinales, tematica: tematicaFinal },
+        motivo: 'editado_desde_cadena',
+      });
   if (!resultado.ok) return json(resultado, 400);
 
   // Mismo criterio best-effort que el resto del proyecto: si falla el

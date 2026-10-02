@@ -67,14 +67,14 @@ await T('Editar adicionales: la ruta admin reutiliza aplicarCambioComercial (no 
   yes(ruta.includes('itemVisible'), 'debe validar compatibilidad con la misma regla que Mi Celebración');
 });
 
-await T('Editar adicionales: una reserva manual se rechaza en el SERVIDOR, no solo se oculta en pantalla', () => {
+await T('Editar adicionales: una reserva manual usa su propio camino ADITIVO — nunca recalcula con el motor de precios', () => {
   const ruta = leer('app/api/cadena/cambio-comercial/route.js');
-  yes(/if \(!vigente\?\.\s*configuracion\)/.test(ruta) || ruta.includes('!vigente?.configuracion'));
-  yes(ruta.includes('reserva_manual_no_editable'));
-  const reservasRoute = leer('app/api/cadena/reservas/route.js');
-  yes(reservasRoute.includes('esManual'));
-  const panel = leer('app/cadena/reservas-pagos.js');
-  yes(panel.includes('r.esManual'), 'el panel debe leer esManual para no mostrar el editor ahí');
+  yes(ruta.includes('aplicarCambioComercialManual'));
+  yes(ruta.includes('esManual'));
+  const motor = leer('lib/cambio-comercial.js');
+  const bloque = motor.slice(motor.indexOf('export async function aplicarCambioComercialManual'), motor.indexOf('export async function historicoComercial'));
+  yes(!/recalcular\(/.test(bloque), 'el camino manual jamás debe llamar a recalcular() — pisaría el total negociado');
+  yes(bloque.includes('totalBase'));
 });
 
 await T('Editar adicionales: /cadena tiene el editor con agregar/quitar por ítem', () => {
@@ -191,20 +191,59 @@ if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
       yes(!!vigente?.configuracion, 'una reserva del armador debe tener .configuracion anidada — la misma condición que usa la ruta admin para permitir el editor');
     });
 
-    await T('Editar adicionales: una reserva MANUAL nunca tiene configuracion vigente anidada — la ruta admin debe rechazarla', async () => {
-      const fecha = fechaPruebaSiguiente();
+    await T('Editar adicionales en reserva MANUAL: el total negociado queda de base y cada adicional se suma (agregar, agregar otro, quitar todo)', async () => {
+      const { aplicarCambioComercialManual } = await import('../lib/cambio-comercial.js');
+      const { detalleDeReserva } = await import('../lib/reservas.js');
       const r = await crearReservaManual({
         referencia: 'QA operativo', nombreNino: 'QA Manual', apoderado: CLIENTE.nombre,
         email: CLIENTE.email, telefono: CLIENTE.telefono,
-        fecha, turno: 'AM', horasAdicionales: 0, tramoInvitados: 'hasta10', tramoMayores: 'no',
+        fecha: fechaPruebaSiguiente(), turno: 'AM', horasAdicionales: 0, tramoInvitados: 'hasta10', tramoMayores: 'no',
         total: 200000, anticipo: 100000, notas: '',
       });
       if (!r.ok) throw new Error(`crearReservaManual falló: ${r.motivo} ${JSON.stringify(r.errores || '')}`);
       filasCreadas.push(r.reserva.codigo);
 
-      const actual = await reservaPorCodigo(r.reserva.codigo);
-      const vigente = configuracionVigente(actual);
-      yes(!vigente?.configuracion, 'una reserva manual NUNCA debe tener .configuracion anidada — si esto cambia algún día, la ruta admin dejaría de proteger su precio negociado');
+      const actual0 = await reservaPorCodigo(r.reserva.codigo);
+      yes(!configuracionVigente(actual0)?.configuracion, 'una reserva manual sigue sin .configuracion anidada (el motor de precios nunca la toca)');
+
+      const A = { id: 'tobogan-premium', nombre: 'Tobogán Premium', emoji: '🎢', precios: { hasta10: 70000, hasta20: 80000, hasta30: 90000, mas30: 100000 } };
+      const B = { id: 'pintacaritas', nombre: 'Pintacaritas', emoji: '🎨', precios: { hasta10: 30000, hasta20: 30000, hasta30: 30000, mas30: 30000 } };
+
+      let c = await aplicarCambioComercialManual({ reservaId: r.reserva.id, items: [A], tematica: null, motivo: 'qa' });
+      yes(c.ok, JSON.stringify(c));
+      eq(c.totalDespues, 270000, 'base negociada 200.000 + 70.000');
+      let actual = await reservaPorCodigo(r.reserva.codigo);
+      eq(actual.total, 270000);
+      yes(configuracionVigente(actual).manual === true, 'sigue siendo manual tras el cambio');
+      let det = detalleDeReserva(actual);
+      eq(det.adicionales.length, 1);
+      eq(det.adicionales[0].precio, 70000);
+
+      c = await aplicarCambioComercialManual({ reservaId: r.reserva.id, items: [A, B], tematica: null, motivo: 'qa' });
+      eq(c.totalDespues, 300000, 'se suma sobre la BASE, no sobre el total anterior (sin acumular dos veces)');
+
+      c = await aplicarCambioComercialManual({ reservaId: r.reserva.id, items: [], tematica: null, motivo: 'qa' });
+      eq(c.totalDespues, 200000, 'sin adicionales vuelve exactamente al total negociado');
+      actual = await reservaPorCodigo(r.reserva.codigo);
+      eq(actual.total, 200000);
+      yes(!JSON.parse(typeof actual.snapshot === 'string' ? actual.snapshot : JSON.stringify(actual.snapshot)).extrasManual, 'el snapshot original nunca se toca');
+    });
+
+    await T('Editar adicionales en reserva MANUAL: una reserva del armador es rechazada por el camino manual', async () => {
+      const { aplicarCambioComercialManual } = await import('../lib/cambio-comercial.js');
+      const r = await crearReserva({
+        configuracion: {
+          fecha: `${fechaPruebaSiguiente()}T12:00:00.000Z`, hora: 'AM', sector: 'independiente',
+          tramoInvitados: 'hasta10', edadNino: 4, festejados: 1, tramoMayores: 'no',
+          extras: [], tematica: null, horasAdicionales: 0,
+        },
+        cliente: CLIENTE, aceptaTyc: true,
+      });
+      if (!r.ok) throw new Error(`crearReserva falló: ${r.motivo}`);
+      filasCreadas.push(r.reserva.codigo);
+      const c = await aplicarCambioComercialManual({ reservaId: r.reserva.id, items: [], tematica: null, motivo: 'qa' });
+      eq(c.ok, false);
+      eq(c.motivo, 'reserva_no_es_manual');
     });
 
   } finally {

@@ -476,15 +476,13 @@ function FilaReserva({ reserva: r, onCambio }) {
           )}
 
           <FichaSeccion titulo="✏️ Editar adicionales">
-            {r.esManual ? (
-              <p className="text-xs text-gray-400">
-                Esta reserva se cargó manualmente con un total negociado aparte — este editor no aplica acá
-                (recalcularía el precio con la tabla vigente y pisaría lo acordado). Usa "Link de adicional" o
-                "Registrar pago manual" más abajo, dejando la referencia de qué se agregó.
+            {r.esManual && (
+              <p className="text-[11px] text-gray-400 mb-2">
+                Reserva cargada manualmente: el total negociado se mantiene como base y cada adicional se
+                suma a su precio de catálogo (según el tramo de niños).
               </p>
-            ) : (
-              <EditorAdicionales reserva={r} onCambio={onCambio} />
             )}
+            <EditorAdicionales reserva={r} onCambio={onCambio} />
           </FichaSeccion>
 
           <FichaSeccion titulo="💰 Pago">
