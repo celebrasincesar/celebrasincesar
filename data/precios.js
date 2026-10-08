@@ -24,7 +24,7 @@
 import {
   PRECIOS_BASE, PRECIOS_EXTRAS, MULTIPLICADORES, CATEGORIAS_ADICIONALES, NEGOCIO,
 } from './master';
-import { contextoDesde, valorMayores, getItem, horarioEfectivo } from './reglas';
+import { contextoDesde, valorMayores, getItem, horarioEfectivo, tramoInvitadosPorId } from './reglas';
 
 // ── Precio de un adicional según el tramo de niños ────────────────────
 // Los ítems con `precios` cobran por tramo (animación); el resto es plano.
@@ -101,6 +101,25 @@ export function esSabado(fecha) {
   if (!fecha) return false;
   const d = fecha instanceof Date ? fecha : new Date(`${String(fecha).slice(0, 10)}T12:00:00`);
   return !Number.isNaN(d.getTime()) && d.getDay() === 6;
+}
+
+// Las 3 piezas que componen la línea "Arriendo …" del total: base del
+// recinto (según día), recargo por tramo de niños y recargo por edad del
+// festejado. Es la MISMA aritmética de calcularTotal() (aplicarMult), solo
+// que sin sumarla — sirve para mostrarle a César de dónde sale el arriendo.
+export function desgloseArriendo(estado = {}) {
+  const ctx = contextoDesde(estado);
+  const cantNinos = estado.cantNinos || ctx.cantNinos;
+  const sabado = esSabado(estado.fecha);
+  const base = baseArriendo({ sector: estado.sector, cantNinos, sabado });
+  if (base === 0) return null;
+  const tramo = tramoInvitadosPorId(estado.tramoInvitados);
+  const sector = estado.sector === 'independiente' ? 'Sector Independiente' : 'Recinto Completo';
+  return [
+    { concepto: `Base ${sector} (${sabado ? 'sábado' : 'viernes/domingo'})`, monto: base },
+    { concepto: `Recargo por cantidad de niños${tramo ? ` (${tramo.corto})` : ''}`, monto: getAddCantidad(cantNinos) },
+    { concepto: `Recargo por edad del festejado${estado.edadNino ? ` (${estado.edadNino} años)` : ''}`, monto: getAddEdad(estado.edadNino) },
+  ];
 }
 
 // ══════════════════════════════════════════════════════════════════════

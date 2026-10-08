@@ -14,6 +14,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { clp, opcionesHorario, TRAMOS_MAYORES, ITEMS, CATEGORIA_DE_ITEM } from '../../data/reglas';
 import { NEGOCIO } from '../../data/master';
+import { ModificarReserva } from './modificar-reserva';
 
 const AZUL = '#1565C0';
 
@@ -426,6 +427,8 @@ function FilaReserva({ reserva: r, onCambio }) {
 
           <ResumenOperacional r={r} />
 
+          <DesgloseCompleto r={r} d={d} tramoNinosLabel={tramoNinosLabel} tramoMayoresLabel={tramoMayoresLabel} />
+
           <FichaSeccion titulo="🎉 Celebración">
             <FichaGrid>
               <FichaDato k="Código" v={r.codigo} />
@@ -450,9 +453,15 @@ function FilaReserva({ reserva: r, onCambio }) {
             </FichaGrid>
           </FichaSeccion>
 
-          {d.adicionales?.length > 0 && (
+          {(d.adicionales?.length > 0 || d.pack) && (
             <FichaSeccion titulo="✨ Adicionales contratados">
               <ul className="space-y-1">
+                {d.pack && (
+                  <li className="text-xs flex justify-between gap-2" style={{ color: '#374151' }}>
+                    <span>🎀 {d.pack.nombre} <span className="text-gray-400">({d.pack.incluye})</span></span>
+                    {d.pack.precio != null && <b>{clp(d.pack.precio)}</b>}
+                  </li>
+                )}
                 {d.adicionales.map((a) => (
                   <li key={a.id} className="text-xs flex justify-between gap-2" style={{ color: '#374151' }}>
                     <span>{a.emoji ? `${a.emoji} ` : ''}{a.nombre}</span>
@@ -485,6 +494,12 @@ function FilaReserva({ reserva: r, onCambio }) {
             <EditorAdicionales reserva={r} onCambio={onCambio} />
           </FichaSeccion>
 
+          {ESTADOS_FIRMES_PANEL.includes(r.estado) && (
+            <FichaSeccion titulo="🛠 Modificar fecha y datos">
+              <ModificarReserva reserva={r} onCambio={onCambio} />
+            </FichaSeccion>
+          )}
+
           <FichaSeccion titulo="💰 Pago">
             <FichaGrid>
               <FichaDato k="Total" v={clp(r.total)} />
@@ -512,23 +527,6 @@ function FilaReserva({ reserva: r, onCambio }) {
               </div>
             )}
           </FichaSeccion>
-
-          {d.lineas?.length > 0 && (
-            <FichaSeccion titulo="📊 Desglose">
-              <ul className="space-y-1">
-                {d.lineas.map((l, i) => (
-                  <li key={i} className="text-xs flex justify-between gap-2" style={{ color: '#374151' }}>
-                    <span>{l.concepto}</span>
-                    <b>{clp(l.monto)}</b>
-                  </li>
-                ))}
-                <li className="text-xs flex justify-between gap-2 pt-1.5 mt-1" style={{ borderTop: '1px solid rgba(21,101,192,0.15)', color: '#0D1B3E' }}>
-                  <b>TOTAL</b>
-                  <b>{clp(r.total)}</b>
-                </li>
-              </ul>
-            </FichaSeccion>
-          )}
 
           <div className="flex gap-2 flex-wrap">
             {saldo > 0 && (
@@ -565,6 +563,66 @@ function FilaReserva({ reserva: r, onCambio }) {
 }
 
 const IDS_TEMATICA_EDITOR = new Set(['deco-tematica-simple', 'deco-tematica-full']);
+
+// "¿Qué contrató y por qué paga lo que paga?" (pedido de César, 02-oct-2026,
+// reserva CSC-2026-000023): datos contratados al inicio + CADA línea del
+// precio —arriendo abierto en base/recargo por niños/recargo por edad,
+// cumpleaños compartido con su número de festejados, cada adicional— y una
+// fila de cuadre contra el total real (descuentos o ajustes).
+function DesgloseCompleto({ r, d, tramoNinosLabel, tramoMayoresLabel }) {
+  const lineas = d.desglose;
+  const chips = [
+    d.festejados ? `${d.festejados} festejado${d.festejados > 1 ? 's' : ''}` : null,
+    tramoNinosLabel ? `Niños: ${tramoNinosLabel}${d.ninosSobre30 > 0 ? ` (+${d.ninosSobre30} sobre 30)` : ''}` : null,
+    tramoMayoresLabel ? `Mayores de 6: ${tramoMayoresLabel}` : null,
+    d.edad != null ? `Edad ${d.edad} años` : null,
+    r.sector ? (r.sector === 'independiente' ? 'Sector Independiente' : 'Recinto Completo') : null,
+    r.hora_inicio && r.hora_termino ? `${r.hora_inicio}–${r.hora_termino}` : null,
+  ].filter(Boolean);
+
+  if (!lineas) {
+    return (
+      <FichaSeccion titulo="🧾 Desglose completo">
+        <p className="text-xs text-gray-400">
+          Esta reserva no guardó un desglose línea por línea (reserva manual o anterior al motor de precios).
+          Total acordado: <b>{clp(r.total)}</b>.
+        </p>
+      </FichaSeccion>
+    );
+  }
+
+  const suma = lineas.filter((l) => !l.parte).reduce((s, l) => s + l.monto, 0);
+  const ajuste = r.total - suma;
+
+  return (
+    <FichaSeccion titulo="🧾 Desglose completo">
+      {chips.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {chips.map((c) => (
+            <span key={c} className="text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: 'rgba(21,101,192,0.08)', color: AZUL }}>{c}</span>
+          ))}
+        </div>
+      )}
+      <ul className="space-y-1">
+        {lineas.map((l, i) => (
+          <li key={i} className="text-xs flex justify-between gap-2"
+            style={{ color: l.parte ? '#6B7280' : '#374151', paddingLeft: l.parte ? 14 : 0, fontWeight: l.encabezado ? 800 : 400 }}>
+            <span>{l.parte ? '↳ ' : ''}{l.concepto}</span>
+            <b style={{ fontWeight: l.parte ? 500 : 800 }}>{clp(l.monto)}</b>
+          </li>
+        ))}
+        {ajuste !== 0 && (
+          <li className="text-xs flex justify-between gap-2" style={{ color: '#9A3412' }}>
+            <span>Descuento / ajuste</span><b>{ajuste < 0 ? '−' : '+'}{clp(Math.abs(ajuste))}</b>
+          </li>
+        )}
+        <li className="text-xs flex justify-between gap-2 pt-1.5 mt-1" style={{ borderTop: '1px solid rgba(21,101,192,0.15)', color: '#0D1B3E' }}>
+          <b>TOTAL</b><b>{clp(r.total)}</b>
+        </li>
+      </ul>
+    </FichaSeccion>
+  );
+}
 
 // Editor de adicionales de una reserva YA confirmada (hallazgo real
 // 30-sep-2026): cuando el papá le pide a César por teléfono agregar o

@@ -10,6 +10,7 @@ import { dbConfigurada } from '../../../../lib/db';
 import { ejecutarCicloPrevio } from '../../../../lib/ciclo-previo';
 import { ejecutarPostevento } from '../../../../lib/postevento';
 import { ejecutarRecordatoriosSaldo } from '../../../../lib/saldo-recordatorio';
+import { ejecutarAvisosCambio } from '../../../../lib/aviso-cambio-reserva';
 import { json } from '../../../../lib/http';
 
 export const dynamic = 'force-dynamic';
@@ -44,5 +45,15 @@ export async function GET(req) {
     saldo = { ok: false, error: err.message };
   }
 
-  return json({ ...resultado, postevento, saldo });
+  // Avisos a la familia por cambios hechos desde /cadena (08-oct-2026):
+  // reintenta los correos de "modificamos tu reserva" que no alcanzaron a
+  // salir al momento del cambio. Mismo aislamiento que los anteriores.
+  let avisosCambio;
+  try {
+    avisosCambio = await ejecutarAvisosCambio();
+  } catch (err) {
+    avisosCambio = { ok: false, error: err.message };
+  }
+
+  return json({ ...resultado, postevento, saldo, avisosCambio });
 }

@@ -83,6 +83,53 @@ await T('Editar adicionales: /cadena tiene el editor con agregar/quitar por íte
   yes(panel.includes('/api/cadena/cambio-comercial'));
 });
 
+await T('Desglose completo (caso real CSC-2026-000023): arriendo abierto en base+niños+edad, cumpleaños compartido con su nº de festejados, y todo suma el total', async () => {
+  const { recalcular, detalleDeReserva } = await import('../lib/reservas.js');
+  const configuracion = {
+    fecha: '2026-11-01', hora: 'AM', sector: 'completo', tramoInvitados: '31a40', ninosExtra: 1, edadNino: 4,
+    festejados: 2, tramoMayores: 'no', horasAdicionales: 0,
+    extras: ['tacataca-adultos', 'funny-bugatti', 'pingpong-junior', 'animacion-completa', 'animacion-huntrix'],
+  };
+  const { estado, precio, ctx } = recalcular(configuracion);
+  const det = detalleDeReserva({ snapshot: { configuracion: estado, precio, ctx } });
+  eq(det.festejados, 2);
+  const montoDe = (re) => det.desglose.find((l) => re.test(l.concepto))?.monto;
+  eq(montoDe(/^Base Recinto Completo/), 195000);
+  eq(montoDe(/^Recargo por cantidad de niños/), 65000);
+  eq(montoDe(/^Recargo por edad/), 15000);
+  eq(montoDe(/^Cumpleaños compartido \(2 festejados\)/), 45000);
+  eq(det.desglose.filter((l) => !l.parte).reduce((s, l) => s + l.monto, 0), precio.total, 'las líneas (sin las partes del arriendo) deben sumar exactamente el total');
+});
+
+await T('Pack Celebra Sin Cesar (caso real CSC-2026-000012): se cobra pero no es un extra — debe verse en detalle, calendario y desglose', async () => {
+  const { recalcular, detalleDeReserva } = await import('../lib/reservas.js');
+  const { descripcion } = await import('../lib/calendario.js');
+  const { estado, precio, ctx } = recalcular({
+    fecha: '2026-10-18', hora: 'AM', sector: 'completo', tramoInvitados: '21a30', edadNino: 5, festejados: 1,
+    tramoMayores: 'no', horasAdicionales: 0, packCelebra: true, extras: ['animacion-completa'],
+  });
+  eq(precio.total, 460000, 'el total del caso real debe seguir siendo 460.000');
+  const reserva = { codigo: 'CSC-TEST', cliente_nombre: 'QA', cliente_telefono: '+56900000000', fecha_evento: '2026-10-18', hora_inicio: '11:00', hora_termino: '14:00', sector: 'completo', ninos: 30, total: precio.total, pagado: 230000, snapshot: { configuracion: estado, precio, ctx } };
+  const det = detalleDeReserva(reserva);
+  eq(det.pack?.precio, 60000);
+  const txt = descripcion(reserva);
+  yes(txt.includes('PACK CELEBRA SIN CESAR') && txt.includes('$60.000'), 'el calendario debe mostrar el pack con su precio');
+  yes(txt.includes('DESGLOSE DEL TOTAL') && txt.includes('Recargo por cantidad de niños'), 'el calendario debe traer el desglose');
+  const sinPack = detalleDeReserva({ ...reserva, snapshot: { configuracion: { ...estado, packCelebra: false }, precio, ctx } });
+  eq(sinPack.pack, null, 'sin packCelebra no hay pack');
+});
+
+await T('Desglose completo: si la apertura del arriendo no reproduce el monto guardado, se deja la línea única (nunca números que no suman)', async () => {
+  const { recalcular, detalleDeReserva } = await import('../lib/reservas.js');
+  const { estado, precio, ctx } = recalcular({
+    fecha: '2026-11-01', hora: 'AM', sector: 'completo', tramoInvitados: '31a40', edadNino: 4, festejados: 1,
+    tramoMayores: 'no', horasAdicionales: 0, extras: [],
+  });
+  const lineasAlteradas = precio.lineas.map((l) => (/^Arriendo /.test(l.concepto) ? { ...l, monto: l.monto + 1000 } : l));
+  const det = detalleDeReserva({ snapshot: { configuracion: estado, precio: { ...precio, lineas: lineasAlteradas }, ctx } });
+  yes(!det.desglose.some((l) => l.parte), 'sin partes cuando no cuadran con lo guardado');
+});
+
 // ── B. INTEGRACIÓN (Sandbox real) ────────────────────────────────────────
 
 function cargarEnvLocal() {
