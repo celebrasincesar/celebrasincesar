@@ -1397,15 +1397,15 @@ ${bloquePack}${bloqueAdicionales}${tematicaLinea}${bloquePreparado}${descuentoLi
 
                 {/* ── ¿Vendrán niños mayores de 6? ─────────────────────────────
                      No es un filtro legal: nos permite prepararles entretención
-                     adecuada. Ya están contados dentro del total. ── */}
+                     adecuada. Se pregunta como parte de los niños de arriba, sin
+                     frases aclaratorias (decisión de César, 16-oct-2026: los
+                     textos largos confunden). Su valor se cobra por separado
+                     (hermanos_mayores). ── */}
                 {estado.tramoInvitados && (
                   <div ref={mayoresRef} className="rounded-2xl border-2 p-5 mb-5 scroll-mt-24" style={{ borderColor: '#E5E7EB' }}>
-                    <label className="block text-sm font-black text-gray-600 mb-1">
-                      ¿Vendrán niños mayores de 6 años?
+                    <label className="block text-sm font-black text-gray-600 mb-4">
+                      De esos niños, ¿cuántos son mayores de 6 años?
                     </label>
-                    <p className="text-xs text-gray-500 mb-4">
-                      Hermanos, primos o invitados grandes. Ya están incluidos en los {labelInvitados(estado)} de arriba.
-                    </p>
 
                     <div className="grid grid-cols-2 gap-3">
                       {TRAMOS_MAYORES.map((t) => {
@@ -1430,7 +1430,7 @@ ${bloquePack}${bloqueAdicionales}${tematicaLinea}${bloquePreparado}${descuentoLi
                               boxShadow: sel ? '0 4px 14px rgba(21,101,192,0.15)' : '0 1px 3px rgba(0,0,0,0.04)',
                             }}
                           >
-                            {t.label}
+                            {t.corto}
                           </button>
                         );
                       })}
