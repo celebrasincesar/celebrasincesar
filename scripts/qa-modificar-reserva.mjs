@@ -226,6 +226,110 @@ if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
         eq((await q(`SELECT count(*)::int AS n FROM pago_evento WHERE reserva_id = $1 AND tipo = 'AVISO_CAMBIO_ENVIADO'`, [r.id]))[0].n, 0, 'sin SMTP no hay evento ENVIADO');
       }
     });
+    // ── Adicional "Otro" (monto libre, 15-oct-2026) ───────────────────
+    const { aplicarCargosLibres, aplicarCambioComercial, aplicarCambioComercialManual } = await import('../lib/cambio-comercial.js');
+    const { getItem } = await import('../data/reglas.js');
+
+    await T('Otro: suma al total, el saldo cuadra (total − pagado), el desglose suma el total y se puede quitar', async () => {
+      const r = await firme(sabado(), 'PM');
+      const saldoAntes = r.total - r.pagado;
+      const res = await aplicarCargosLibres({ reservaId: r.id, cargos: [{ concepto: 'comida extra', monto: 30000 }] });
+      yes(res.ok, JSON.stringify(res));
+      eq(res.totalDespues, r.total + 30000); eq(res.diferencia, 30000);
+      const a = await reservaPorCodigo(r.codigo);
+      eq(a.total, r.total + 30000);
+      eq(a.total - a.pagado, saldoAntes + 30000, 'el saldo sube exactamente el monto del Otro');
+      const d = detalleDeReserva(a);
+      const otro = d.adicionales.find((x) => x.cargoLibre);
+      yes(otro && otro.precio === 30000 && /comida extra/.test(otro.nombre), JSON.stringify(otro));
+      eq(d.cargosLibres.length, 1);
+      eq(d.desglose.reduce((s, l) => s + (l.parte ? 0 : l.monto), 0), a.total, 'las líneas del desglose suman el total');
+      // quitar = mandar la lista sin él
+      const quita = await aplicarCargosLibres({ reservaId: r.id, cargos: [] });
+      yes(quita.ok); eq(quita.totalDespues, r.total);
+      eq((await reservaPorCodigo(r.codigo)).total, r.total, 'quitarlo devuelve el total original');
+      eq((await q(`SELECT count(*)::int AS n FROM cambio_comercial WHERE reserva_id = $1`, [r.id]))[0].n, 2, 'queda en el histórico (agregar y quitar)');
+    });
+
+    await T('Otro: montos inválidos se rechazan sin escribir nada', async () => {
+      const r = await firme(sabado(), 'PM');
+      for (const monto of [0, -500, 1.5, 6_000_000, 'abc', null]) {
+        const res = await aplicarCargosLibres({ reservaId: r.id, cargos: [{ monto }] });
+        eq(res.ok, false, `monto ${monto} debe rechazarse`);
+      }
+      eq((await reservaPorCodigo(r.codigo)).total, r.total);
+      eq((await q(`SELECT count(*)::int AS n FROM cambio_comercial WHERE reserva_id = $1`, [r.id]))[0].n, 0);
+    });
+
+    await T('Otro sin glosa se llama "Otro"; dos cargos suman y ambos se conservan al agregar un adicional del catálogo', async () => {
+      const r = await firme(sabado(), 'PM');
+      const res = await aplicarCargosLibres({ reservaId: r.id, cargos: [{ monto: 10000 }, { concepto: 'torta', monto: 25000 }] });
+      yes(res.ok, JSON.stringify(res)); eq(res.cargos[0].concepto, 'Otro');
+      const mid = await reservaPorCodigo(r.codigo);
+      eq(mid.total, r.total + 35000);
+      const item = getItem('tobogan-premium');
+      const cc = await aplicarCambioComercial({ reservaId: r.id, configuracionPropuesta: { extras: [item], tematica: null }, motivo: 'qa' });
+      yes(cc.ok, JSON.stringify(cc));
+      const a = await reservaPorCodigo(r.codigo);
+      const precioItem = a.total - r.total - 35000;
+      yes(precioItem > 0, 'el adicional del catálogo suma su precio');
+      eq(detalleDeReserva(a).cargosLibres.length, 2, 'los dos Otro sobreviven al cambio comercial');
+      eq(detalleDeReserva(a).desglose.reduce((s, l) => s + (l.parte ? 0 : l.monto), 0), a.total, 'desglose = total');
+    });
+
+    await T('Otro sobrevive a mover la reserva (mantener y recalcular) y el "Ajuste acordado" sobrevive a un adicional posterior', async () => {
+      const sab = sabado();
+      const r = await firme(sab, 'PM');
+      yes((await aplicarCargosLibres({ reservaId: r.id, cargos: [{ concepto: 'comida', monto: 20000 }] })).ok);
+      const conOtro = await reservaPorCodigo(r.codigo);
+      const mover = await modificarReserva({ codigo: r.codigo, cambios: { fecha: dia(sab, 1), hora: 'AM' }, politicaPrecio: 'mantener' });
+      yes(mover.ok, JSON.stringify(mover));
+      const a = await reservaPorCodigo(r.codigo);
+      eq(a.total, conOtro.total, 'mantener: el total (con el Otro) no cambia');
+      eq(detalleDeReserva(a).cargosLibres.length, 1);
+      eq(detalleDeReserva(a).desglose.reduce((s, l) => s + (l.parte ? 0 : l.monto), 0), a.total);
+      // un adicional posterior NO debe perder el ajuste acordado (caso Pedro)
+      const item = getItem('tobogan-premium');
+      const cc = await aplicarCambioComercial({ reservaId: r.id, configuracionPropuesta: { extras: [item], tematica: null }, motivo: 'qa' });
+      yes(cc.ok, JSON.stringify(cc));
+      const b = await reservaPorCodigo(r.codigo);
+      const precioItem = b.total - conOtro.total;
+      yes(precioItem > 0 && precioItem < 200000, `solo suma el adicional (suma ${precioItem}), no reprecia el domingo`);
+      // recalcular: tabla vigente + Otro
+      const sab2 = sabado();
+      const r2 = await firme(sab2, 'PM');
+      yes((await aplicarCargosLibres({ reservaId: r2.id, cargos: [{ monto: 15000 }] })).ok);
+      const rec = await modificarReserva({ codigo: r2.codigo, cambios: { fecha: dia(sab2, 1), hora: 'AM' }, politicaPrecio: 'recalcular' });
+      yes(rec.ok, JSON.stringify(rec));
+      eq((await reservaPorCodigo(r2.codigo)).total, rec.totalSegunTabla, 'recalcular = tabla + Otro');
+      eq(rec.totalSegunTabla, (await reservaPorCodigo(r2.codigo)).total);
+    });
+
+    await T('Otro en reserva MANUAL: suma sobre el total negociado, sobrevive a un adicional y a mover', async () => {
+      const sab = sabado();
+      const r = await crearReservaManual({
+        referencia: 'QA otro', nombreNino: 'QA Otro', apoderado: CLIENTE.nombre, email: CLIENTE.email, telefono: CLIENTE.telefono,
+        fecha: ymd(sab), turno: 'PM', horasAdicionales: 0, tramoInvitados: 'hasta10', tramoMayores: 'no', total: 300000, anticipo: 100000, notas: '',
+      });
+      if (!r.ok) throw new Error(JSON.stringify(r));
+      codigos.push(r.reserva.codigo);
+      await q(`UPDATE reserva SET estado = 'CONFIRMED', pagado = 100000 WHERE id = $1`, [r.reserva.id]);
+      await q(`UPDATE turno_hold SET firme = true, vence = now() + interval '5 years' WHERE reserva_codigo = $1`, [r.reserva.codigo]);
+      const res = await aplicarCargosLibres({ reservaId: r.reserva.id, cargos: [{ concepto: 'bebidas', monto: 40000 }] });
+      yes(res.ok, JSON.stringify(res)); eq(res.totalDespues, 340000);
+      let a = await reservaPorCodigo(r.reserva.codigo);
+      eq(a.total, 340000); eq(a.total - a.pagado, 240000);
+      yes(detalleDeReserva(a).adicionales.some((x) => x.cargoLibre && x.precio === 40000));
+      const cm = await aplicarCambioComercialManual({ reservaId: r.reserva.id, items: [getItem('tobogan-premium')], tematica: null, motivo: 'qa' });
+      yes(cm.ok, JSON.stringify(cm));
+      a = await reservaPorCodigo(r.reserva.codigo);
+      const precio = a.total - 340000;
+      yes(precio > 0, 'el adicional suma sobre total negociado + Otro');
+      yes((await modificarReserva({ codigo: r.reserva.codigo, cambios: { fecha: dia(sab, 1), hora: 'AM' } })).ok);
+      eq((await reservaPorCodigo(r.reserva.codigo)).total, a.total, 'mover no cambia el total');
+      eq((await aplicarCargosLibres({ reservaId: r.reserva.id, cargos: [] })).totalDespues, 300000 + precio, 'quitar el Otro deja negociado + adicional');
+    });
+
   } finally {
     await limpiar().catch((e) => console.error('limpieza falló:', e.message));
   }

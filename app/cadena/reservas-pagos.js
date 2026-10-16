@@ -624,6 +624,88 @@ function DesgloseCompleto({ r, d, tramoNinosLabel, tramoMayoresLabel }) {
   );
 }
 
+// Adicional "Otro": un monto libre que NO está en ninguna opción del catálogo
+// (ej. comida que el papá pidió aparte). César escribe el monto —y, si
+// quiere, una glosa— y el total sube en ese valor; el saldo se recalcula
+// solo (total − pagado), así el anticipo + el saldo cuadran con el total.
+// Lista completa en cada llamada: agregar y quitar son el mismo gesto
+// (/api/cadena/cargos-libres).
+function CargosLibres({ reserva: r, onCambio }) {
+  const actuales = (r.detalle?.cargosLibres || []).map((c) => ({ concepto: c.concepto, monto: c.monto }));
+  const [concepto, setConcepto] = useState('');
+  const [monto, setMonto] = useState('');
+  const [aplicando, setAplicando] = useState(false);
+  const [aviso, setAviso] = useState('');
+
+  const montoNum = Math.round(Number(monto) || 0);
+  const pagado = r.pagado || 0;
+
+  const aplicar = async (lista) => {
+    setAplicando(true);
+    setAviso('');
+    try {
+      const res = await fetch('/api/cadena/cargos-libres', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reservationCode: r.codigo, cargos: lista }),
+      });
+      const j = await res.json();
+      if (j.ok) {
+        setConcepto(''); setMonto('');
+        onCambio();
+      } else {
+        setAviso(j.motivo === 'monto_invalido' ? 'El monto debe ser un número entero mayor que 0 (máximo $5.000.000).' : `No se pudo aplicar (${j.motivo || 'error'}).`);
+      }
+    } catch {
+      setAviso('No se pudo conectar con el servidor.');
+    } finally {
+      setAplicando(false);
+    }
+  };
+
+  return (
+    <div className="mt-4 pt-3" style={{ borderTop: '1px dashed rgba(21,101,192,0.2)' }}>
+      <p className="text-[11px] font-black text-gray-500 mb-1.5">Otro (monto libre, fuera del catálogo)</p>
+      {actuales.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {actuales.map((c, i) => (
+            <span key={i} className="text-xs font-bold pl-2.5 pr-1.5 py-1 rounded-full flex items-center gap-1.5"
+              style={{ background: 'rgba(21,101,192,0.08)', color: AZUL }}>
+              {c.concepto === 'Otro' ? 'Otro' : `Otro: ${c.concepto}`} · {clp(c.monto)}
+              <button onClick={() => aplicar(actuales.filter((_, j) => j !== i))} disabled={aplicando}
+                aria-label={`Quitar ${c.concepto}`} className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] disabled:opacity-50"
+                style={{ background: 'rgba(21,101,192,0.18)' }}>×</button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-2 flex-wrap items-end">
+        <label className="text-xs">
+          <span className="block text-[11px] text-gray-500 mb-0.5">Monto ($)</span>
+          <input type="number" min="1" step="1" inputMode="numeric" value={monto} onChange={(e) => setMonto(e.target.value)}
+            placeholder="Ej: 30000" className="text-xs px-3 py-2 rounded-xl w-32" style={{ border: '1.5px solid #E5E7EB' }} />
+        </label>
+        <label className="text-xs">
+          <span className="block text-[11px] text-gray-500 mb-0.5">Glosa (opcional)</span>
+          <input value={concepto} onChange={(e) => setConcepto(e.target.value)} maxLength={60}
+            placeholder="Ej: comida extra" className="text-xs px-3 py-2 rounded-xl" style={{ border: '1.5px solid #E5E7EB' }} />
+        </label>
+        <button onClick={() => aplicar([...actuales, { concepto: concepto.trim(), monto: montoNum }])}
+          disabled={aplicando || montoNum <= 0}
+          className="text-xs font-black px-3.5 py-2 rounded-xl text-white disabled:opacity-50" style={{ background: AZUL }}>
+          {aplicando ? 'Aplicando…' : '+ Agregar Otro'}
+        </button>
+      </div>
+      {montoNum > 0 && (
+        <p className="text-[11px] text-gray-500 mt-1.5">
+          Total {clp(r.total)} → <b>{clp((r.total || 0) + montoNum)}</b> · pagado {clp(pagado)} · saldo → <b>{clp(Math.max(0, (r.total || 0) + montoNum - pagado))}</b>
+        </p>
+      )}
+      {aviso && <p className="text-xs text-red-500 mt-1.5">{aviso}</p>}
+    </div>
+  );
+}
+
 // Editor de adicionales de una reserva YA confirmada (hallazgo real
 // 30-sep-2026): cuando el papá le pide a César por teléfono agregar o
 // quitar algo, en vez de hacerlo él mismo desde Mi Celebración. Llama a
@@ -644,7 +726,7 @@ function EditorAdicionales({ reserva: r, onCambio }) {
   useEffect(() => { setTematicaTexto(d.tematica || ''); }, [d.tematica]);
 
   const idsActuales = [
-    ...(d.adicionales || []).map((a) => a.id),
+    ...(d.adicionales || []).filter((a) => !a.cargoLibre).map((a) => a.id),
     ...(d.incluidos || []).map((i) => i.id),
   ];
 
@@ -733,6 +815,7 @@ function EditorAdicionales({ reserva: r, onCambio }) {
         </button>
       </div>
       {aviso && <p className="text-xs text-red-500 mt-2">{aviso}</p>}
+      <CargosLibres reserva={r} onCambio={onCambio} />
     </div>
   );
 }
