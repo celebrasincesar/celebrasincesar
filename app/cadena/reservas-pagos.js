@@ -540,11 +540,6 @@ function FilaReserva({ reserva: r, onCambio }) {
                 (o si) lo manda. Nunca se envía solo ni se marca como
                 enviado — esto es ayuda, no cobranza automática. */}
             {saldo > 0 && <BotonCopiarMensajeSaldo reserva={r} festejado={d.festejado} saldo={saldo} />}
-            <button onClick={() => generarLink('EXTRA')} disabled={generando}
-              className="text-xs font-black px-3 py-2 rounded-xl disabled:opacity-50"
-              style={{ background: 'rgba(21,101,192,0.08)', color: AZUL }}>
-              Link de adicional
-            </button>
             <button onClick={() => setManualAbierto((v) => !v)}
               className="text-xs font-black px-3 py-2 rounded-xl"
               style={{ background: 'rgba(13,27,62,0.06)', color: '#0D1B3E' }}>
