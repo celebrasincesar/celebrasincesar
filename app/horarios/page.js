@@ -5,7 +5,7 @@ import { Pagina, Tarjeta, CtaArmar, metaRespuesta } from '../paginas-respuesta';
 export const metadata = metaRespuesta(
   'horarios',
   'Días y horarios',
-  'Celebramos viernes, sábados y domingos: AM 11:00-14:00 (solo sábado y domingo) y PM 16:00-19:00 todos los días. Puedes llegar 30 minutos antes a decorar.'
+  'Celebramos viernes, sábados y domingos: tarde 16:00-19:00 (viernes, sábado y domingo) y mañana 11:00-14:00 (solo sábado y domingo). Puedes llegar 30 minutos antes a decorar.'
 );
 
 // Fecha de referencia solo para resolver qué tabla de turnos corresponde a

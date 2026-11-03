@@ -967,8 +967,7 @@ ${bloquePack}${bloqueAdicionales}${tematicaLinea}${bloquePreparado}${descuentoLi
                       <span className="text-xl flex-shrink-0">🌧️</span>
                       <p className="text-sm font-bold leading-snug" style={{ color: '#0369A1' }}>
                         ¿Reservando en invierno? Tranquilidad total: si llueve,{' '}
-                        <span className="font-black">reagendas sin costo</span> y tu anticipo queda 100% vigente.
-                        Nunca pierdes tu reserva.
+                        <span className="font-black">reagendas sin costo</span> y tu anticipo pasa completo a la nueva fecha.
                       </p>
                     </div>
                   );

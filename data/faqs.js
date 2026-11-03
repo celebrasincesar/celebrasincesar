@@ -10,7 +10,7 @@
 export const FAQS = [
   {
     q: '¿Tengo que contratar un paquete obligatorio?',
-    a: 'Arriendas el espacio y sumas solo lo que necesitas. Puedes traer tu propia torta, comida y decoración, o dejar que lo organicemos nosotros. Un caso especial: si asisten niños mayores de 6 años, el armador incorpora automáticamente una configuración mínima de entretención pensada para ellos, porque los juegos fijos del jardín están diseñados para niños de 0 a 6.',
+    a: 'Arriendas el espacio y sumas solo lo que necesitas. Puedes traer tu propia torta, comida y decoración, o dejar que lo organicemos nosotros. Si vienen niños mayores de 6 años, al armar tu celebración te mostramos opciones de entretención pensadas para ellos y eliges la que prefieras.',
   },
   {
     q: '¿Puedo traer mi propia torta, comida y decoración?',
@@ -38,7 +38,7 @@ export const FAQS = [
   },
   {
     q: '¿Qué pasa si llueve el día de mi celebración?',
-    a: 'Tranquilidad total: si llueve, reagendas sin costo a otra fecha disponible y tu anticipo queda 100% vigente — nunca lo pierdes. Y si prefieres seguir adelante ese día, el salón techado y climatizado recibe la torta, la comida y a todos los adultos cómodos. Tú decides, sin presiones.',
+    a: 'Si llueve, reagendas sin costo a otra fecha disponible dentro de los 3 meses siguientes y tu anticipo pasa completo a la nueva fecha. Y si prefieres seguir adelante ese día, el salón techado y climatizado recibe la torta, la comida y a todos los adultos cómodos. Tú decides, sin presiones.',
   },
   {
     q: '¿Para qué edades es Alce Kids? ¿Pueden venir niños más grandes?',

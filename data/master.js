@@ -140,7 +140,7 @@ export const NEGOCIO = {
   holdMinutos: 15,
 
   // Política de lluvia — texto ya publicado en la web, mantenido como fuente única.
-  lluvia: 'Si llueve, reagendas sin costo y tu anticipo queda 100% vigente. Nunca pierdes tu reserva.',
+  lluvia: 'Si llueve, reagendas sin costo y tu anticipo pasa completo a la nueva fecha, dentro de los 3 meses siguientes y según disponibilidad.',
 
   edades: { min: 0, max: 6 },
   superficieM2: 600,
@@ -424,7 +424,7 @@ export const CATEGORIAS_ADICIONALES = [
         categoria_pack: 'inflable_gigante', apto_pack_mayores: true },
       { id: 'super-saltarina', nombre: 'Súper Saltarina',
         precios: { hasta10: 70000, hasta20: 70000, hasta30: 70000, mas30: 70000 }, emoji: '🎈',
-        desc: 'Cama elástica inflable gigante para saltar sin parar toda la fiesta.',
+        desc: 'Cama elástica de 2,44 m con malla de seguridad, para 4 niños a la vez.',
         tamano: 'gigante', edad_min: 2, edad_max: 12,
         categoria_pack: 'inflable_gigante', apto_pack_mayores: true },
       { id: 'tiburon-escalador', nombre: 'Tiburón Escalador',

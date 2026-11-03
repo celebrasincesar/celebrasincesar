@@ -306,7 +306,7 @@ export function HeroStatic({ onVerOpciones, onArmar }) {
           <span className="text-white/90 font-bold"> adaptas a tu manera</span>.
         </p>
         <p className="text-white/80 text-sm md:text-base font-bold mb-4 md:mb-6 max-w-lg">
-          Arma tu celebración, mira el precio al instante y reserva online.
+          Arma tu celebración a tu manera y reserva tu fecha online, con disponibilidad real al instante.
         </p>
 
         {/* ── Franja de confianza — prueba social premium ── */}
@@ -3320,7 +3320,7 @@ export function PageAlce({ onIniciarWizard }) {
                 },
                 {
                   icon: '🕐', title: 'Viernes · Sábado · Domingo',
-                  sub: 'AM 11:00–14:00 (sáb/dom) · PM 16:00–19:00 (todos los días)', color: 'rgba(249,115,22,0.15)',
+                  sub: 'Tarde 16:00–19:00 · Mañana 11:00–14:00 (sábado y domingo)', color: 'rgba(249,115,22,0.15)',
                 },
                 {
                   icon: <WaIcon />, title: '+56 9 4435 6955',
@@ -3550,10 +3550,10 @@ export function Footer() {
               {NEGOCIO.email}
             </a>
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Vie PM 16:00–19:00
+              Viernes · Sábado · Domingo
             </p>
             <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              PM 16:00–19:00 (todos los días) · Sáb/Dom también AM 11:00–14:00
+              Tarde 16:00–19:00 · Mañana 11:00–14:00 (sábado y domingo)
             </p>
           </div>
           <div

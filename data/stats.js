@@ -18,7 +18,7 @@ export const STATS = {
   edadMax: 6,                    // Edad máxima (niños)
 
   // ── Instagram ─────────────────────────────────────────────────────────────
-  seguidores: '1.400',           // Seguidores actuales en Instagram (@celebracionesalce)
+  seguidores: '1.900',         // Seguidores actuales en Instagram (@celebracionesalce)
   handle: '@celebracionesalce',  // Handle de Instagram
 };
 
@@ -35,7 +35,7 @@ export const RESEÑA_ORIGEN_LABEL = 'Reseña en Google';
 
 // Texto del strip de Instagram (home)
 export const INSTAGRAM_STRIP_TEXT =
-  `${STATS.handle} · +${STATS.seguidores} familias del sector oriente · fotos reales del recinto`;
+  `${STATS.handle} · +${STATS.seguidores} seguidores · fotos reales del recinto`;
 
 // Texto de reseñas corto (para badges y subtítulos)
 export const RESEÑAS_CORTO = `${RESEÑAS_LABEL} · Promedio ${STATS.rating}`;

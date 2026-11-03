@@ -51,7 +51,7 @@ export const CATEGORIAS_PACK = {
     label: 'Inflable gigante',
     plural: 'Inflables gigantes',
     emoji: '🏰',
-    ayuda: 'Solo los inflables gigantes son aptos para niños mayores de 6 (Tobogán Premium, Gran Castillo y Súper Saltarina). Los medianos y pequeños están hechos para los más chicos.',
+    ayuda: 'Para niños mayores de 6 son aptos los inflables gigantes (Tobogán Premium y Gran Castillo) y la cama elástica Súper Saltarina. Los medianos y pequeños están hechos para los más chicos.',
   },
   animacion: {
     id: 'animacion',
