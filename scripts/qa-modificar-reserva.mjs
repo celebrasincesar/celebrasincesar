@@ -46,6 +46,24 @@ await T('la ruta valida simulación → calendario → aplicar, y el cron reinte
   yes(lib.indexOf('await enviarCorreo(') < lib.indexOf('TIPO_AVISO_ENVIADO, evento.referencia'), 'el evento ENVIADO se registra después del SMTP');
 });
 
+await T('el aviso nombra los adicionales y "Otro" agregados/quitados y la temática nueva', async () => {
+  const { construirAvisoCambio } = await import('../lib/aviso-cambio-reserva.js');
+  const reserva = { codigo: 'CSC-2026-000998', acceso_token: 'x', cliente_nombre: 'Ana Pérez', total: 805000, pagado: 250000, snapshot: { configuracion: { nombreNino: 'Martina' } } };
+  const fijo = { fecha: '2026-11-07', turno: 'PM', horaInicio: '15:30', horaTermino: '18:30' };
+  const detalle = {
+    antes: { ...fijo, total: 725000 }, despues: { ...fijo, total: 805000 }, campos: ['extras', 'tematica'],
+    comercial: { adicionales: { agregados: ['Pinta y Globo'], quitados: ['Tobogán'] }, otros: { agregados: ['Otro: torta ($20.000)'], quitados: [] }, tematica: { antes: null, despues: 'Bluey <3' } },
+  };
+  const { asunto, texto, html } = construirAvisoCambio(reserva, detalle);
+  yes(/detalles/.test(asunto), asunto);
+  yes(texto.includes('Agregamos: Pinta y Globo, Otro: torta ($20.000).'), texto);
+  yes(texto.includes('Quitamos: Tobogán.'));
+  yes(texto.includes('Temática de la decoración: Bluey <3.'));
+  yes(texto.includes('Valor total: $805.000 (antes $725.000)'));
+  yes(!/Fecha: antes/.test(texto), 'sin cambio de fecha no se menciona la fecha');
+  yes(html.includes('Bluey &lt;3'), 'el HTML escapa lo que escribe César');
+});
+
 // ── B. INTEGRACIÓN ───────────────────────────────────────────────────
 function cargarEnvLocal() {
   const ruta = path.join(RAIZ, '.env.local');
@@ -170,7 +188,7 @@ if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
       const r = await firme(sab, 'PM');
       const viernesAM = await modificarReserva({ codigo: r.codigo, cambios: { fecha: dia(sab, -1), hora: 'AM' } });
       eq(viernesAM.ok, false); eq(viernesAM.motivo, 'configuracion_invalida');
-      const campo = await modificarReserva({ codigo: r.codigo, cambios: { extras: [] } });
+      const campo = await modificarReserva({ codigo: r.codigo, cambios: { estado: 'PAID' } });
       eq(campo.motivo, 'campo_no_modificable');
       const fecha = await modificarReserva({ codigo: r.codigo, cambios: { fecha: '31/10/2026' } });
       eq(fecha.motivo, 'fecha_invalida');
@@ -328,6 +346,85 @@ if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
       yes((await modificarReserva({ codigo: r.reserva.codigo, cambios: { fecha: dia(sab, 1), hora: 'AM' } })).ok);
       eq((await reservaPorCodigo(r.reserva.codigo)).total, a.total, 'mover no cambia el total');
       eq((await aplicarCargosLibres({ reservaId: r.reserva.id, cargos: [] })).totalDespues, 300000 + precio, 'quitar el Otro deja negociado + adicional');
+    });
+
+    // ── Adicionales dentro de Modificar (04-nov-2026) ─────────────────
+    await T('Modificar adicionales: simular no escribe; aplicar suma el precio del ítem con "mantener", registra el cambio y deja el aviso pendiente', async () => {
+      const sab = sabado();
+      const r = await firme(sab, 'PM');
+      const ids = configuracionVigente(r).configuracion.extras.map((e) => e.id);
+      const sim = await modificarReserva({ codigo: r.codigo, cambios: { extras: [...ids, 'tobogan-premium'] }, politicaPrecio: 'mantener', simular: true });
+      yes(sim.ok && sim.simulacion, JSON.stringify(sim));
+      eq(sim.comercial.adicionales.agregados.length, 1);
+      eq((await reservaPorCodigo(r.codigo)).total, r.total, 'simular no cambia el total');
+      const res = await modificarReserva({ codigo: r.codigo, cambios: { extras: [...ids, 'tobogan-premium'] }, politicaPrecio: 'mantener', avisar: true });
+      yes(res.ok, JSON.stringify(res));
+      const a = await reservaPorCodigo(r.codigo);
+      const precioItem = a.total - r.total;
+      yes(precioItem > 0 && precioItem < 300000, `suma solo el adicional (${precioItem})`);
+      yes(detalleDeReserva(a).adicionales.some((x) => x.id === 'tobogan-premium'));
+      eq(configuracionVigente(a).precio.lineas.reduce((s, l) => s + l.monto, 0), a.total, 'el desglose suma el total');
+      const ev = await q1(`SELECT detalle FROM pago_evento WHERE reserva_id = $1 AND tipo = 'RESERVA_MODIFICADA'`, [r.id]);
+      const det = typeof ev.detalle === 'string' ? JSON.parse(ev.detalle) : ev.detalle;
+      eq(det.avisar, true); yes(det.comercial.adicionales.agregados.length === 1, JSON.stringify(det.comercial));
+      eq((await q(`SELECT count(*)::int AS n FROM cambio_comercial WHERE reserva_id = $1`, [r.id]))[0].n, 1);
+      const quita = await modificarReserva({ codigo: r.codigo, cambios: { extras: ids }, politicaPrecio: 'mantener' });
+      yes(quita.ok, JSON.stringify(quita));
+      eq((await reservaPorCodigo(r.codigo)).total, r.total, 'quitarlo devuelve el total');
+      eq(quita.comercial.adicionales.quitados.length, 1);
+    });
+
+    await T('Modificar adicionales: mover de turno y agregar un ítem en el mismo cambio solo suma el ítem', async () => {
+      const sab = sabado();
+      const r = await firme(sab, 'PM');
+      const res = await modificarReserva({ codigo: r.codigo, cambios: { fecha: dia(sab, 1), hora: 'AM', horasAdicionales: 0, extras: ['tobogan-premium'] }, politicaPrecio: 'mantener' });
+      yes(res.ok, JSON.stringify(res));
+      const a = await reservaPorCodigo(r.codigo);
+      const precioItem = a.total - r.total;
+      yes(precioItem > 0 && precioItem < 300000, `solo suma el adicional (${precioItem}), no reprecia el domingo`);
+    });
+
+    await T('Modificar "Otro" y temática: suma el monto, exige temática con decoración y valida montos', async () => {
+      const r = await firme(sabado(), 'PM');
+      const otro = await modificarReserva({ codigo: r.codigo, cambios: { cargosLibres: [{ concepto: 'torta', monto: 20000 }] } });
+      yes(otro.ok, JSON.stringify(otro));
+      eq((await reservaPorCodigo(r.codigo)).total, r.total + 20000);
+      eq(otro.comercial.otros.agregados[0], 'Otro: torta ($20.000)');
+      const malo = await modificarReserva({ codigo: r.codigo, cambios: { cargosLibres: [{ monto: 0 }] } });
+      eq(malo.ok, false); eq(malo.motivo, 'monto_invalido');
+      const sinTem = await modificarReserva({ codigo: r.codigo, cambios: { extras: ['deco-tematica-simple'] } });
+      eq(sinTem.ok, false, 'decoración temática sin temática se rechaza');
+      const conTem = await modificarReserva({ codigo: r.codigo, cambios: { extras: ['deco-tematica-simple'], tematica: 'Bluey' } });
+      yes(conTem.ok, JSON.stringify(conTem));
+      const a = await reservaPorCodigo(r.codigo);
+      eq(configuracionVigente(a).configuracion.tematica, 'Bluey');
+      eq(detalleDeReserva(a).cargosLibres.length, 1, 'el Otro sobrevive al cambio de adicionales');
+      const pend = await q(`SELECT tipo FROM pendiente_proveedor WHERE reserva_id = $1 AND estado <> 'RETIRADO'`, [r.id]);
+      yes(pend.some((p) => p.tipo === 'decoracion_tematica'), 'la decoración genera su pendiente de proveedor');
+    });
+
+    await T('Modificar adicionales en reserva MANUAL: suma sobre el negociado y lo ya contratado conserva su precio', async () => {
+      const sab = sabado();
+      const r = await crearReservaManual({
+        referencia: 'QA mod adic', nombreNino: 'QA Adic', apoderado: CLIENTE.nombre, email: CLIENTE.email, telefono: CLIENTE.telefono,
+        fecha: ymd(sab), turno: 'PM', horasAdicionales: 0, tramoInvitados: 'hasta10', tramoMayores: 'no', total: 300000, anticipo: 100000, notas: '',
+      });
+      if (!r.ok) throw new Error(JSON.stringify(r));
+      codigos.push(r.reserva.codigo);
+      await q(`UPDATE reserva SET estado = 'CONFIRMED', pagado = 100000 WHERE id = $1`, [r.reserva.id]);
+      await q(`UPDATE turno_hold SET firme = true, vence = now() + interval '5 years' WHERE reserva_codigo = $1`, [r.reserva.codigo]);
+      const uno = await modificarReserva({ codigo: r.reserva.codigo, cambios: { extras: ['tobogan-premium'], cargosLibres: [{ monto: 10000 }] }, avisar: true });
+      yes(uno.ok, JSON.stringify(uno));
+      let a = await reservaPorCodigo(r.reserva.codigo);
+      yes(a.total - 310000 > 0, 'el adicional suma sobre negociado + Otro');
+      const vig = configuracionVigente(a);
+      vig.extrasManual[0].precio = 12345;
+      await q(`UPDATE reserva SET snapshot_vigente = $2::jsonb, total = $3 WHERE id = $1`, [r.reserva.id, JSON.stringify(vig), 310000 + 12345]);
+      const dos = await modificarReserva({ codigo: r.reserva.codigo, cambios: { extras: ['tobogan-premium', 'pingpong-junior'] } });
+      yes(dos.ok, JSON.stringify(dos));
+      a = await reservaPorCodigo(r.reserva.codigo);
+      eq(configuracionVigente(a).extrasManual.find((e) => e.id === 'tobogan-premium').precio, 12345, 'lo ya contratado conserva su precio');
+      yes(configuracionVigente(a).manual === true, 'sigue siendo manual');
     });
 
   } finally {

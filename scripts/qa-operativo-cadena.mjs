@@ -60,27 +60,30 @@ await T('Invitación Digital: /cadena tiene la sección y la tarjeta con "Marcar
   yes(panel.includes('/api/cadena/invitacion-enviada'));
 });
 
-await T('Editar adicionales: la ruta admin reutiliza aplicarCambioComercial (no un segundo motor)', () => {
-  const ruta = leer('app/api/cadena/cambio-comercial/route.js');
-  yes(ruta.includes("from '../../../../lib/cambio-comercial'"));
-  yes(ruta.includes('aplicarCambioComercial'));
-  yes(ruta.includes('itemVisible'), 'debe validar compatibilidad con la misma regla que Mi Celebración');
+await T('Editar adicionales: desde /cadena pasan por Modificar (vista previa + aviso), validando con la misma regla que Mi Celebración', () => {
+  const motor = leer('lib/cambio-comercial.js');
+  const resolver = motor.slice(motor.indexOf('export function resolverExtras'), motor.indexOf('export function extraManualDe'));
+  yes(resolver.includes('itemVisible'), 'debe validar compatibilidad con la misma regla que Mi Celebración');
+  const mod = leer('lib/modificar-reserva.js');
+  yes(mod.includes('resolverExtras') && mod.includes("'extras'") && mod.includes("'cargosLibres'"));
+  yes(!/api\/cadena\/(cambio-comercial|cargos-libres)/.test(leer('app/cadena/reservas-pagos.js') + leer('app/cadena/modificar-reserva.js')),
+    'ya no hay caminos sueltos que apliquen adicionales sin vista previa ni aviso');
 });
 
 await T('Editar adicionales: una reserva manual usa su propio camino ADITIVO — nunca recalcula con el motor de precios', () => {
-  const ruta = leer('app/api/cadena/cambio-comercial/route.js');
-  yes(ruta.includes('aplicarCambioComercialManual'));
-  yes(ruta.includes('esManual'));
   const motor = leer('lib/cambio-comercial.js');
   const bloque = motor.slice(motor.indexOf('export async function aplicarCambioComercialManual'), motor.indexOf('export async function historicoComercial'));
   yes(!/recalcular\(/.test(bloque), 'el camino manual jamás debe llamar a recalcular() — pisaría el total negociado');
   yes(bloque.includes('totalBase'));
+  const mod = leer('lib/modificar-reserva.js');
+  const manual = mod.slice(mod.indexOf('if (esManual) {', mod.indexOf('const avisosNormalizacion')), mod.indexOf('} else {', mod.indexOf('precioNuevo = null')));
+  yes(!/recalcular\(/.test(manual) && manual.includes('totalBase'), 'Modificar en manual tampoco recalcula');
 });
 
-await T('Editar adicionales: /cadena tiene el editor con agregar/quitar por ítem', () => {
-  const panel = leer('app/cadena/reservas-pagos.js');
-  yes(panel.includes('function EditorAdicionales'));
-  yes(panel.includes('/api/cadena/cambio-comercial'));
+await T('Editar adicionales: /cadena tiene agregar/quitar ítem y "Otro" dentro de Modificar', () => {
+  const panel = leer('app/cadena/modificar-reserva.js');
+  yes(panel.includes('Agregar ítem') && panel.includes('+ Agregar Otro'));
+  yes(panel.includes('/api/cadena/modificar-reserva'));
 });
 
 await T('Desglose completo (caso real CSC-2026-000023): arriendo abierto en base+niños+edad, cumpleaños compartido con su nº de festejados, y todo suma el total', async () => {
