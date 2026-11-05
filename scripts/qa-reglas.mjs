@@ -883,6 +883,43 @@ T('el último tramo aporta $15.000 propios, además del cobro por niño', () => 
   eq(addCantidad('mas30') - addCantidad('hasta30'), 15000);
 });
 
+// ── Dino Bicis + Pack Ruedas (05-nov-2026) ────────────────────────────
+T('Dino Bicis: 4 colores a $10.000 c/u, en Juegos, con selector en una sola ficha', () => {
+  const g = R.BLOQUES_VITRINA.find((b) => b.id === 'b-juegos').grupos.find((x) => x.id === 'g-dino-bicis');
+  if (!g?.selectorColores) throw new Error('falta la ficha con selector');
+  eq(g.itemIds.length, 4);
+  for (const id of g.itemIds) {
+    eq(R.CATEGORIA_DE_ITEM[id].id, 'juegos', id);
+    eq(R.ITEMS[id].precios.hasta10, 10000, id);
+    if (!R.ITEMS[id].color?.hex) throw new Error(`${id} sin color`);
+  }
+});
+
+T('Packs Diversión va justo después de Juegos y Pack Ruedas vale $35.000', () => {
+  const ids = R.BLOQUES_VITRINA.map((b) => b.id);
+  eq(ids.indexOf('b-packs-diversion'), ids.indexOf('b-juegos') + 1);
+  eq(R.ITEMS['pack-ruedas'].precios.mas30, 35000);
+  for (const id of R.ITEMS['pack-ruedas'].incluye) if (!R.ITEMS[id]) throw new Error(`incluye ${id} inexistente`);
+});
+
+T('el pack saca los sueltos que trae y un suelto no se suma encima del pack', () => {
+  const I = (id) => R.ITEMS[id];
+  let ex = [I('dino-bici-rosa'), I('dino-bici-negra'), I('racing-kart'), I('tobogan-premium')];
+  ex = R.sumarAdicional(ex, I('pack-ruedas'));
+  eq(ex.map((e) => e.id).join(','), 'tobogan-premium,pack-ruedas');
+  eq(R.sumarAdicional(ex, I('dino-bici-dino')), ex, 'la bici ya viene en el pack');
+  eq(R.sumarAdicional(ex, I('racing-kart')), ex, 'el kart ya viene en el pack');
+  eq(R.packQueIncluye(ex, 'racing-kart')?.id, 'pack-ruedas');
+  eq(R.sinDuplicadosDePack([I('dino-bici-rosa'), I('pack-ruedas')]).map((e) => e.id).join(','), 'pack-ruedas');
+});
+
+T('las Dino Bicis se ofrecen a festejados de 2 a 5 y el pack hasta 6', () => {
+  const ctx = (edad) => R.contextoDesde({ tramoInvitados: 'hasta10', tramoMayores: 'no', edadNino: edad });
+  eq(R.itemVisible(R.ITEMS['dino-bici-rosa'], ctx(3)), true);
+  eq(R.itemVisible(R.ITEMS['dino-bici-rosa'], ctx(6)), false);
+  eq(R.itemVisible(R.ITEMS['pack-ruedas'], ctx(6)), true);
+});
+
 
 // RESULTADO
 // ══════════════════════════════════════════════════════════════════════

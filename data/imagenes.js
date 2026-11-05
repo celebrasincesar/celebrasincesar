@@ -78,6 +78,9 @@ export const CARRUSEL = {
     "/fotos/deportivos/foto-07.webp",
     "/fotos/deportivos/foto-08.webp"
   ],
+  "dino-bicis": [
+    "/fotos/dino-bicis/foto-01.webp"
+  ],
   "elec-autos": [
     "/fotos/elec-autos/foto-01.webp",
     "/fotos/elec-autos/foto-02.webp",
@@ -126,6 +129,9 @@ export const CARRUSEL = {
     "/fotos/inflables/foto-06.webp",
     "/fotos/inflables/foto-07.webp"
   ],
+  "pack-ruedas": [
+    "/fotos/pack-ruedas/foto-01.webp"
+  ],
   "packs": [
     "/fotos/packs/foto-01.webp"
   ],
@@ -156,6 +162,7 @@ export const VITRINA = {
   "dep-mini": "/fotos/vitrina/dep-mini.webp",
   "dep-recreativos": "/fotos/vitrina/dep-recreativos.webp",
   "deportivos": "/fotos/vitrina/deportivos.webp",
+  "dino-bicis": "/fotos/vitrina/dino-bicis.webp",
   "elec-autos": "/fotos/vitrina/elec-autos.webp",
   "electricos": "/fotos/vitrina/electricos.webp",
   "inc-cocina": "/fotos/vitrina/inc-cocina.webp",
@@ -172,6 +179,7 @@ export const VITRINA = {
   "inflables": "/fotos/vitrina/inflables.webp",
   "juegos-portada": "/fotos/vitrina/juegos-portada.webp",
   "kpop": "/fotos/vitrina/kpop.webp",
+  "pack-ruedas": "/fotos/vitrina/pack-ruedas.webp",
   "packs": "/fotos/vitrina/packs.webp",
   "parlantes": "/fotos/vitrina/parlantes.webp",
   "personajes": "/fotos/vitrina/personajes.webp",

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { BLOQUES_VITRINA, MARCA } from '../../data/master';
 import { clp, WaIcon, BloqueSection, FichaCarrusel, scrollBehavior } from '../adicionales-grid';
+import { sumarAdicional } from '../../data/reglas';
 
 const WA_BASE = `https://wa.me/${MARCA.whatsapp}`;
 const WA_GENERAL = `${WA_BASE}?text=${encodeURIComponent(
@@ -103,11 +104,13 @@ export default function CatalogoCliente({ categoriaInicial = null }) {
     setExtras((prev) => {
       const yaEsta = prev.some((e) => e.id === item.id);
       if (yaEsta) return prev.filter((e) => e.id !== item.id);
+      // sumarAdicional: un pack saca los sueltos que trae dentro, y un suelto
+      // que ya viene en un pack elegido no se suma (Pack Ruedas / Dino Bicis).
       if (!grupo.seleccionMultiple) {
         const idsGrupo = grupo.items.map((i) => i.id);
-        return [...prev.filter((e) => !idsGrupo.includes(e.id)), item];
+        return sumarAdicional(prev.filter((e) => !idsGrupo.includes(e.id)), item);
       }
-      return [...prev, item];
+      return sumarAdicional(prev, item);
     });
   };
 

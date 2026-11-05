@@ -29,11 +29,15 @@ const META = {
   },
   juegos: {
     titulo: 'Juegos y Autos Eléctricos',
-    desc: 'Autos eléctricos para la Autopista Gigante, mini deportivos y mesas de taca taca y ping pong para el torneo familiar.',
+    desc: 'Autos eléctricos y Dino Bicis para la Autopista Gigante, mini deportivos y mesas de taca taca y ping pong para el torneo familiar.',
   },
   deportivos: {
     titulo: 'Juegos Deportivos para Cumpleaños',
     desc: 'Taca taca, ping pong, hockey y karts — tamaño junior y tamaño adulto. Ideales cuando vienen niños mayores de 6 años.',
+  },
+  'packs-diversion': {
+    titulo: 'Packs Diversión',
+    desc: 'Combos de juegos a precio especial para tu cumpleaños infantil en Las Condes. Pack Ruedas: 4 bicicletas de equilibrio + 1 Racing Kart para la Autopista Gigante.',
   },
   decoracion: {
     titulo: 'Decoración de Cumpleaños',

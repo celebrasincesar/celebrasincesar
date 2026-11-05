@@ -282,6 +282,35 @@ export const CATEGORIA_DE_ITEM = Object.fromEntries(
 export const filtraPorEdad = (itemId) => CATEGORIA_DE_ITEM[itemId]?.filtraPorEdad === true;
 
 // ─────────────────────────────────────────────────────────────────────
+// PACKS QUE TRAEN ÍTEMS SUELTOS DENTRO  (campo `incluye` del pack)
+//
+// Pack Ruedas = las 4 Dino Bicis + el Racing Kart. Un ítem suelto y el
+// pack que ya lo trae nunca conviven: el inventario es uno solo y sería
+// cobrarlo dos veces.
+//   · Se agrega el pack → salen los sueltos que trae dentro.
+//   · Se agrega un suelto que ya viene en un pack elegido → no cambia nada.
+// ─────────────────────────────────────────────────────────────────────
+export function packQueIncluye(extras = [], itemId) {
+  const pack = (extras || []).find((e) => (ITEMS[e?.id]?.incluye || []).includes(itemId));
+  return pack ? ITEMS[pack.id] : null;
+}
+
+// `extras` + `item`, respetando la regla de arriba. No toca las demás
+// reglas (selección única por grupo/categoría): eso lo resuelve quien llama.
+export function sumarAdicional(extras = [], item) {
+  if (!item) return extras;
+  if (extras.some((e) => e.id === item.id) || packQueIncluye(extras, item.id)) return extras;
+  const dentro = new Set(ITEMS[item.id]?.incluye || []);
+  return [...extras.filter((e) => !dentro.has(e.id)), item];
+}
+
+// Para una lista ya armada (servidor, sesiones viejas): quita los sueltos
+// que ya vienen dentro de un pack de la misma lista.
+export function sinDuplicadosDePack(extras = []) {
+  return (extras || []).filter((e) => !packQueIncluye(extras, e.id));
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // GRUPOS REALES DE LA CELEBRACIÓN
 //
 // La pregunta correcta no es "¿le sirve al festejado?" sino "¿le sirve a
@@ -444,6 +473,10 @@ export function normalizarConfiguracion(estado = {}) {
   // 6 · adicionales que dejaron de corresponder
   const enPack = new Set(itemsDelPack(e.packMayores?.seleccion));
   if (Array.isArray(e.extras) && e.extras.length) {
+    // Un suelto que ya viene dentro de un pack elegido sobra (no se avisa:
+    // el papá no pierde nada, lo sigue teniendo dentro del pack).
+    const depurados = sinDuplicadosDePack(e.extras);
+    if (depurados.length !== e.extras.length) e.extras = depurados;
     const fuera = e.extras.filter((x) => enPack.has(x.id) || !itemVisible(ITEMS[x.id] || x, ctx));
     if (fuera.length) {
       const ids = new Set(fuera.map((x) => x.id));

@@ -516,6 +516,46 @@ export const CATEGORIAS_ADICIONALES = [
         precios: { hasta10: 25000, hasta20: 25000, hasta30: 25000, mas30: 25000 }, emoji: '🏓',
         desc: 'Mesa de ping pong reglamentaria para el torneo familiar.',
         edad_min: 0, edad_max: 99, categoria_pack: 'deportivo', apto_pack_mayores: true },
+      // Dino Bicis: bicicletas de equilibrio, una por color. El papá elige
+      // 1, 2, 3 o las 4 en la misma ficha y cada una suma $10.000.
+      // `color` lo usa el selector de la ficha (g-dino-bicis.selectorColores).
+      { id: 'dino-bici-dino', nombre: 'Dino Bici Dino',
+        precios: { hasta10: 10000, hasta20: 10000, hasta30: 10000, mas30: 10000 }, emoji: '🦖',
+        desc: 'Bicicleta de equilibrio verde dino, con ruedas de EVA y apoya pies.',
+        color: { nombre: 'Dino', hex: '#0F9D8A' },
+        edad_min: 2, edad_max: 5, apto_mayores: false },
+      { id: 'dino-bici-jirafa', nombre: 'Dino Bici Jirafa',
+        precios: { hasta10: 10000, hasta20: 10000, hasta30: 10000, mas30: 10000 }, emoji: '🦒',
+        desc: 'Bicicleta de equilibrio amarilla jirafa, con ruedas de EVA y apoya pies.',
+        color: { nombre: 'Jirafa', hex: '#FACC15' },
+        edad_min: 2, edad_max: 5, apto_mayores: false },
+      { id: 'dino-bici-rosa', nombre: 'Dino Bici Rosa',
+        precios: { hasta10: 10000, hasta20: 10000, hasta30: 10000, mas30: 10000 }, emoji: '🌸',
+        desc: 'Bicicleta de equilibrio rosa, con ruedas de EVA y apoya pies.',
+        color: { nombre: 'Rosa', hex: '#EC4899' },
+        edad_min: 2, edad_max: 5, apto_mayores: false },
+      { id: 'dino-bici-negra', nombre: 'Dino Bici Negra',
+        precios: { hasta10: 10000, hasta20: 10000, hasta30: 10000, mas30: 10000 }, emoji: '🖤',
+        desc: 'Bicicleta de equilibrio negra, con ruedas de EVA y apoya pies.',
+        color: { nombre: 'Negra', hex: '#1F2937' },
+        edad_min: 2, edad_max: 5, apto_mayores: false },
+    ],
+  },
+
+  // ── CATEGORÍA 3B · PACKS DIVERSIÓN (combos a precio especial) ────────
+  //  `incluye` = ítems que también se venden sueltos y vienen DENTRO del
+  //  pack. Nunca conviven con el pack en la misma celebración (inventario
+  //  único y sería cobrar dos veces): ver sumarAdicional() en data/reglas.js.
+  {
+    id: 'packs-diversion', label: 'Packs Diversión', emoji: '🎁', filtraPorEdad: true,
+    desc: 'Combos de juegos a precio especial',
+    seleccionMultiple: true,
+    items: [
+      { id: 'pack-ruedas', nombre: 'Pack Ruedas',
+        precios: { hasta10: 35000, hasta20: 35000, hasta30: 35000, mas30: 35000 }, emoji: '🚲',
+        desc: '4 bicicletas de equilibrio Dino Bici + 1 Racing Kart. Hasta 5 niños en simultáneo.',
+        incluye: ['dino-bici-dino', 'dino-bici-jirafa', 'dino-bici-rosa', 'dino-bici-negra', 'racing-kart'],
+        edad_min: 2, edad_max: 6, apto_mayores: false },
     ],
   },
 
@@ -659,9 +699,28 @@ export const BLOQUES_VITRINA = [
       { id: 'g-dep-mini', nombre: 'Mini Deportivos', subNombre: 'Los mejores torneos para desarrollar una competencia sana.',
         carpeta: 'dep-mini', seleccionMultiple: true,
         itemIds: ['racing-kart', 'tiggy-junior', 'hockey-junior', 'tacataca-junior', 'pingpong-junior'] },
+      // Una sola ficha con selector de colores (no carrusel): cada color es
+      // un ítem propio y suma su precio. `upsell` = el pack que las trae todas.
+      { id: 'g-dino-bicis', nombre: 'Dino Bicis', subNombre: 'Bicicletas de equilibrio. Elige 1, 2, 3 o los 4 colores.',
+        carpeta: 'dino-bicis', seleccionMultiple: true, selectorColores: true, unidad: 'bici',
+        upsell: 'pack-ruedas',
+        itemIds: ['dino-bici-dino', 'dino-bici-jirafa', 'dino-bici-rosa', 'dino-bici-negra'] },
       { id: 'g-dep-recreativos', nombre: 'Súper Recreativos', subNombre: 'Para que los adultos no se queden fuera de la diversión.',
         carpeta: 'dep-recreativos', seleccionMultiple: true,
         itemIds: ['tacataca-adultos', 'pingpong-adultos'] },
+    ],
+  },
+
+  // ── CATEGORÍA 3B · PACKS DIVERSIÓN ───────────────────────────────
+  //  Aquí se van sumando los combos nuevos: un grupo por pack, con su
+  //  ficha en /public/fotos/vitrina/<carpeta>.webp.
+  {
+    id: 'b-packs-diversion', titulo: 'PACKS DIVERSIÓN', slug: 'packs-diversion',
+    subTitulo: 'Combos de juegos a precio especial',
+    addDirecto: true, // un pack = una opción: botón Agregar en la tarjeta
+    grupos: [
+      { id: 'g-pack-ruedas', nombre: 'Pack Ruedas', subNombre: '4 bicicletas + 1 Racing Kart. Hasta 5 niños a la vez.',
+        carpeta: 'pack-ruedas', seleccionMultiple: true, itemIds: ['pack-ruedas'] },
     ],
   },
 

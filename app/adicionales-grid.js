@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { CATEGORIAS_ADICIONALES, MARCA } from '../data/master';
+import { CATEGORIAS_ADICIONALES, BLOQUES_VITRINA, MARCA } from '../data/master';
 import { VITRINA, CARRUSEL } from '../data/imagenes';
 
 export const WA_BASE = `https://wa.me/${MARCA.whatsapp}`;
@@ -36,10 +36,28 @@ export function resolveGrupo(g) {
   return { ...g, items: (g.itemIds || []).map((id) => ITEM_LOOKUP[id]).filter(Boolean) };
 }
 
+// Sección de la vitrina donde vive un ítem (para agregar el pack del upsell
+// con la misma regla de selección que si lo tocaran en su tarjeta).
+function grupoDeItem(itemId) {
+  for (const b of BLOQUES_VITRINA) {
+    const g = b.grupos.find((x) => (x.itemIds || []).includes(itemId));
+    if (g) return resolveGrupo(g);
+  }
+  return null;
+}
+
+const PACKS = Object.values(ITEM_LOOKUP).filter((i) => Array.isArray(i.incluye));
+
 // ── Tarjeta de CATEGORÍA (grupo) ──────────────────────────────────────────────
 // seleccionado: true cuando algún ítem del grupo está en el carrito (modo wizard)
 export function GrupoCard({ grupo, onTap, isMobile = true, seleccionado = false, permitirAddDirecto = false, onAddDirecto = null, cantNinos = 'hasta10', agregados = [] }) {
-  const nombresAgregados = agregados.map((i) => i.nombre).join(' · ');
+  // Selector de colores (Dino Bicis): basta el color, el nombre ya está arriba.
+  const nombresAgregados = grupo.selectorColores
+    ? agregados.map((i) => i.color?.nombre || i.nombre).join(' · ')
+    : agregados.map((i) => i.nombre).join(' · ');
+  const tituloAgregado = grupo.selectorColores && grupo.unidad
+    ? `✓ ${agregados.length} ${grupo.unidad}${agregados.length === 1 ? '' : 's'}`
+    : '✓ Agregado';
   const imgSrc = VITRINA[grupo.carpeta];
   const count = grupo.items.length;
   const precios = grupo.preciosPorFoto
@@ -111,7 +129,7 @@ export function GrupoCard({ grupo, onTap, isMobile = true, seleccionado = false,
       {count > 1 && (
         <div className="absolute top-3 right-3 rounded-xl px-2 py-1 font-bold text-white"
           style={{ fontSize: '0.6rem', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)' }}>
-          {count} opciones
+          {count} {grupo.selectorColores ? 'colores' : 'opciones'}
         </div>
       )}
 
@@ -140,7 +158,7 @@ export function GrupoCard({ grupo, onTap, isMobile = true, seleccionado = false,
           // Multi-opción agregada: mismo diseño verde que Incluidos, con el/los nombre(s)
           <div className="w-full px-3.5 py-2 rounded-xl font-black text-white"
             style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 16px rgba(34,197,94,0.3)' }}>
-            <span style={{ fontSize: '0.8rem' }}>✓ Agregado</span>
+            <span style={{ fontSize: '0.8rem' }}>{tituloAgregado}</span>
             {nombresAgregados && (
               <span className="block leading-snug line-clamp-2 mt-0.5 font-semibold"
                 style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.95)' }}>
@@ -151,7 +169,7 @@ export function GrupoCard({ grupo, onTap, isMobile = true, seleccionado = false,
         ) : (
           <div className="flex items-center justify-between">
             <span className="text-xs font-black" style={{ color: '#29B9E8' }}>
-              {count === 1 ? 'Ver ficha →' : 'Ver opciones →'}
+              {count === 1 ? 'Ver ficha →' : grupo.selectorColores ? 'Elegir colores →' : 'Ver opciones →'}
             </span>
             <div className="w-7 h-7 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(41,185,232,0.2)', border: '1px solid rgba(41,185,232,0.3)' }}>
@@ -330,6 +348,20 @@ export function FichaCarrusel({ grupo, onCerrar, onAdd = null, isAdded = null, c
   const esGratis = precioRaw === 0;
   const estaAgregado = isAdded && item ? isAdded(item) : false;
   const puedAgregar = onAdd !== null && Boolean(item?.id);
+  // Pack ya elegido que trae este ítem dentro (Pack Ruedas → Racing Kart y
+  // Dino Bicis): no se ofrece agregarlo suelto, se dice que ya viene.
+  const packDe = (it) => (isAdded && it ? PACKS.find((p) => p.incluye.includes(it.id) && isAdded(p)) : null) || null;
+  const packDelItem = packDe(item);
+
+  // Selector de colores: una sola ficha y cada color se suma/quita sin cerrar.
+  const selector = grupo.selectorColores && onAdd !== null && items.length > 0;
+  const elegidos = selector && isAdded ? items.filter((i) => isAdded(i)) : [];
+  const totalElegidos = elegidos.reduce((t, i) => t + (i.precios?.[cantNinos] ?? i.precios?.hasta10 ?? i.precio ?? 0), 0);
+  const packSelector = selector ? packDe(items[0]) : null;
+  const upsellItem = selector && grupo.upsell ? ITEM_LOOKUP[grupo.upsell] : null;
+  const upsellPrecio = upsellItem ? (upsellItem.precios?.[cantNinos] ?? upsellItem.precios?.hasta10 ?? 0) : 0;
+  const unidad = grupo.unidad || 'opción';
+  const plural = (n) => `${n} ${unidad}${n === 1 ? '' : 's'}`;
 
   const waLink = `${WA_BASE}?text=${encodeURIComponent(
     `Hola! Vi el catálogo de Alce Kids y me interesa un *${grupo.nombre}* para mi celebración. ¿Está disponible? 🎉`
@@ -398,7 +430,7 @@ export function FichaCarrusel({ grupo, onCerrar, onAdd = null, isAdded = null, c
             aspectRatio: '520 / 735', borderRadius: '1rem', overflow: 'hidden',
             boxShadow: '0 0 60px rgba(255,255,255,0.08), 0 12px 48px rgba(0,0,0,0.5)',
           }}>
-            <img src={imgSrc} alt={item?.nombre || grupo.nombre}
+            <img src={imgSrc} alt={selector ? grupo.nombre : (item?.nombre || grupo.nombre)}
               className="w-full h-full object-contain"
               style={{ filter: 'brightness(1.06) saturate(1.1)' }} />
           </div>
@@ -418,7 +450,72 @@ export function FichaCarrusel({ grupo, onCerrar, onAdd = null, isAdded = null, c
           </div>
         )}
 
-        {puedAgregar ? (
+        {selector ? (
+          <div>
+            {packSelector ? (
+              <p className="text-center text-sm font-black mb-3" style={{ color: '#86efac' }}>
+                ✓ Ya vienen todas en tu {packSelector.nombre}
+              </p>
+            ) : (
+              <>
+                <p className="text-center text-xs font-bold mb-2" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                  Elige el color — puedes llevar 1, 2, 3 o las {items.length}
+                </p>
+                <div className="grid grid-cols-4 gap-2 mb-3" role="group" aria-label="Colores">
+                  {items.map((it) => {
+                    const on = isAdded ? isAdded(it) : false;
+                    return (
+                      <button key={it.id} type="button" onClick={() => onAdd(it, grupo)}
+                        aria-pressed={on}
+                        className="relative flex flex-col items-center justify-center gap-1 rounded-2xl py-2 font-black text-white transition-all active:scale-95"
+                        style={{
+                          minHeight: '60px',
+                          background: on ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.1)',
+                          border: on ? '2px solid #22c55e' : '2px solid rgba(255,255,255,0.18)',
+                        }}>
+                        <span className="rounded-full" aria-hidden="true"
+                          style={{ width: 24, height: 24, background: it.color?.hex || '#999', border: '2px solid rgba(255,255,255,0.85)' }} />
+                        <span style={{ fontSize: '0.72rem', lineHeight: 1 }}>{it.color?.nombre || it.nombre}</span>
+                        {on && (
+                          <span className="absolute top-1 right-1.5 text-xs" aria-hidden="true" style={{ color: '#4ade80' }}>✓</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Upsell: con 3+ colores conviene el pack que trae las 4 + Racing Kart */}
+                {upsellItem && elegidos.length >= 3 && (
+                  <button type="button"
+                    onClick={() => { const g = grupoDeItem(upsellItem.id); if (g) { onAdd(upsellItem, g); cerrar(); } }}
+                    className="w-full mb-2 px-4 py-2.5 rounded-2xl text-left font-black text-white"
+                    style={{ background: 'rgba(250,204,21,0.15)', border: '1.5px solid rgba(250,204,21,0.6)' }}>
+                    <span className="block text-xs" style={{ color: '#FDE047' }}>💡 Conviene más el {upsellItem.nombre}</span>
+                    <span className="block" style={{ fontSize: '0.8rem' }}>
+                      Las {items.length} bicis + Racing Kart por {clp(upsellPrecio)} →
+                    </span>
+                  </button>
+                )}
+              </>
+            )}
+            <button type="button" onClick={cerrar}
+              className="flex items-center justify-between w-full px-5 py-4 rounded-2xl font-black text-white"
+              style={elegidos.length > 0
+                ? { background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }
+                : { background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
+              <span className="text-sm">
+                {elegidos.length > 0 ? `✓ Listo · ${plural(elegidos.length)}` : (packSelector ? 'Cerrar' : 'Elige uno o más colores')}
+              </span>
+              <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>
+                {elegidos.length > 0 ? clp(totalElegidos) : (!packSelector && precioLabel ? `${precioLabel} c/u` : '')}
+              </span>
+            </button>
+          </div>
+        ) : puedAgregar && packDelItem ? (
+          <div className="flex items-center justify-center w-full px-5 py-4 rounded-2xl font-black text-sm"
+            style={{ background: 'rgba(34,197,94,0.18)', border: '2px solid #22c55e', color: '#bbf7d0' }}>
+            ✓ Incluido en tu {packDelItem.nombre}
+          </div>
+        ) : puedAgregar ? (
           <button
             onClick={() => { const yaEstaba = estaAgregado; onAdd(item, grupo); if (!yaEstaba) cerrar(); }}
             className="flex items-center justify-between w-full px-5 py-4 rounded-2xl font-black text-white"

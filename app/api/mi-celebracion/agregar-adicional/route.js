@@ -16,7 +16,7 @@ import { reservaDesdeParams, leerIdYToken } from '../../../../lib/mi-celebracion
 import { aplicarCambioComercial } from '../../../../lib/cambio-comercial';
 import { IDS_DECORACION_TEMATICA } from '../../../../lib/pendientes-proveedor';
 import { sincronizarCalendario } from '../../../../lib/calendario';
-import { getItem, itemVisible, contextoDesde, CATEGORIA_DE_ITEM } from '../../../../data/reglas';
+import { getItem, itemVisible, contextoDesde, CATEGORIA_DE_ITEM, packQueIncluye, sumarAdicional } from '../../../../data/reglas';
 import { dbConfigurada } from '../../../../lib/db';
 import { json, texto, demasiadasPeticiones, ipDe, cuerpoDe } from '../../../../lib/http';
 
@@ -56,7 +56,8 @@ export async function POST(req) {
 
   // Idempotente: si ya estaba agregado, no se abre un cambio comercial
   // vacío por un doble clic.
-  if (extrasActuales.some((e) => e.id === itemId)) {
+  // Lo mismo si ya viene dentro de un pack contratado (Dino Bici con Pack Ruedas).
+  if (extrasActuales.some((e) => e.id === itemId) || packQueIncluye(extrasActuales, itemId)) {
     return json({ ok: true, sinCambios: true, totalDespues: reserva.total });
   }
 
@@ -68,7 +69,8 @@ export async function POST(req) {
     ? extrasActuales.filter((e) => CATEGORIA_DE_ITEM[e.id]?.id !== categoria.id)
     : extrasActuales;
 
-  const extrasNuevos = [...extrasSinReemplazo, item];
+  // Un pack reemplaza los sueltos que trae dentro (no se cobran dos veces).
+  const extrasNuevos = sumarAdicional(extrasSinReemplazo, item);
 
   // La temática es canónica dentro de la configuración (nunca en otra
   // parte, documento §2): si el ítem agregado es de decoración temática,

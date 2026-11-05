@@ -49,7 +49,7 @@ const IDS_DECORACION_TEMATICA = new Set(['deco-tematica-simple', 'deco-tematica-
 // Categorías que tiene sentido ofrecer para agregar después de reservar
 // (documento §8) — el servidor (itemVisible()) es la autoridad final de
 // qué es compatible; acá solo se ofrece una lista razonable.
-const CATEGORIAS_OFRECIDAS = ['inflables', 'juegos', 'decoracion', 'animacion'];
+const CATEGORIAS_OFRECIDAS = ['inflables', 'juegos', 'packs-diversion', 'decoracion', 'animacion'];
 
 export default function MiCelebracionPage() {
   return (

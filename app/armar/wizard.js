@@ -11,7 +11,7 @@ import {
   cotizacionEsReferencial,
   seleccionVacia, tramoInvitadosPorId, alternativasPara, motivoNoDisponible, itemVisible,
   horarioEfectivo, opcionesHorario, maxHorasAdicionales, migrarHoraExtra, turnoPorId,
-  valorMayores, evaluarMayores, opcionesPack,
+  valorMayores, evaluarMayores, opcionesPack, sumarAdicional,
 } from '../../data/reglas';
 import { STATS } from '../../data/stats';
 import { EVENTOS, track, propsCelebracion } from '../../data/analytics';
@@ -434,7 +434,7 @@ export default function CelebrationWizard() {
     }
     setEstado((p) => ({
       ...p,
-      extras: [...p.extras, ...agregados.filter((a) => !p.extras.some((e) => e.id === a.id))],
+      extras: agregados.reduce((acc, a) => sumarAdicional(acc, a), p.extras),
       pendientes: [],
     }));
     if (agregados.length || rechazados.length) setAvisoPendientes({ agregados, rechazados });
@@ -514,11 +514,16 @@ export default function CelebrationWizard() {
   const retroceder = () => {
     if (depthRef.current > 0) { try { history.back(); } catch {} return; }
     const cur = { paso, grupo: grupoAbierto, ficha: grupoFicha, sheet: sheetAbierto };
-    if (cur.sheet)                 applyNav({ ...cur, sheet: false });
-    else if (cur.ficha)            applyNav({ ...cur, ficha: null });
-    else if (cur.grupo)            applyNav({ ...cur, grupo: null });
-    else if (cur.paso > 0)         applyNav({ ...cur, paso: cur.paso - 1 });
-    else if (cur.paso > 0) applyNav({ paso: cur.paso - 1, grupo: null, ficha: null, sheet: false });
+    // Sin entradas apiladas se retrocede en el sitio y la entrada base pasa a
+    // ser la pantalla nueva (si no, un atrás posterior volvería a la vieja).
+    const enBase = (n) => {
+      applyNav(n);
+      try { history.replaceState({ nav: n, depth: 0 }, '', location.href); } catch {}
+    };
+    if (cur.sheet)                 enBase({ ...cur, sheet: false });
+    else if (cur.ficha)            enBase({ ...cur, ficha: null });
+    else if (cur.grupo)            enBase({ ...cur, grupo: null });
+    else if (cur.paso > 0)         enBase({ ...cur, paso: cur.paso - 1 });
   };
 
   // Inicializar la entrada base con la posición inicial (normalmente 'inicio').
@@ -528,6 +533,19 @@ export default function CelebrationWizard() {
     depthRef.current = 0;
     try { history.replaceState({ nav: inicial, depth: 0 }, '', location.href); } catch {}
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // El paso también cambia SIN avanzar: al retomar una sesión guardada (salta
+  // directo a su paso) y cuando faltan datos y se vuelve al primer paso
+  // incompleto. Esa entrada del historial quedaba con el paso viejo, y al
+  // cerrar una ficha (atrás) se restauraba → saltaba a "¿Cuándo quieres
+  // celebrar?" (bug 05-nov-2026). Se corrige la entrada ACTUAL, sin apilar.
+  useEffect(() => {
+    const n = navFullRef.current;
+    if (!n || n.paso === paso) return;
+    const sync = { ...n, paso };
+    navFullRef.current = sync;
+    try { history.replaceState({ nav: sync, depth: depthRef.current }, '', location.href); } catch {}
+  }, [paso]);
 
   // El botón atrás del navegador: restaurar el estado guardado en esa entrada.
   useEffect(() => {
@@ -568,14 +586,16 @@ export default function CelebrationWizard() {
       if (yaEsta) {
         return { ...p, extras: p.extras.filter((e) => e.id !== item.id) };
       }
+      // sumarAdicional: un pack saca los sueltos que trae dentro, y un suelto
+      // que ya viene en un pack elegido no se suma (Pack Ruedas / Dino Bicis).
       if (!grupo.seleccionMultiple) {
         const idsGrupo = grupo.items.map((i) => i.id);
         return {
           ...p,
-          extras: [...p.extras.filter((e) => !idsGrupo.includes(e.id)), item],
+          extras: sumarAdicional(p.extras.filter((e) => !idsGrupo.includes(e.id)), item),
         };
       }
-      return { ...p, extras: [...p.extras, item] };
+      return { ...p, extras: sumarAdicional(p.extras, item) };
     });
   };
 
