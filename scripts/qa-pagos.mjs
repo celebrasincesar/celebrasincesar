@@ -29,7 +29,7 @@ register('./_resolver-sin-extension.mjs', import.meta.url);
 const { fechaISO, detalleDeReserva } = await import('../lib/reservas.js');
 const { escrituraCalendarHabilitada, tituloEvento, descripcion, metodoCalendar } = await import('../lib/calendario.js');
 const { construirResumenReserva } = await import('../lib/resumen-reserva.js');
-const { construirResumenCliente } = await import('../lib/resumen-cliente.js');
+const { construirResumenCliente, construirPagoRecibidoCliente } = await import('../lib/resumen-cliente.js');
 const { construirResumenContractual } = await import('../lib/resumen-contractual.js');
 
 // data/precios.js importa de data/master.js, data/reglas.js y
@@ -606,6 +606,34 @@ T('construirResumenCliente: reserva pagada completa no menciona fecha límite de
   const r = construirResumenCliente({ ...RESERVA_FIXTURE, pagado: 505000, saldo: 0 });
   yes(r.texto.includes('Saldo: pagado completo'));
   yes(!r.texto.includes('Fecha límite del saldo'));
+});
+
+// Correo "Pago recibido" (saldo/adicional registrado a mano, 05-nov-2026):
+// mismos títulos que /pago/resultado según si el cumpleaños ya pasó.
+const PAGO_SALDO = { tipo: 'BALANCE', monto: 252500 };
+T('construirPagoRecibidoCliente: saldo completo ANTES del cumpleaños → "¡Pago completo! … 100% confirmada"', () => {
+  const r = construirPagoRecibidoCliente({ ...RESERVA_FIXTURE, pagado: 505000 }, PAGO_SALDO, { yaCelebrada: false, resenaUrl: 'https://g.page/r/x/review' });
+  eq(r.asunto, '✅ ¡Pago completo! La celebración de Clemente está 100% confirmada · CSC-2026-000005');
+  yes(r.texto.includes('Ya no queda nada pendiente: solo falta celebrar'));
+  yes(r.texto.includes('Este pago: $252.500') && r.texto.includes('Saldo: pagado completo'));
+  yes(!r.texto.includes('reservada'), 'nunca repite "ya está reservada"');
+  yes(!r.texto.includes('reseña') && !r.html.includes('Contar cómo les fue'), 'antes de la fiesta no se pide reseña');
+});
+T('construirPagoRecibidoCliente: saldo completo DESPUÉS del cumpleaños → agradece y ofrece reseña', () => {
+  const r = construirPagoRecibidoCliente({ ...RESERVA_FIXTURE, pagado: 505000 }, PAGO_SALDO, { yaCelebrada: true, resenaUrl: 'https://g.page/r/x/review' });
+  eq(r.asunto, '💙 ¡Pago recibido, muchas gracias! · CSC-2026-000005');
+  yes(r.texto.includes('La celebración de Clemente quedó totalmente pagada. Gracias por celebrar con nosotros'));
+  yes(r.html.includes('https://g.page/r/x/review'));
+  yes(!r.texto.includes('100% confirmada'));
+});
+T('construirPagoRecibidoCliente: queda saldo → "Quedó registrado", sin decir pagado completo', () => {
+  const r = construirPagoRecibidoCliente({ ...RESERVA_FIXTURE, pagado: 300000 }, { tipo: 'EXTRA', monto: 47500 }, { yaCelebrada: false });
+  eq(r.asunto, '✅ ¡Pago recibido! · CSC-2026-000005');
+  yes(r.texto.includes('Quedó registrado en la celebración de Clemente.'));
+  yes(r.texto.includes('Saldo: $205.000'));
+  const post = construirPagoRecibidoCliente({ ...RESERVA_FIXTURE, pagado: 300000 }, { tipo: 'EXTRA', monto: 47500 }, { yaCelebrada: true });
+  yes(post.asunto.startsWith('💙 ¡Pago recibido, muchas gracias!'));
+  yes(!post.texto.includes('totalmente pagada'));
 });
 
 // ══════════════════════════════════════════════════════════════════════

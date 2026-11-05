@@ -354,6 +354,7 @@ function FilaReserva({ reserva: r, onCambio }) {
   const [copiado, setCopiado] = useState(false);
   const [aviso, setAviso] = useState('');
   const [manualAbierto, setManualAbierto] = useState(false);
+  const [avisoCorreo, setAvisoCorreo] = useState('');
 
   const saldo = Math.max(0, (r.total || 0) - (r.pagado || 0));
   const sobrepago = Math.max(0, (r.pagado || 0) - (r.total || 0));
@@ -537,9 +538,10 @@ function FilaReserva({ reserva: r, onCambio }) {
             </button>
           </div>
           {aviso && <p className="text-xs text-red-500 mt-2">{aviso}</p>}
+          {avisoCorreo && <p className="text-xs font-bold mt-2" style={{ color: avisoCorreo.startsWith('✉️') ? '#16a34a' : '#B45309' }}>{avisoCorreo}</p>}
 
           {manualAbierto && (
-            <FormPagoManual reserva={r} onRegistrado={() => { setManualAbierto(false); onCambio(); }} />
+            <FormPagoManual reserva={r} onRegistrado={(j) => { setManualAbierto(false); setAvisoCorreo(textoCorreoCliente(j?.correoCliente, r.cliente_email)); onCambio(); }} />
           )}
         </div>
       )}
@@ -686,7 +688,7 @@ function FormPagoManual({ reserva, onRegistrado }) {
         body: JSON.stringify({ reservationCode: reserva.codigo, tipo, medio, fecha, referencia, monto: montoNum }),
       });
       const j = await res.json();
-      if (j.ok) onRegistrado();
+      if (j.ok) onRegistrado(j);
       else setAviso(`No se pudo registrar (${j.motivo || 'error'}).`);
     } catch {
       setAviso('No se pudo conectar con el servidor.');
@@ -745,6 +747,16 @@ function FormPagoManual({ reserva, onRegistrado }) {
       {aviso && <p className="text-xs text-red-500 mt-2">{aviso}</p>}
     </div>
   );
+}
+
+// Resultado del correo "Pago recibido" a la familia (solo saldo/adicional
+// manual). Sin dato = anticipo, que ya tiene su propio correo.
+function textoCorreoCliente(c, email) {
+  if (!c) return '';
+  if (c.enviado) return `✉️ Le llegó un correo a la familia (${email}) confirmando el pago.`;
+  if (c.motivo === 'ya_notificado') return '';
+  if (c.motivo === 'sin_email_cliente') return '⚠ La reserva no tiene correo: avísale por WhatsApp.';
+  return '⚠ No se pudo mandar el correo a la familia: avísale por WhatsApp.';
 }
 
 const ETIQUETA_TIPO_PAGO = { DEPOSIT: 'Anticipo', BALANCE: 'Saldo', EXTRA: 'Adicional' };

@@ -24,6 +24,7 @@ import { NEGOCIO, BLOQUES_VITRINA } from '../../../data/master';
 import { CARRUSEL } from '../../../data/imagenes';
 import { getPrecio } from '../../celebra-ui';
 import { EVENTOS, track } from '../../../data/analytics';
+import { encabezadoPostPago } from '../../../lib/encabezado-pago';
 
 const AZUL = '#1565C0';
 const NARANJA = '#F97316';
@@ -417,42 +418,6 @@ function fmtFechaHablada(fecha) {
 // incluidos/preparar internos, esos solo importan para César (/cadena y
 // Calendar). Todo sale de lo que ya devolvió /api/pagos/flow/status, que a
 // su vez sale del snapshot histórico — nada se inventa ni se recalcula acá.
-// El anticipo es lo que RESERVA la fecha; el saldo y los adicionales llegan
-// sobre una celebración que ya estaba reservada, así que su pantalla
-// confirma el pago en vez de repetir "ya está reservada".
-function encabezadoPostPago({ tipo, saldoPendiente, festejado, yaCelebrada }) {
-  // Pago que llega después del cumpleaños (cualquier tipo): ni "reservada"
-  // ni "confirmada" — la fiesta ya fue, se agradece y se cierra la cuenta.
-  if (yaCelebrada) {
-    return saldoPendiente <= 0
-      ? {
-        icono: '💙',
-        titulo: '¡Pago recibido, muchas gracias!',
-        bajada: `La celebración de ${festejado} quedó totalmente pagada. Gracias por celebrar con nosotros 🎈`,
-      }
-      : {
-        icono: '💙',
-        titulo: '¡Pago recibido, muchas gracias!',
-        bajada: `Quedó registrado en la celebración de ${festejado}.`,
-      };
-  }
-  if (tipo === 'BALANCE' || tipo === 'EXTRA') {
-    if (saldoPendiente <= 0) {
-      return {
-        icono: '✅',
-        titulo: `¡Pago completo! La celebración de ${festejado} está 100% confirmada`,
-        bajada: 'Ya no queda nada pendiente: solo falta celebrar 🎈',
-      };
-    }
-    return {
-      icono: '✅',
-      titulo: '¡Pago recibido!',
-      bajada: `Quedó registrado en la celebración de ${festejado}.`,
-    };
-  }
-  return { icono: '🎉', titulo: `🎉 ¡La celebración de ${festejado} ya está reservada!`, bajada: null };
-}
-
 function mensajePostPago({ id, datos, festejado }) {
   const ninosLabel = tramoInvitadosPorId(datos.tramoInvitados)?.corto || null;
   const mayoresLabel = tramoMayoresPorId(datos.tramoMayores)?.corto || null;

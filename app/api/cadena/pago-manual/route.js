@@ -25,7 +25,7 @@
 import { reservaPorCodigo, registrarPagoManual } from '../../../../lib/reservas';
 import { TRIBUTARIO_POR_MEDIO_MANUAL } from '../../../../lib/tributario';
 import { sincronizarCalendario } from '../../../../lib/calendario';
-import { notificarAdminPago, notificarClientePago } from '../../../../lib/notificaciones';
+import { notificarAdminPago, notificarClientePago, notificarClientePagoRecibido } from '../../../../lib/notificaciones';
 import { enviarEmailContractual } from '../../../../lib/email-contractual';
 import { dbConfigurada } from '../../../../lib/db';
 import { json, texto, CODIGO_RESERVA, cuerpoDe } from '../../../../lib/http';
@@ -77,5 +77,13 @@ export async function POST(req) {
     await enviarEmailContractual(reserva.id).catch(() => {});
   }
 
-  return json({ ok: true, reserva: resultado.reserva, conflictoTurno: resultado.conflictoTurno, sobrepago });
+  // Saldo o adicional: la familia recibe "¡Pago completo!" / "¡Pago
+  // recibido, muchas gracias!" (lib/encabezado-pago.js). Va aparte del
+  // bloque de arriba porque un pago tras el cumpleaños igual debe avisarse.
+  let correoCliente = null;
+  if (resultado.nuevos > 0 && (tipo === 'BALANCE' || tipo === 'EXTRA')) {
+    correoCliente = await notificarClientePagoRecibido(resultado.pagoId).catch(() => ({ ok: false, enviado: false, motivo: 'error_envio' }));
+  }
+
+  return json({ ok: true, reserva: resultado.reserva, conflictoTurno: resultado.conflictoTurno, sobrepago, correoCliente });
 }

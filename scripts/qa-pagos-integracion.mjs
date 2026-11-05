@@ -59,7 +59,7 @@ const {
   montoQueCorresponde, acreditarPago, tomarTurno, PAGO,
   registrarPagoManual, marcarBoletaEmitida, pagosPendientesBVE, fechaISO, pagosDeReserva,
 } = await import('../lib/reservas.js');
-const { notificarAdminPago, pagoYaNotificado, notificarClientePago, pagoClienteYaNotificado } = await import('../lib/notificaciones.js');
+const { notificarAdminPago, pagoYaNotificado, notificarClientePago, pagoClienteYaNotificado, notificarClientePagoRecibido } = await import('../lib/notificaciones.js');
 const { enviarEmailContractual, reservaYaTieneEmailContractual, reservasPendientesEmailContractual } = await import('../lib/email-contractual.js');
 const { TYC_VERSION } = await import('../data/master.js');
 
@@ -1115,6 +1115,19 @@ try {
     eq(resultado.ok, true);
     eq(resultado.enviado, false);
     eq(resultado.motivo, 'no_es_anticipo');
+
+    // …pero ese mismo saldo SÍ llega al correo "Pago recibido" (aquí sin
+    // SMTP: se detiene justo antes de mandar, sin marcar nada como enviado).
+    const recibido = await notificarClientePagoRecibido(saldo.pagoId);
+    eq(recibido.ok, true);
+    eq(recibido.enviado, false);
+    eq(recibido.motivo, 'correo_no_configurado');
+  });
+
+  await T('NOTIFICACIÓN "PAGO RECIBIDO": un anticipo nunca la dispara (ya tiene su propio correo)', async () => {
+    const r = await notificarClientePagoRecibido(pagoNotifId);
+    eq(r.enviado, false);
+    eq(r.motivo, 'no_es_saldo_ni_adicional');
   });
 
   await T('NOTIFICACIÓN CLIENTE: construirResumenCliente() con esta reserva real trae festejado y los tres CTA', async () => {
