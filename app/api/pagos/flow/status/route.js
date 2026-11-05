@@ -61,6 +61,11 @@ export async function GET(req) {
   const config = snap?.configuracion || null; // null en reservas manuales
   const d = detalleDeReserva(actual);
 
+  // Qué se acaba de pagar (el último pago acreditado): la pantalla no dice
+  // "ya está reservada" cuando lo que llegó fue el saldo o un adicional.
+  const pagosFinal = enCurso ? await pagosDeReserva(reserva.id) : pagos;
+  const ultimoPagado = [...pagosFinal].reverse().find((p) => p.estado === 'PAID');
+
   return json({
     ok: true,
     reservationCode: actual.codigo,
@@ -69,6 +74,7 @@ export async function GET(req) {
     total: actual.total,
     pagado: actual.pagado,
     saldoPendiente: saldo.pendiente,
+    ultimoPagoTipo: ultimoPagado?.tipo || null, // DEPOSIT | BALANCE | EXTRA
 
     festejado: d.festejado,
     edadNino: d.edad,

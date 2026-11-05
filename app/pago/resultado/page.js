@@ -179,16 +179,20 @@ function ResultadoPago() {
     const extrasIds = (datos.extras || []).map((e) => e.id);
     const sugerencias = datos.ctx ? recomendados(datos.ctx, extrasIds, 4) : [];
     const mensajeWhatsApp = mensajePostPago({ id, datos, festejado });
+    const encabezado = encabezadoPostPago({ tipo: datos.ultimoPagoTipo, saldoPendiente, festejado });
 
     return (
       <Envoltorio ancho="max-w-lg">
         <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"
           style={{ background: 'radial-gradient(circle at 35% 30%, rgba(34,197,94,0.22), rgba(34,197,94,0.06))' }}>
-          🎉
+          {encabezado.icono}
         </div>
         <h1 className="text-[26px] md:text-3xl font-black mb-2 leading-tight" style={{ color: NAVY }}>
-          🎉 ¡La celebración de {festejado} ya está reservada!
+          {encabezado.titulo}
         </h1>
+        {encabezado.bajada && (
+          <p className="text-base font-bold mb-1" style={{ color: '#16a34a' }}>{encabezado.bajada}</p>
+        )}
         <span className="inline-block text-xs font-black px-3 py-1.5 rounded-lg mt-1" style={{ color: AZUL, background: 'rgba(21,101,192,0.08)', fontFamily: 'ui-monospace,monospace' }}>
           {id}
         </span>
@@ -400,13 +404,38 @@ function fmtFechaHablada(fecha) {
 // incluidos/preparar internos, esos solo importan para César (/cadena y
 // Calendar). Todo sale de lo que ya devolvió /api/pagos/flow/status, que a
 // su vez sale del snapshot histórico — nada se inventa ni se recalcula acá.
+// El anticipo es lo que RESERVA la fecha; el saldo y los adicionales llegan
+// sobre una celebración que ya estaba reservada, así que su pantalla
+// confirma el pago en vez de repetir "ya está reservada".
+function encabezadoPostPago({ tipo, saldoPendiente, festejado }) {
+  if (tipo === 'BALANCE' || tipo === 'EXTRA') {
+    if (saldoPendiente <= 0) {
+      return {
+        icono: '✅',
+        titulo: `¡Pago completo! La celebración de ${festejado} está 100% confirmada`,
+        bajada: 'Ya no queda nada pendiente: solo falta celebrar 🎈',
+      };
+    }
+    return {
+      icono: '✅',
+      titulo: '¡Pago recibido!',
+      bajada: `Quedó registrado en la celebración de ${festejado}.`,
+    };
+  }
+  return { icono: '🎉', titulo: `🎉 ¡La celebración de ${festejado} ya está reservada!`, bajada: null };
+}
+
 function mensajePostPago({ id, datos, festejado }) {
   const ninosLabel = tramoInvitadosPorId(datos.tramoInvitados)?.corto || null;
   const mayoresLabel = tramoMayoresPorId(datos.tramoMayores)?.corto || null;
   const sectorLabel = datos.sector === 'independiente' ? 'Sector Independiente' : 'Recinto Completo';
+  const saludo = {
+    BALANCE: '¡Hola César! 👋 Ya pagué el saldo de mi celebración en ALCE KIDS.',
+    EXTRA: '¡Hola César! 👋 Ya pagué el adicional de mi celebración en ALCE KIDS.',
+  }[datos.ultimoPagoTipo] || '¡Hola César! 👋 Ya reservé y pagué mi anticipo en ALCE KIDS.';
 
   const lineas = [
-    '¡Hola César! 👋 Ya reservé y pagué mi anticipo en ALCE KIDS.',
+    saludo,
     '',
     `🎉 Reserva: ${id}`,
     `🎂 ${festejado}${datos.edadNino != null ? ` · ${datos.edadNino} años` : ''}`,
