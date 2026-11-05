@@ -177,9 +177,11 @@ function ResultadoPago() {
   if (confirmada) {
     const festejado = datos.festejado || 'tu hij@';
     const extrasIds = (datos.extras || []).map((e) => e.id);
-    const sugerencias = datos.ctx ? recomendados(datos.ctx, extrasIds, 4) : [];
+    const yaCelebrada = datos.yaCelebrada === true;
+    // Después del cumpleaños no se ofrece seguir personalizando nada.
+    const sugerencias = datos.ctx && !yaCelebrada ? recomendados(datos.ctx, extrasIds, 4) : [];
     const mensajeWhatsApp = mensajePostPago({ id, datos, festejado });
-    const encabezado = encabezadoPostPago({ tipo: datos.ultimoPagoTipo, saldoPendiente, festejado });
+    const encabezado = encabezadoPostPago({ tipo: datos.ultimoPagoTipo, saldoPendiente, festejado, yaCelebrada });
 
     return (
       <Envoltorio ancho="max-w-lg">
@@ -217,23 +219,34 @@ function ResultadoPago() {
           </div>
         )}
 
-        {saldoPendiente > 0 && (
+        {saldoPendiente > 0 && !yaCelebrada && (
           <div className="mt-5 text-sm text-left rounded-xl p-3.5" style={{ background: 'rgba(41,185,232,0.08)', borderLeft: '3px solid #29B9E8', color: '#6B7A99' }}>
             Te avisaremos por WhatsApp para pagar el saldo {NEGOCIO.saldoVence}.
           </div>
         )}
 
+        {yaCelebrada && datos.resenaUrl && (
+          <a href={datos.resenaUrl} target="_blank" rel="noopener noreferrer"
+            className="block w-full text-center font-black text-white py-4 md:py-3.5 rounded-2xl mt-6"
+            style={{ background: `linear-gradient(135deg,${NARANJA},#EA580C)`, fontSize: 16 }}>
+            ⭐ Contar cómo les fue en Google
+          </a>
+        )}
         <Link href={`/mi-celebracion?id=${encodeURIComponent(id)}&t=${encodeURIComponent(token)}`}
-          className="block w-full text-center font-black text-white py-4 md:py-3.5 rounded-2xl mt-6"
-          style={{ background: `linear-gradient(135deg,${AZUL},#1976D2)`, fontSize: 16 }}>
+          className={`block w-full text-center font-black py-4 md:py-3.5 rounded-2xl ${yaCelebrada && datos.resenaUrl ? 'mt-3' : 'mt-6'} ${yaCelebrada && datos.resenaUrl ? '' : 'text-white'}`}
+          style={yaCelebrada && datos.resenaUrl
+            ? { color: AZUL, border: '1.5px solid rgba(21,101,192,0.25)', fontSize: 16 }
+            : { background: `linear-gradient(135deg,${AZUL},#1976D2)`, fontSize: 16 }}>
           Ver mi celebración
         </Link>
-        <BotonWhatsApp href={irWhatsApp(mensajeWhatsApp)} texto="Coordinar mi celebración por WhatsApp" />
-        <Link href="/catalogo"
-          className="block w-full text-center font-black py-3 rounded-2xl mt-3 text-sm"
-          style={{ color: AZUL, border: '1.5px solid rgba(21,101,192,0.25)' }}>
-          Personalizar aún más mi celebración ✨
-        </Link>
+        <BotonWhatsApp href={irWhatsApp(mensajeWhatsApp)} texto={yaCelebrada ? 'Escribir por WhatsApp' : 'Coordinar mi celebración por WhatsApp'} />
+        {!yaCelebrada && (
+          <Link href="/catalogo"
+            className="block w-full text-center font-black py-3 rounded-2xl mt-3 text-sm"
+            style={{ color: AZUL, border: '1.5px solid rgba(21,101,192,0.25)' }}>
+            Personalizar aún más mi celebración ✨
+          </Link>
+        )}
 
         {sugerencias.length > 0 && (
           <div className="mt-9 text-center">
@@ -407,7 +420,22 @@ function fmtFechaHablada(fecha) {
 // El anticipo es lo que RESERVA la fecha; el saldo y los adicionales llegan
 // sobre una celebración que ya estaba reservada, así que su pantalla
 // confirma el pago en vez de repetir "ya está reservada".
-function encabezadoPostPago({ tipo, saldoPendiente, festejado }) {
+function encabezadoPostPago({ tipo, saldoPendiente, festejado, yaCelebrada }) {
+  // Pago que llega después del cumpleaños (cualquier tipo): ni "reservada"
+  // ni "confirmada" — la fiesta ya fue, se agradece y se cierra la cuenta.
+  if (yaCelebrada) {
+    return saldoPendiente <= 0
+      ? {
+        icono: '💙',
+        titulo: '¡Pago recibido, muchas gracias!',
+        bajada: `La celebración de ${festejado} quedó totalmente pagada. Gracias por celebrar con nosotros 🎈`,
+      }
+      : {
+        icono: '💙',
+        titulo: '¡Pago recibido, muchas gracias!',
+        bajada: `Quedó registrado en la celebración de ${festejado}.`,
+      };
+  }
   if (tipo === 'BALANCE' || tipo === 'EXTRA') {
     if (saldoPendiente <= 0) {
       return {
@@ -429,10 +457,12 @@ function mensajePostPago({ id, datos, festejado }) {
   const ninosLabel = tramoInvitadosPorId(datos.tramoInvitados)?.corto || null;
   const mayoresLabel = tramoMayoresPorId(datos.tramoMayores)?.corto || null;
   const sectorLabel = datos.sector === 'independiente' ? 'Sector Independiente' : 'Recinto Completo';
-  const saludo = {
-    BALANCE: '¡Hola César! 👋 Ya pagué el saldo de mi celebración en ALCE KIDS.',
-    EXTRA: '¡Hola César! 👋 Ya pagué el adicional de mi celebración en ALCE KIDS.',
-  }[datos.ultimoPagoTipo] || '¡Hola César! 👋 Ya reservé y pagué mi anticipo en ALCE KIDS.';
+  const saludo = datos.yaCelebrada
+    ? `¡Hola César! 👋 Ya pagué lo pendiente de la celebración de ${festejado} en ALCE KIDS.`
+    : {
+      BALANCE: '¡Hola César! 👋 Ya pagué el saldo de mi celebración en ALCE KIDS.',
+      EXTRA: '¡Hola César! 👋 Ya pagué el adicional de mi celebración en ALCE KIDS.',
+    }[datos.ultimoPagoTipo] || '¡Hola César! 👋 Ya reservé y pagué mi anticipo en ALCE KIDS.';
 
   const lineas = [
     saludo,

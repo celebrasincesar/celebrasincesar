@@ -15,6 +15,8 @@ import { reservaPorCodigo, pagosDeReserva, etiquetaReserva, estadoSaldo, detalle
 import { procesarToken } from '../../../../../lib/pagos-flow';
 import { igualSeguro, json, texto, CODIGO_RESERVA, TOKEN_ACCESO, demasiadasPeticiones, ipDe } from '../../../../../lib/http';
 import { dbConfigurada } from '../../../../../lib/db';
+import { estadoPostevento, linkResenaValido } from '../../../../../lib/postevento';
+import { NEGOCIO } from '../../../../../data/master';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,6 +77,10 @@ export async function GET(req) {
     pagado: actual.pagado,
     saldoPendiente: saldo.pendiente,
     ultimoPagoTipo: ultimoPagado?.tipo || null, // DEPOSIT | BALANCE | EXTRA
+    // Desde el día siguiente al evento (misma regla que Mi Celebración):
+    // el pago llega sobre una celebración que ya ocurrió.
+    yaCelebrada: estadoPostevento(actual).activo === true,
+    resenaUrl: linkResenaValido(NEGOCIO.postevento.googleReviewUrl) ? NEGOCIO.postevento.googleReviewUrl : null,
 
     festejado: d.festejado,
     edadNino: d.edad,
