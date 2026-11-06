@@ -84,8 +84,10 @@ export function ModificarReserva({ reserva: r, onCambio }) {
   const set = (k, v) => { setF((p) => ({ ...p, [k]: v })); setSim(null); setAviso(''); setConfirmarCal(false); };
   const opcionesExt = opcionesHorario(f.hora, f.fecha) || [];
 
+  // La comida (Pizzas) no va en esta lista: lleva sabores y cantidades.
+  // Para comida pedida aparte está "Otro" con su monto.
   const disponibles = Object.values(ITEMS)
-    .filter((it) => !f.extras.includes(it.id))
+    .filter((it) => !f.extras.includes(it.id) && !it.comida)
     .sort((a, b) =>
       (CATEGORIA_DE_ITEM[a.id]?.label || '').localeCompare(CATEGORIA_DE_ITEM[b.id]?.label || '')
       || a.nombre.localeCompare(b.nombre));
@@ -137,6 +139,8 @@ export function ModificarReserva({ reserva: r, onCambio }) {
       } else if (j.motivo === 'calendario_ocupado') {
         setSim({ ...j, ok: true, calendario: { eventos: j.eventos } });
         setAviso('El calendario ya tiene otro evento ocupando ese turno. Revísalo y confirma si igual quieres moverla.');
+      } else if (j.motivo === 'item_requiere_detalle') {
+        setAviso(`${ITEMS[j.item]?.nombre || j.item} se pide con sabores desde el catálogo; aquí usa "Otro" con el monto.`);
       } else if (j.motivo === 'item_no_compatible') {
         setAviso(`${ITEMS[j.item]?.nombre || j.item} no corresponde para esta celebración (edad, niños o mayores de 6).`);
       } else {

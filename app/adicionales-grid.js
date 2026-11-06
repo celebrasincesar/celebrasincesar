@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { CATEGORIAS_ADICIONALES, BLOQUES_VITRINA, MARCA } from '../data/master';
 import { VITRINA, CARRUSEL } from '../data/imagenes';
+import { pedidoComida } from '../data/reglas';
 
 export const WA_BASE = `https://wa.me/${MARCA.whatsapp}`;
 
@@ -51,11 +52,20 @@ const PACKS = Object.values(ITEM_LOOKUP).filter((i) => Array.isArray(i.incluye))
 // ── Tarjeta de CATEGORÍA (grupo) ──────────────────────────────────────────────
 // seleccionado: true cuando algún ítem del grupo está en el carrito (modo wizard)
 export function GrupoCard({ grupo, onTap, isMobile = true, seleccionado = false, permitirAddDirecto = false, onAddDirecto = null, cantNinos = 'hasta10', agregados = [] }) {
+  // Comida (Pizzas): `agregados` trae el pedido del carro, con sus sabores.
+  const pedido = grupo.selectorComida && agregados[0]?.sabores
+    ? pedidoComida(agregados[0].id, agregados[0].sabores) : null;
+  const saboresCortos = pedido
+    ? grupo.items[0].comida.sabores.filter((s) => pedido.sabores[s.id]).map((s) => `${pedido.sabores[s.id]} ${s.nombre}`).join(' · ')
+    : '';
   // Selector de colores (Dino Bicis): basta el color, el nombre ya está arriba.
-  const nombresAgregados = grupo.selectorColores
+  const nombresAgregados = pedido ? saboresCortos
+    : grupo.selectorColores
     ? agregados.map((i) => i.color?.nombre || i.nombre).join(' · ')
     : agregados.map((i) => i.nombre).join(' · ');
-  const tituloAgregado = grupo.selectorColores && grupo.unidad
+  const tituloAgregado = pedido
+    ? `✓ ${pedido.cantidad} ${grupo.items[0].comida.unidad}${pedido.cantidad === 1 ? '' : 's'} · ${clp(pedido.total)}`
+    : grupo.selectorColores && grupo.unidad
     ? `✓ ${agregados.length} ${grupo.unidad}${agregados.length === 1 ? '' : 's'}`
     : '✓ Agregado';
   const imgSrc = VITRINA[grupo.carpeta];
@@ -169,7 +179,8 @@ export function GrupoCard({ grupo, onTap, isMobile = true, seleccionado = false,
         ) : (
           <div className="flex items-center justify-between">
             <span className="text-xs font-black" style={{ color: '#29B9E8' }}>
-              {count === 1 ? 'Ver ficha →' : grupo.selectorColores ? 'Elegir colores →' : 'Ver opciones →'}
+              {grupo.selectorComida ? `Elegir sabores · ${clp(grupo.items[0]?.precios?.hasta10 ?? 0)} c/u →`
+                : count === 1 ? 'Ver ficha →' : grupo.selectorColores ? 'Elegir colores →' : 'Ver opciones →'}
             </span>
             <div className="w-7 h-7 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(41,185,232,0.2)', border: '1px solid rgba(41,185,232,0.3)' }}>
@@ -285,7 +296,133 @@ export function IncludedCard({ grupo, isMobile = true, onCotizar = null, cotizad
 // Modo catálogo (onAdd=null): botón azul "Reservar →" que lleva al wizard
 // Modo wizard (onAdd provisto): botón naranja "Agregar" que agrega al carrito
 // cantNinos: tramo de precios activo ('hasta10' | 'hasta20' | 'hasta30' | 'mas30')
-export function FichaCarrusel({ grupo, onCerrar, onAdd = null, isAdded = null, cantNinos = 'hasta10', ownHistory = true }) {
+// ── Selector de comida (Pizzas) dentro de la ficha ───────────────────────────
+// Sabores con − / +, packs como meta opcional y el precio pack aplicado solo.
+// Cada toque actualiza el carro al tiro (onComida), igual que los colores.
+function packsTexto(pedido) {
+  const veces = {};
+  for (const p of pedido.packs) veces[p] = (veces[p] || 0) + 1;
+  const partes = Object.entries(veces).map(([c, n]) => `Pack ${c}${n > 1 ? ` × ${n}` : ''}`);
+  if (pedido.sueltas > 0) partes.push(`${pedido.sueltas} suelta${pedido.sueltas === 1 ? '' : 's'}`);
+  return partes.join(' + ');
+}
+
+function SelectorComida({ item, inicial, onComida, onListo }) {
+  const conf = item.comida;
+  const [sabores, setSabores] = useState(() => ({ ...(inicial || {}) }));
+  const [meta, setMeta] = useState(null);
+  const pedido = pedidoComida(item.id, sabores);
+  const unidad = item.precios?.hasta10 ?? 0;
+  const plural = (n) => `${n} ${conf.unidad}${n === 1 ? '' : 's'}`;
+
+  // Actualización funcional: dos toques seguidos suman dos, nunca uno.
+  const cambiar = (saborId, delta) => setSabores((prev) => {
+    const total = Object.values(prev).reduce((s, n) => s + n, 0);
+    if (delta > 0 && total >= conf.maximo) return prev;
+    const n = Math.max(0, (prev[saborId] || 0) + delta);
+    const nuevo = { ...prev, [saborId]: n };
+    if (!n) delete nuevo[saborId];
+    return nuevo;
+  });
+  // El carro se entera de cada cambio (no del valor con que se abrió).
+  const montado = useRef(false);
+  useEffect(() => {
+    if (!montado.current) { montado.current = true; return; }
+    onComida(item, sabores);
+  }, [sabores]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const faltanMeta = meta ? meta - pedido.cantidad : 0;
+  const sig = pedido.siguiente;
+
+  return (
+    <div>
+      {/* Packs: solo orientan, el mejor precio se aplica igual sin tocarlos */}
+      <div className="grid grid-cols-3 gap-1.5 mb-2" role="group" aria-label="Packs">
+        {conf.packs.map((p) => {
+          const on = meta === p.cantidad;
+          const logrado = pedido.cantidad >= p.cantidad;
+          return (
+            <button key={p.cantidad} type="button" onClick={() => setMeta(on ? null : p.cantidad)}
+              aria-pressed={on}
+              className="rounded-xl py-1.5 font-black text-white transition-all active:scale-95"
+              style={{
+                background: on ? 'rgba(249,115,22,0.3)' : logrado ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.1)',
+                border: on ? '2px solid #F97316' : logrado ? '2px solid rgba(34,197,94,0.6)' : '2px solid rgba(255,255,255,0.18)',
+              }}>
+              <span className="block" style={{ fontSize: '0.75rem', lineHeight: 1.1 }}>Pack {p.cantidad}</span>
+              <span className="block" style={{ fontSize: '0.7rem', lineHeight: 1.2, color: '#FDBA74' }}>{clp(p.precio)}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="text-center text-xs font-bold mb-2" style={{ color: 'rgba(255,255,255,0.85)' }} aria-live="polite">
+        {meta && faltanMeta > 0
+          ? `Llevas ${pedido.cantidad} de ${meta} · elige ${plural(faltanMeta)} más`
+          : meta && faltanMeta <= 0
+            ? `✓ Pack ${meta} completo`
+            : `${clp(unidad)} c/u · desde 10, precio pack`}
+      </p>
+
+      <div className="grid grid-cols-2 gap-1.5 mb-2" role="group" aria-label="Sabores">
+        {conf.sabores.map((s) => {
+          const n = sabores[s.id] || 0;
+          return (
+            <div key={s.id} className="flex items-center gap-1 rounded-xl pl-2.5 pr-1 py-1"
+              style={{
+                background: n ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.08)',
+                border: n ? '1.5px solid #22c55e' : '1.5px solid rgba(255,255,255,0.15)',
+              }}>
+              <span className="flex-1 min-w-0 font-black text-white leading-tight" style={{ fontSize: '0.72rem' }}
+                title={s.detalle || undefined}>
+                {s.nombre}
+              </span>
+              <button type="button" onClick={() => cambiar(s.id, -1)} disabled={!n}
+                aria-label={`Quitar una ${s.nombre}`}
+                className="w-8 h-8 rounded-lg font-black text-white disabled:opacity-30"
+                style={{ background: 'rgba(255,255,255,0.15)' }}>−</button>
+              <span className="w-5 text-center font-black text-white" style={{ fontSize: '0.85rem' }}
+                aria-label={`${n} ${s.nombre}`}>{n}</span>
+              <button type="button" onClick={() => cambiar(s.id, 1)} disabled={pedido.cantidad >= conf.maximo}
+                aria-label={`Agregar una ${s.nombre}`}
+                className="w-8 h-8 rounded-lg font-black text-white disabled:opacity-30"
+                style={{ background: '#F97316' }}>+</button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Empujón al siguiente pack: a veces llevar más cuesta MENOS. La
+          línea siempre ocupa su lugar para que los botones no se muevan. */}
+      <p className="text-center text-xs font-black mb-2" style={{ color: '#FDE047', minHeight: '1rem' }} aria-live="polite">
+        {sig && !(meta && faltanMeta > 0) ? `💡 ${sig.diferencia < 0
+          ? `Agrega ${sig.faltan} más y pagas ${clp(-sig.diferencia)} menos`
+          : sig.diferencia === 0
+            ? `Agrega ${sig.faltan} más y pagas lo mismo`
+            : `Por ${clp(sig.diferencia)} más llevas ${plural(sig.cantidad)}`}` : ''}
+      </p>
+
+      <button type="button" onClick={onListo}
+        className="flex items-center justify-between w-full px-5 py-3 rounded-2xl font-black text-white"
+        style={pedido.cantidad > 0
+          ? { background: 'linear-gradient(135deg, #22c55e, #16a34a)', boxShadow: '0 4px 20px rgba(34,197,94,0.35)' }
+          : { background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)' }}>
+        <span className="text-left">
+          <span className="block text-sm">{pedido.cantidad > 0 ? `✓ Listo · ${plural(pedido.cantidad)}` : 'Elige tus sabores'}</span>
+          {/* Segunda línea siempre presente (alto fijo del botón) */}
+          <span className="block font-semibold" style={{ fontSize: '0.7rem', minHeight: '0.9rem', color: '#bbf7d0' }}>
+            {pedido.ahorro > 0 ? `${packsTexto(pedido)} · ahorras ${clp(pedido.ahorro)}` : ''}
+          </span>
+        </span>
+        <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>
+          {pedido.cantidad > 0 ? clp(pedido.total) : `${clp(unidad)} c/u`}
+        </span>
+      </button>
+    </div>
+  );
+}
+
+export function FichaCarrusel({ grupo, onCerrar, onAdd = null, isAdded = null, cantNinos = 'hasta10', ownHistory = true, getExtra = null, onComida = null }) {
   const [idx, setIdx] = useState(0);
   const touchStartX = useRef(null);
   const panelRef = useRef(null);
@@ -362,6 +499,8 @@ export function FichaCarrusel({ grupo, onCerrar, onAdd = null, isAdded = null, c
   const upsellPrecio = upsellItem ? (upsellItem.precios?.[cantNinos] ?? upsellItem.precios?.hasta10 ?? 0) : 0;
   const unidad = grupo.unidad || 'opción';
   const plural = (n) => `${n} ${unidad}${n === 1 ? '' : 's'}`;
+  // Comida (Pizzas): el pedido se arma en la ficha con sabores y cantidades.
+  const comidaSel = grupo.selectorComida && typeof onComida === 'function' && item?.comida;
 
   const waLink = `${WA_BASE}?text=${encodeURIComponent(
     `Hola! Vi el catálogo de Alce Kids y me interesa un *${grupo.nombre}* para mi celebración. ¿Está disponible? 🎉`
@@ -450,7 +589,9 @@ export function FichaCarrusel({ grupo, onCerrar, onAdd = null, isAdded = null, c
           </div>
         )}
 
-        {selector ? (
+        {comidaSel ? (
+          <SelectorComida item={item} inicial={getExtra?.(item)?.sabores} onComida={onComida} onListo={cerrar} />
+        ) : selector ? (
           <div>
             {packSelector ? (
               <p className="text-center text-sm font-black mb-3" style={{ color: '#86efac' }}>

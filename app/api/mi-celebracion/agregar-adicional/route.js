@@ -43,6 +43,8 @@ export async function POST(req) {
 
   const item = getItem(itemId);
   if (!item) return json({ ok: false, motivo: 'item_no_existe' }, 400);
+  // La comida se pide con sabores y cantidades, no con un solo toque.
+  if (item.comida) return json({ ok: false, motivo: 'item_no_disponible' }, 400);
 
   const vigente = configuracionVigente(reserva);
   const config = vigente?.configuracion || {};

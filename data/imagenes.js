@@ -135,6 +135,9 @@ export const CARRUSEL = {
   "packs": [
     "/fotos/packs/foto-01.webp"
   ],
+  "pizzas": [
+    "/fotos/pizzas/foto-01.webp"
+  ],
   "videojuegos": [
     "/fotos/videojuegos/foto-01.webp"
   ]
@@ -185,6 +188,7 @@ export const VITRINA = {
   "personajes": "/fotos/vitrina/personajes.webp",
   "pinata-video": "/fotos/vitrina/pinata-video.webp",
   "pinta-caritas": "/fotos/vitrina/pinta-caritas.webp",
+  "pizzas": "/fotos/vitrina/pizzas.webp",
   "tortas": "/fotos/vitrina/tortas.webp",
   "videojuegos": "/fotos/vitrina/videojuegos.webp"
 };

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { BLOQUES_VITRINA, MARCA } from '../../data/master';
 import { clp, WaIcon, BloqueSection, FichaCarrusel, scrollBehavior } from '../adicionales-grid';
-import { sumarAdicional } from '../../data/reglas';
+import { sumarAdicional, materializarExtra } from '../../data/reglas';
 
 const WA_BASE = `https://wa.me/${MARCA.whatsapp}`;
 const WA_GENERAL = `${WA_BASE}?text=${encodeURIComponent(
@@ -114,6 +114,18 @@ export default function CatalogoCliente({ categoriaInicial = null }) {
     });
   };
 
+  // Comida (Pizzas): cada cambio de sabores reemplaza el pedido en el carro;
+  // sin unidades, sale del carro.
+  const setComida = (item, sabores) => {
+    const pedido = materializarExtra({ id: item.id, sabores });
+    setExtras((prev) => {
+      if (!pedido) return prev.filter((e) => e.id !== item.id);
+      return prev.some((e) => e.id === item.id)
+        ? prev.map((e) => (e.id === item.id ? pedido : e))
+        : [...prev, pedido];
+    });
+  };
+
   const total = useMemo(
     () => extras.reduce((t, e) => t + getPrecio(e, cantNinos), 0),
     [extras, cantNinos]
@@ -151,8 +163,11 @@ Total adicionales: ${clp(total)}
     try {
       const raw = localStorage.getItem('alce-wizard-v3');
       const prev = raw ? JSON.parse(raw) : {};
-      const previos = Array.isArray(prev.pendientes) ? prev.pendientes : [];
-      const pendientes = [...new Set([...previos, ...extras.map((e) => e.id)])];
+      // La comida viaja con sus sabores ({ id, sabores }); el resto, por id.
+      const idsAhora = new Set(extras.map((e) => e.id));
+      const previos = (Array.isArray(prev.pendientes) ? prev.pendientes : [])
+        .filter((p) => !idsAhora.has(typeof p === 'string' ? p : p?.id));
+      const pendientes = [...previos, ...extras.map((e) => (e.comida ? { id: e.id, sabores: e.sabores } : e.id))];
       localStorage.setItem('alce-wizard-v3', JSON.stringify({
         ...prev,
         pendientes,
@@ -282,7 +297,7 @@ Total adicionales: ${clp(total)}
             bloque={bloque}
             onTapGrupo={setGrupoAbierto}
             getSeleccionado={(grupo) => grupo.items.some((i) => extras.some((e) => e.id === i.id))}
-            getAgregados={(grupo) => grupo.items.filter((i) => extras.some((e) => e.id === i.id))}
+            getAgregados={(grupo) => grupo.items.map((i) => extras.find((e) => e.id === i.id)).filter(Boolean)}
             onAddDirecto={toggleItem}
             cantNinos={cantNinos}
           />
@@ -372,6 +387,8 @@ Total adicionales: ${clp(total)}
           onCerrar={() => setGrupoAbierto(null)}
           onAdd={toggleItem}
           isAdded={(item) => extras.some((e) => e.id === item.id)}
+          getExtra={(item) => extras.find((e) => e.id === item.id)}
+          onComida={setComida}
           cantNinos={cantNinos}
         />
       )}

@@ -920,6 +920,62 @@ T('las Dino Bicis se ofrecen a festejados de 2 a 5 y el pack hasta 6', () => {
   eq(R.itemVisible(R.ITEMS['pack-ruedas'], ctx(6)), true);
 });
 
+// ── Comida: Pizzas por sabor con precio pack automático (05-nov-2026) ──
+T('Pizzas: $11.500 c/u, 6 sabores y packs 10/20/30 = $109.000/$195.000/$285.000', () => {
+  const c = R.ITEMS.pizzas.comida;
+  eq(R.ITEMS.pizzas.precios.hasta10, 11500);
+  eq(c.sabores.length, 6);
+  eq(c.packs.map((p) => `${p.cantidad}:${p.precio}`).join(','), '10:109000,20:195000,30:285000');
+  const g = R.BLOQUES_VITRINA.find((b) => b.id === 'b-comida').grupos.find((x) => x.id === 'g-pizzas');
+  if (!g?.selectorComida) throw new Error('falta la ficha con selector de sabores');
+});
+
+T('el precio pack se aplica solo y nunca cobra más de lo pedido', () => {
+  const P = (n) => R.pedidoComida('pizzas', { pepperoni: n });
+  eq(P(1).total, 11500);
+  eq(P(9).total, 103500);
+  eq(P(10).total, 109000);
+  eq(P(13).total, 109000 + 3 * 11500, '13 = Pack 10 + 3 sueltas');
+  eq(P(20).total, 195000);
+  eq(P(30).total, 285000);
+  eq(P(40).total, 390000, '40 = 2 × Pack 20');
+  eq(P(13).sueltas, 3);
+  // 18 sale más caro que 20: la ficha lo dice
+  eq(P(18).siguiente.cantidad, 20);
+  eq(P(18).siguiente.diferencia, 195000 - (109000 + 8 * 11500));
+  if (P(18).siguiente.diferencia >= 0) throw new Error('18 debería costar más que 20');
+});
+
+T('sabores: solo los que existen, enteros positivos y tope de 60', () => {
+  eq(JSON.stringify(R.normalizarSabores('pizzas', { pepperoni: '4', inventado: 9, margarita: -2, camarones: 2.7 })),
+    JSON.stringify({ pepperoni: 4, camarones: 2 }));
+  eq(R.pedidoComida('pizzas', { pepperoni: 50, margarita: 50 }).cantidad, 60);
+});
+
+T('materializarExtra: nombre con detalle y valor del servidor, aunque el navegador mienta', () => {
+  const ex = R.materializarExtra({ id: 'pizzas', sabores: { margarita: 6, pepperoni: 4 }, nombre: 'x', precios: { hasta10: 1 } });
+  eq(ex.nombre, '10 Pizzas: 4 Super Pepperoni, 6 Super Margarita');
+  eq(ex.precios.hasta20, 109000);
+  eq(ex.cantidad, 10);
+  eq(R.materializarExtra({ id: 'pizzas', sabores: {} }), null, 'sin unidades no hay adicional');
+  eq(R.materializarExtra('pizzas'), null);
+  const otro = { id: 'tobogan-premium' };
+  eq(R.materializarExtra(otro), otro, 'lo que no es comida pasa intacto');
+});
+
+T('normalizarConfiguracion recalcula la comida y bota la vacía', () => {
+  const base = { tramoInvitados: 'hasta20', tramoMayores: 'no', edadNino: 5, sector: 'completo' };
+  const n = R.normalizarConfiguracion({ ...base, extras: [
+    { id: 'pizzas', sabores: { pollo_bbq: 3, 'pollo-bbq': 12 }, precios: { hasta20: 5 } },
+    R.ITEMS['tobogan-premium'],
+  ] });
+  const piz = n.extras.find((e) => e.id === 'pizzas');
+  eq(piz.precios.hasta20, 109000 + 2 * 11500);
+  eq(piz.nombre, '12 Pizzas: 12 Pollo BBQ');
+  const vacia = R.normalizarConfiguracion({ ...base, extras: [{ id: 'pizzas', sabores: {} }] });
+  eq(vacia.extras.length, 0);
+});
+
 
 // RESULTADO
 // ══════════════════════════════════════════════════════════════════════

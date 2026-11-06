@@ -24,7 +24,7 @@
 import {
   PRECIOS_BASE, PRECIOS_EXTRAS, MULTIPLICADORES, CATEGORIAS_ADICIONALES, NEGOCIO,
 } from './master';
-import { contextoDesde, valorMayores, getItem, horarioEfectivo, tramoInvitadosPorId } from './reglas';
+import { contextoDesde, valorMayores, getItem, horarioEfectivo, tramoInvitadosPorId, esComida, materializarExtra } from './reglas';
 
 // ── Precio de un adicional según el tramo de niños ────────────────────
 // Los ítems con `precios` cobran por tramo (animación); el resto es plano.
@@ -140,7 +140,9 @@ export function calcularTotal(estado = {}, promo = null) {
   // Los extras se normalizan a ítems del catálogo. Un ID que ya no existe
   // se descarta: no se cobra algo que la web no puede entregar.
   const extras = (estado.extras || [])
-    .map((e) => (typeof e === 'string' ? getItem(e) : (getItem(e?.id) || e)))
+    // La comida se cobra por su pedido (sabores → precio pack), no por id.
+    .map((e) => (esComida(e?.id) ? materializarExtra(e)
+      : typeof e === 'string' ? getItem(e) : (getItem(e?.id) || e)))
     .filter(Boolean);
 
   const lineas = [];

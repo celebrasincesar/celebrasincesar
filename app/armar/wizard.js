@@ -11,7 +11,7 @@ import {
   cotizacionEsReferencial,
   seleccionVacia, tramoInvitadosPorId, alternativasPara, motivoNoDisponible, itemVisible,
   horarioEfectivo, opcionesHorario, maxHorasAdicionales, migrarHoraExtra, turnoPorId,
-  valorMayores, evaluarMayores, opcionesPack, sumarAdicional,
+  valorMayores, evaluarMayores, opcionesPack, sumarAdicional, materializarExtra,
 } from '../../data/reglas';
 import { STATS } from '../../data/stats';
 import { EVENTOS, track, propsCelebracion } from '../../data/analytics';
@@ -330,7 +330,10 @@ export default function CelebrationWizard() {
       const fecha = s.fecha ? new Date(s.fecha) : null;
       const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
       const fechaValida = fecha && !isNaN(fecha) && fecha >= hoy ? fecha : null;
-      const extras = (s.extras || []).map((e) => ITEM_LOOKUP[e?.id]).filter(Boolean);
+      // La comida se rearma desde sus sabores (valor vigente del catálogo).
+      const extras = (s.extras || [])
+        .map((e) => (ITEM_LOOKUP[e?.id]?.comida ? materializarExtra(e) : ITEM_LOOKUP[e?.id]))
+        .filter(Boolean);
       const cotizar = Array.isArray(s.cotizar) ? s.cotizar.filter((c) => c && c.id && c.nombre) : [];
       // Venir del catálogo con productos pendientes TAMBIÉN es avance: si no,
       // la sesión se descartaba y la intención del papá se perdía (§AT).
@@ -414,10 +417,12 @@ export default function CelebrationWizard() {
     const enPack = new Set(itemsDelPack(estado.packMayores?.seleccion));
     const agregados = [];
     const rechazados = [];
-    for (const id of estado.pendientes) {
-      const item = getItem(id);
+    for (const pendiente of estado.pendientes) {
+      // La comida llega como { id, sabores }; el resto, como id.
+      const id = typeof pendiente === 'string' ? pendiente : pendiente?.id;
+      const item = getItem(id)?.comida ? materializarExtra(pendiente) : getItem(id);
       if (!item) continue;
-      if (estado.extras.some((e) => e.id === id)) continue;
+      if (estado.extras.some((e) => e.id === id) && !item.comida) continue;
       if (enPack.has(id)) {
         rechazados.push({ item, motivo: 'ya viene dentro de la entretención para los mayores', alternativas: [] });
         continue;
@@ -434,7 +439,9 @@ export default function CelebrationWizard() {
     }
     setEstado((p) => ({
       ...p,
-      extras: agregados.reduce((acc, a) => sumarAdicional(acc, a), p.extras),
+      // Un pedido de comida que llega del catálogo reemplaza al que había.
+      extras: agregados.reduce(
+        (acc, a) => sumarAdicional(a.comida ? acc.filter((e) => e.id !== a.id) : acc, a), p.extras),
       pendientes: [],
     }));
     if (agregados.length || rechazados.length) setAvisoPendientes({ agregados, rechazados });
@@ -599,6 +606,22 @@ export default function CelebrationWizard() {
     });
   };
 
+  // Comida (Pizzas): cada cambio de sabores reemplaza el pedido; sin
+  // unidades, sale del carro. Mismo gesto que en /catalogo.
+  const setComida = (item, sabores) => {
+    const pedido = materializarExtra({ id: item.id, sabores });
+    setEstado((p) => {
+      if (!pedido) return { ...p, extras: p.extras.filter((e) => e.id !== item.id) };
+      if (!p.extras.some((e) => e.id === item.id)) track(EVENTOS.extraAdded, { producto: item.id, gratis: false });
+      return {
+        ...p,
+        extras: p.extras.some((e) => e.id === item.id)
+          ? p.extras.map((e) => (e.id === item.id ? pedido : e))
+          : [...p.extras, pedido],
+      };
+    });
+  };
+
   // Precio correcto según día — sábado tiene tabla propia
   const esSabado = estado.fecha?.getDay() === 6;
 
@@ -725,7 +748,7 @@ export default function CelebrationWizard() {
             }
           : null,
         preparados: preparados.map((e) => e.id),
-        adicionales: estado.extras.filter((e) => !e.gratis).map((e) => e.id),
+        adicionales: estado.extras.filter((e) => !e.gratis).map((e) => (e.comida ? e.nombre : e.id)),
         cotizar: estado.cotizar.map((c) => c.id),
         packCelebra: estado.packCelebra,
         codigo: estado.codigo || null,
@@ -1655,7 +1678,7 @@ ${bloquePack}${bloqueAdicionales}${tematicaLinea}${bloquePreparado}${descuentoLi
                       bloque={bloqueIncluidos}
                       onTapGrupo={(g) => avanzar({ ficha: g })}
                       getSeleccionado={(grupo) => grupo.items.some(i => estado.extras.some(e => e.id === i.id))}
-                      getAgregados={(grupo) => grupo.items.filter(i => estado.extras.some(e => e.id === i.id))}
+                      getAgregados={(grupo) => grupo.items.map((i) => estado.extras.find((e) => e.id === i.id)).filter(Boolean)}
                       onAddDirecto={toggleItemModal}
                       cantNinos={estado.cantNinos || 'hasta10'}
                       onCotizar={toggleCotizar}
@@ -1801,7 +1824,7 @@ ${bloquePack}${bloqueAdicionales}${tematicaLinea}${bloquePreparado}${descuentoLi
                               bloque={bloque}
                               onTapGrupo={(g) => avanzar({ ficha: g })}
                               getSeleccionado={(grupo) => grupo.items.some(i => estado.extras.some(e => e.id === i.id))}
-                              getAgregados={(grupo) => grupo.items.filter(i => estado.extras.some(e => e.id === i.id))}
+                              getAgregados={(grupo) => grupo.items.map((i) => estado.extras.find((e) => e.id === i.id)).filter(Boolean)}
                               onAddDirecto={toggleItemModal}
                               cantNinos={estado.cantNinos || 'hasta10'}
                               onCotizar={toggleCotizar}
@@ -2163,6 +2186,8 @@ ${bloquePack}${bloqueAdicionales}${tematicaLinea}${bloquePreparado}${descuentoLi
           onCerrar={retroceder}
           onAdd={(item, grupo) => toggleItemModal(item, grupo)}
           isAdded={(item) => estado.extras.some(e => e.id === item.id)}
+          getExtra={(item) => estado.extras.find((e) => e.id === item.id)}
+          onComida={setComida}
           cantNinos={estado.cantNinos || 'hasta10'}
           ownHistory={false}
         />

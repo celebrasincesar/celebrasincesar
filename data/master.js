@@ -626,6 +626,41 @@ export const CATEGORIAS_ADICIONALES = [
         edad_min: 0, edad_max: 99, categoria_pack: null, apto_pack_mayores: false },
     ],
   },
+
+  // ── CATEGORÍA 6 · COMIDA (por cantidad · sabores a elección) ─────────
+  //  Un ítem por producto. El papá reparte la cantidad entre los sabores
+  //  como quiera y el precio pack se aplica solo según el total (pedido de
+  //  César 05-nov-2026: 10 = $109.000, 20 = $195.000, 30 = $285.000).
+  //  `precios` es el valor de UNA unidad (el "c/u" de la tarjeta); el valor
+  //  real del pedido lo calcula pedidoComida() en data/reglas.js.
+  {
+    id: 'comida', label: 'Comida', emoji: '🍕', filtraPorEdad: false,
+    desc: 'Elige sabores y cantidades — desde 10 se aplica el precio pack',
+    seleccionMultiple: true,
+    items: [
+      { id: 'pizzas', nombre: 'Pizzas',
+        precios: { hasta10: 11500, hasta20: 11500, hasta30: 11500, mas30: 11500 }, emoji: '🍕',
+        desc: 'Combina los sabores como quieras. Desde 10 pizzas se aplica el precio pack.',
+        edad_min: 0, edad_max: 99,
+        comida: {
+          unidad: 'pizza',
+          maximo: 60,
+          packs: [
+            { cantidad: 10, precio: 109000 },
+            { cantidad: 20, precio: 195000 },
+            { cantidad: 30, precio: 285000 },
+          ],
+          sabores: [
+            { id: 'mechada-palta', nombre: 'Mechada Palta' },
+            { id: 'pepperoni', nombre: 'Super Pepperoni' },
+            { id: 'pollo-bbq', nombre: 'Pollo BBQ' },
+            { id: 'camarones', nombre: 'Camarones' },
+            { id: 'margarita', nombre: 'Super Margarita' },
+            { id: 'vegetariana', nombre: 'Vegetariana', detalle: 'Champiñón, aceituna y pimentón' },
+          ],
+        } },
+    ],
+  },
 ];
 
 
@@ -757,7 +792,19 @@ export const BLOQUES_VITRINA = [
     ],
   },
 
-  // ── CATEGORÍA 6 · BANQUETERÍA NIÑOS (próximamente · cotizar) ──────
+  // ── CATEGORÍA 6 · COMIDA ─────────────────────────────────────────
+  //  Ficha con selector de sabores y cantidades (selectorComida): no es
+  //  carrusel ni botón Agregar, se arma el pedido dentro de la ficha.
+  {
+    id: 'b-comida', titulo: 'COMIDA', slug: 'comida',
+    subTitulo: 'Elige sabores y cantidades · precio pack desde 10',
+    grupos: [
+      { id: 'g-pizzas', nombre: 'Pizzas', subNombre: '6 sabores para combinar como quieras. Desde 10, precio pack.',
+        carpeta: 'pizzas', seleccionMultiple: true, selectorComida: true, itemIds: ['pizzas'] },
+    ],
+  },
+
+  // ── CATEGORÍA 6B · BANQUETERÍA NIÑOS (próximamente · cotizar) ─────
   {
     id: 'b-banq-ninos', titulo: 'BANQUETERÍA NIÑOS', slug: 'banqueteria-ninos',
     subTitulo: 'Menús pensados para los más chicos',

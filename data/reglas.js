@@ -311,6 +311,103 @@ export function sinDuplicadosDePack(extras = []) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// COMIDA POR CANTIDAD  (campo `comida` del ítem · Pizzas)
+//
+// El papá reparte unidades entre sabores ({ pepperoni: 4, margarita: 6 })
+// y el precio pack se aplica SOLO: se cobra la combinación más barata de
+// packs y unidades sueltas para esa cantidad exacta (13 = Pack 10 + 3
+// sueltas; 40 = 2 × Pack 20). Nunca se cobra más de lo pedido.
+//
+// El adicional guardado lleva sus `sabores` y, ya calculados, el `nombre`
+// con el detalle y `precios` planos con el valor del pedido: así correos,
+// panel, calendario y cobro lo leen como cualquier otro adicional. Lo
+// recalcula siempre materializarExtra() desde los sabores: el servidor
+// nunca confía en el nombre ni en el precio que manda el navegador.
+// ─────────────────────────────────────────────────────────────────────
+export const esComida = (id) => !!ITEMS[id]?.comida;
+
+// Solo sabores que existen, en enteros positivos y sin pasar el máximo.
+export function normalizarSabores(itemId, crudo) {
+  const c = ITEMS[itemId]?.comida;
+  if (!c || !crudo || typeof crudo !== 'object') return {};
+  const out = {};
+  let total = 0;
+  for (const s of c.sabores) {
+    const n = Math.min(Math.max(0, Math.floor(Number(crudo[s.id]) || 0)), c.maximo - total);
+    if (n > 0) { out[s.id] = n; total += n; }
+  }
+  return out;
+}
+
+// Costo mínimo para exactamente `n` unidades (packs repetibles + sueltas).
+function costoComida(item, n) {
+  const unidad = item.precios?.hasta10 ?? 0;
+  const packs = item.comida.packs;
+  const costo = [{ total: 0, packs: [] }];
+  for (let i = 1; i <= n; i++) {
+    let mejor = { total: costo[i - 1].total + unidad, packs: costo[i - 1].packs };
+    for (const p of packs) {
+      if (p.cantidad <= i && costo[i - p.cantidad].total + p.precio < mejor.total) {
+        mejor = { total: costo[i - p.cantidad].total + p.precio, packs: [...costo[i - p.cantidad].packs, p.cantidad] };
+      }
+    }
+    costo.push(mejor);
+  }
+  return costo[n];
+}
+
+// Todo lo que la ficha y el cobro necesitan saber de un pedido.
+//   siguiente: el próximo múltiplo de 10 (a 5 o menos) y cuánto cambia el
+//   valor al llegar a él — puede ser MENOS (18 cuesta más que 20).
+export function pedidoComida(itemId, crudo) {
+  const item = ITEMS[itemId];
+  if (!item?.comida) return null;
+  const sabores = normalizarSabores(itemId, crudo);
+  const cantidad = Object.values(sabores).reduce((s, n) => s + n, 0);
+  const unidad = item.precios?.hasta10 ?? 0;
+  const { total, packs } = costoComida(item, cantidad);
+  const enPacks = packs.reduce((s, p) => s + p, 0);
+  const meta = Math.ceil((cantidad + 1) / 10) * 10;
+  const siguiente = cantidad > 0 && meta - cantidad <= 5 && meta <= item.comida.maximo
+    ? { cantidad: meta, faltan: meta - cantidad, diferencia: costoComida(item, meta).total - total }
+    : null;
+  return {
+    sabores, cantidad, total, packs, sueltas: cantidad - enPacks,
+    ahorro: cantidad * unidad - total, siguiente,
+  };
+}
+
+// "13 Pizzas: 4 Super Pepperoni, 6 Super Margarita, 3 Pollo BBQ"
+export function detalleComida(itemId, sabores) {
+  const item = ITEMS[itemId];
+  if (!item?.comida) return '';
+  const partes = item.comida.sabores.filter((s) => sabores?.[s.id] > 0).map((s) => `${sabores[s.id]} ${s.nombre}`);
+  const cantidad = item.comida.sabores.reduce((t, s) => t + (sabores?.[s.id] || 0), 0);
+  return `${cantidad} ${item.nombre}: ${partes.join(', ')}`;
+}
+
+// Un adicional tal como viaja/se guarda → el mismo, con los valores
+// correctos. Lo que no es comida pasa intacto. Comida sin unidades = null.
+export function materializarExtra(raw) {
+  const id = typeof raw === 'string' ? raw : raw?.id;
+  const item = ITEMS[id];
+  if (!item?.comida) return raw;
+  const pedido = pedidoComida(id, raw?.sabores);
+  if (!pedido.cantidad) return null;
+  const { comida, ...base } = item;
+  return {
+    ...base,
+    comida: true,
+    sabores: pedido.sabores,
+    cantidad: pedido.cantidad,
+    nombre: detalleComida(id, pedido.sabores),
+    precios: { hasta10: pedido.total, hasta20: pedido.total, hasta30: pedido.total, mas30: pedido.total },
+  };
+}
+
+export const materializarExtras = (extras = []) => (extras || []).map(materializarExtra).filter(Boolean);
+
+// ─────────────────────────────────────────────────────────────────────
 // GRUPOS REALES DE LA CELEBRACIÓN
 //
 // La pregunta correcta no es "¿le sirve al festejado?" sino "¿le sirve a
@@ -472,6 +569,10 @@ export function normalizarConfiguracion(estado = {}) {
 
   // 6 · adicionales que dejaron de corresponder
   const enPack = new Set(itemsDelPack(e.packMayores?.seleccion));
+  // La comida se recalcula siempre desde sus sabores (nombre y valor).
+  if (Array.isArray(e.extras) && e.extras.some((x) => esComida(x?.id ?? x))) {
+    e.extras = materializarExtras(e.extras);
+  }
   if (Array.isArray(e.extras) && e.extras.length) {
     // Un suelto que ya viene dentro de un pack elegido sobra (no se avisa:
     // el papá no pierde nada, lo sigue teniendo dentro del pack).
