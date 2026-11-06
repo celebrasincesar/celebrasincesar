@@ -926,7 +926,7 @@ T('Pizzas: $11.500 c/u, 6 sabores y packs 10/20/30 = $109.000/$195.000/$285.000'
   eq(R.ITEMS.pizzas.precios.hasta10, 11500);
   eq(c.sabores.length, 6);
   eq(c.packs.map((p) => `${p.cantidad}:${p.precio}`).join(','), '10:109000,20:195000,30:285000');
-  const g = R.BLOQUES_VITRINA.find((b) => b.id === 'b-comida').grupos.find((x) => x.id === 'g-pizzas');
+  const g = R.BLOQUES_VITRINA.find((b) => b.id === 'b-banq-adultos').grupos.find((x) => x.id === 'g-pizzas');
   if (!g?.selectorComida) throw new Error('falta la ficha con selector de sabores');
 });
 

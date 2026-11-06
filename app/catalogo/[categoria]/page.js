@@ -47,17 +47,13 @@ const META = {
     titulo: 'Animación y Shows Infantiles',
     desc: 'Pintacaritas, globoflexia, animación full juegos, personajes favoritos y shows temáticos. Valor según la cantidad de niños.',
   },
-  comida: {
-    titulo: 'Pizzas para Cumpleaños',
-    desc: 'Pizzas en 6 sabores para combinar como quieras en tu cumpleaños infantil en Las Condes. Desde 10 pizzas, precio pack.',
-  },
   'banqueteria-ninos': {
     titulo: 'Banquetería para Niños',
     desc: 'Carrito de mini sándwich y cóctel infantil a la medida de tu celebración. Cotización sin compromiso.',
   },
   'banqueteria-adultos': {
     titulo: 'Banquetería para Adultos',
-    desc: 'Cóctel y sándwich para que los grandes también disfruten la celebración. Cotización sin compromiso.',
+    desc: 'Pizzas en 6 sabores con precio pack desde 10, más cóctel y sándwich para que los grandes también disfruten la celebración.',
   },
   videojuegos: {
     titulo: 'Sala de Video Juegos +7',

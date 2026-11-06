@@ -634,7 +634,8 @@ export const CATEGORIAS_ADICIONALES = [
   //  `precios` es el valor de UNA unidad (el "c/u" de la tarjeta); el valor
   //  real del pedido lo calcula pedidoComida() en data/reglas.js.
   {
-    id: 'comida', label: 'Comida', emoji: '🍕', filtraPorEdad: false,
+    // Se muestra en la vitrina dentro de BANQUETERÍA ADULTOS (b-banq-adultos).
+    id: 'comida', label: 'Banquetería Adultos', emoji: '🍕', filtraPorEdad: false,
     desc: 'Elige sabores y cantidades — desde 10 se aplica el precio pack',
     seleccionMultiple: true,
     items: [
@@ -792,19 +793,7 @@ export const BLOQUES_VITRINA = [
     ],
   },
 
-  // ── CATEGORÍA 6 · COMIDA ─────────────────────────────────────────
-  //  Ficha con selector de sabores y cantidades (selectorComida): no es
-  //  carrusel ni botón Agregar, se arma el pedido dentro de la ficha.
-  {
-    id: 'b-comida', titulo: 'COMIDA', slug: 'comida',
-    subTitulo: 'Elige sabores y cantidades · precio pack desde 10',
-    grupos: [
-      { id: 'g-pizzas', nombre: 'Pizzas', subNombre: '6 sabores para combinar como quieras. Desde 10, precio pack.',
-        carpeta: 'pizzas', seleccionMultiple: true, selectorComida: true, itemIds: ['pizzas'] },
-    ],
-  },
-
-  // ── CATEGORÍA 6B · BANQUETERÍA NIÑOS (próximamente · cotizar) ─────
+  // ── CATEGORÍA 6 · BANQUETERÍA NIÑOS (próximamente · cotizar) ──────
   {
     id: 'b-banq-ninos', titulo: 'BANQUETERÍA NIÑOS', slug: 'banqueteria-ninos',
     subTitulo: 'Menús pensados para los más chicos',
@@ -820,11 +809,15 @@ export const BLOQUES_VITRINA = [
     ],
   },
 
-  // ── CATEGORÍA 7 · BANQUETERÍA ADULTOS (próximamente · cotizar) ────
+  // ── CATEGORÍA 7 · BANQUETERÍA ADULTOS ────────────────────────────
+  //  Pizzas: ficha con selector de sabores y cantidades (selectorComida),
+  //  el pedido se arma dentro de la ficha. El resto sigue a cotizar.
   {
     id: 'b-banq-adultos', titulo: 'BANQUETERÍA ADULTOS', slug: 'banqueteria-adultos',
     subTitulo: 'Para que los grandes también disfruten',
     grupos: [
+      { id: 'g-pizzas', nombre: 'Pizzas', subNombre: '6 sabores para combinar como quieras. Desde 10, precio pack.',
+        carpeta: 'pizzas', seleccionMultiple: true, selectorComida: true, itemIds: ['pizzas'] },
       { id: 'g-banq-adultos', nombre: 'Banquetería Adultos', subNombre: 'Cóctel, sándwich y más',
         carpeta: 'banq-adultos', badge: 'COTIZAR', badgeTipo: 'cotizar',
         nota: 'Todos nuestros sándwich van con salsas además de los agregados. Armamos el menú de adultos a tu medida — cotización sin compromiso.',
