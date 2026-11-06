@@ -351,12 +351,15 @@ function ResumenOperacional({ r }) {
 function FilaReserva({ reserva: r, onCambio }) {
   const [abierto, setAbierto] = useState(false);
   const [generando, setGenerando] = useState(false);
-  const [copiado, setCopiado] = useState(false);
+  const [copiado, setCopiado] = useState(null); // 'DEPOSIT' | 'BALANCE' | null
   const [aviso, setAviso] = useState('');
   const [manualAbierto, setManualAbierto] = useState(false);
   const [avisoCorreo, setAvisoCorreo] = useState('');
 
   const saldo = Math.max(0, (r.total || 0) - (r.pagado || 0));
+  // Falta (parte del) anticipo: típicamente una reserva web que expiró sin
+  // pagar (CSC-2026-000059, 06-nov-2026). El link de saldo cobraría el total.
+  const anticipoPendiente = Math.max(0, (r.anticipo || 0) - (r.pagado || 0));
   const sobrepago = Math.max(0, (r.pagado || 0) - (r.total || 0));
 
   const generarLink = async (tipo) => {
@@ -371,10 +374,13 @@ function FilaReserva({ reserva: r, onCambio }) {
       const j = await res.json();
       if (j.ok && j.checkoutUrl) {
         await navigator.clipboard.writeText(j.checkoutUrl).catch(() => {});
-        setCopiado(true);
-        setTimeout(() => setCopiado(false), 2500);
+        setCopiado(tipo);
+        setTimeout(() => setCopiado(null), 2500);
+        if (tipo === 'DEPOSIT') onCambio();
       } else {
-        setAviso(j.motivo === 'nada_por_cobrar' ? 'No hay saldo por cobrar.' : `No se pudo generar el link (${j.motivo || 'error'}).`);
+        setAviso(j.motivo === 'nada_por_cobrar' ? (tipo === 'DEPOSIT' ? 'El anticipo ya está pagado.' : 'No hay saldo por cobrar.')
+          : j.motivo === 'turno_ocupado' ? 'Ese turno ya lo tomó otra reserva: no se generó el link.'
+          : `No se pudo generar el link (${j.motivo || 'error'}).`);
       }
     } catch {
       setAviso('No se pudo conectar con el servidor.');
@@ -520,11 +526,18 @@ function FilaReserva({ reserva: r, onCambio }) {
           </FichaSeccion>
 
           <div className="flex gap-2 flex-wrap">
+            {anticipoPendiente > 0 && (
+              <button onClick={() => generarLink('DEPOSIT')} disabled={generando}
+                className="text-xs font-black px-3 py-2 rounded-xl disabled:opacity-50"
+                style={{ background: copiado === 'DEPOSIT' ? '#22c55e' : 'rgba(21,101,192,0.08)', color: copiado === 'DEPOSIT' ? 'white' : AZUL }}>
+                {copiado === 'DEPOSIT' ? '✓ Link copiado' : `Generar link de anticipo (${clp(anticipoPendiente)})`}
+              </button>
+            )}
             {saldo > 0 && (
               <button onClick={() => generarLink('BALANCE')} disabled={generando}
                 className="text-xs font-black px-3 py-2 rounded-xl disabled:opacity-50"
-                style={{ background: copiado ? '#22c55e' : 'rgba(21,101,192,0.08)', color: copiado ? 'white' : AZUL }}>
-                {copiado ? '✓ Link copiado' : 'Generar link de saldo'}
+                style={{ background: copiado === 'BALANCE' ? '#22c55e' : 'rgba(21,101,192,0.08)', color: copiado === 'BALANCE' ? 'white' : AZUL }}>
+                {copiado === 'BALANCE' ? '✓ Link copiado' : 'Generar link de saldo'}
               </button>
             )}
             {/* Fase 5 Bloque 3: solo copia el texto — César decide cuándo

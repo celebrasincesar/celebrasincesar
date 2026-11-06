@@ -16,6 +16,7 @@
 import {
   reservaPorCodigo, crearPagoPendiente, marcarPagoEnCheckout,
   siguienteCommerceOrder, montoQueCorresponde, festejadoDeReserva,
+  retenerTurnoParaAnticipo, liberarTurno,
 } from '../../../../lib/reservas';
 import { crearPagoFlow, flowConfigurado } from '../../../../lib/flow';
 import { dbConfigurada, esquemaListo } from '../../../../lib/db';
@@ -47,11 +48,19 @@ export async function POST(req) {
     return json({ ok: false, motivo: tipo === 'EXTRA' ? 'monto_invalido' : 'nada_por_cobrar' }, 400);
   }
 
+  const minutos = 60 * 24; // un link para mandar por WhatsApp vive más que el checkout en vivo
+
+  // Anticipo de una reserva que perdió su HOLD (EXPIRED, o nunca pagada):
+  // se vuelve a retener el turno por lo mismo que dura el link. Si otra
+  // familia ya lo tomó, no se genera un link que terminaría en conflicto.
+  let retencion = { aplica: false };
+  if (tipo === 'DEPOSIT') {
+    retencion = await retenerTurnoParaAnticipo({ reservaId: reserva.id, minutos });
+    if (!retencion.tomado) return json({ ok: false, motivo: 'turno_ocupado' }, 409);
+  }
+
   const commerceOrder = await siguienteCommerceOrder(codigo, tipo);
-  const pago = await crearPagoPendiente({
-    reservaId: reserva.id, commerceOrder, tipo, monto,
-    minutos: 60 * 24, // un link para mandar por WhatsApp vive más que el checkout en vivo
-  });
+  const pago = await crearPagoPendiente({ reservaId: reserva.id, commerceOrder, tipo, monto, minutos });
 
   try {
     const flow = await crearPagoFlow({
@@ -68,6 +77,7 @@ export async function POST(req) {
 
   } catch (err) {
     console.error(`[cadena/link-pago] Flow falló para ${commerceOrder}: ${err.message}`);
+    if (retencion.aplica) await liberarTurno(codigo);
     return json({ ok: false, motivo: 'error_flow' }, 502);
   }
 }
