@@ -9,7 +9,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { q, dbConfigurada } from '../../../../lib/db';
-import { barrerVencidos, detalleDeReserva, configuracionVigente, fechaISO, ESTADOS_FIRMES } from '../../../../lib/reservas';
+import { barrerVencidos, detalleDeReserva, configuracionVigente, fechaISO, ESTADOS_FIRMES, reservaEliminable } from '../../../../lib/reservas';
 import { resumenOperacional } from '../../../../lib/resumen-operacional';
 import { json, texto } from '../../../../lib/http';
 
@@ -128,6 +128,9 @@ export async function GET(req) {
       // evento. Es aritmética sobre la fecha real, no un precio — no toca
       // el motor de precios ni la conciliación.
       saldoVenceEn: r.saldo > 0 ? fechaLimiteSaldo(r) : null,
+      // Nunca se concretó (expirada/cancelada/borrador sin un peso): el
+      // panel ofrece eliminarla. El DELETE vuelve a verificar todo.
+      eliminable: reservaEliminable(r),
       datosFinales: datos_finales || null,
       pendientesProveedor: pendientes_proveedor || [],
       // "¿Qué falta resolver?" en un vistazo (documento §6/§15) — calculado

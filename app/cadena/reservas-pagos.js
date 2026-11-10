@@ -44,6 +44,7 @@ const FILTROS = [
   { id: 'esperando', label: 'Esperando anticipo', estados: ['PENDING_PAYMENT', 'PAYMENT_VERIFYING'] },
   { id: 'anticipo', label: 'Anticipo pagado · saldo pendiente', estados: ['CONFIRMED', 'BALANCE_PENDING'] },
   { id: 'completa', label: 'Pagada completa', estados: ['PAID'] },
+  { id: 'no-concretadas', label: 'No concretadas', estados: ['EXPIRED', 'CANCELLED', 'DRAFT'] },
 ];
 // Mismos 4 estados que ESTADOS_FIRMES en lib/reservas.js — el turno ya es
 // del papá de verdad. Se repite acá a propósito (el panel es 'use client',
@@ -552,6 +553,7 @@ function FilaReserva({ reserva: r, onCambio }) {
               style={{ background: 'rgba(13,27,62,0.06)', color: '#0D1B3E' }}>
               {manualAbierto ? 'Cerrar' : '+ Registrar pago manual'}
             </button>
+            {r.eliminable && <BotonEliminarReserva reserva={r} onEliminada={onCambio} onError={setAviso} />}
           </div>
           {aviso && <p className="text-xs text-red-500 mt-2">{aviso}</p>}
           {avisoCorreo && <p className="text-xs font-bold mt-2" style={{ color: avisoCorreo.startsWith('✉️') ? '#16a34a' : '#B45309' }}>{avisoCorreo}</p>}
@@ -678,6 +680,47 @@ function BotonCopiarLinkAdicionales({ reserva: r, festejado }) {
       className="text-xs font-black px-3 py-2 rounded-xl disabled:opacity-50"
       style={{ background: copiado ? '#22c55e' : 'rgba(249,115,22,0.10)', color: copiado ? 'white' : '#C2410C' }}>
       {copiado ? '✓ Mensaje copiado' : '✨ Copiar link de adicionales'}
+    </button>
+  );
+}
+
+// "Eliminar reserva" (pedido de César, 10-nov-2026): solo para las que
+// nunca se concretaron — expiradas, canceladas o borradores sin un peso
+// pagado (`r.eliminable`, calculado en /api/cadena/reservas). El servidor
+// vuelve a verificar todo en el mismo DELETE; queda un registro en la
+// bitácora y, si tenía evento en el calendario, se borra.
+function BotonEliminarReserva({ reserva: r, onEliminada, onError }) {
+  const [eliminando, setEliminando] = useState(false);
+
+  const eliminar = async () => {
+    const ok = window.confirm(
+      `¿Eliminar la reserva ${r.codigo} de ${r.cliente_nombre} (${fmtFecha(r.fecha_evento)} ${r.turno})?
+
+`
+      + 'Nunca se pagó. Desaparece del panel y no se puede deshacer.'
+    );
+    if (!ok) return;
+    setEliminando(true);
+    onError('');
+    try {
+      const res = await fetch(`/api/cadena/reservas/${encodeURIComponent(r.codigo)}`, { method: 'DELETE' });
+      const j = await res.json();
+      if (j.ok) onEliminada();
+      else onError(j.motivo === 'no_eliminable'
+        ? 'Ya no se puede eliminar: la reserva cambió (tiene un pago o está activa). Recarga el panel.'
+        : `No se pudo eliminar (${j.motivo || 'error'}).`);
+    } catch {
+      onError('No se pudo conectar con el servidor.');
+    } finally {
+      setEliminando(false);
+    }
+  };
+
+  return (
+    <button onClick={eliminar} disabled={eliminando}
+      className="text-xs font-black px-3 py-2 rounded-xl disabled:opacity-50 ml-auto"
+      style={{ background: 'rgba(220,38,38,0.08)', color: '#DC2626' }}>
+      {eliminando ? 'Eliminando…' : '🗑 Eliminar reserva'}
     </button>
   );
 }
