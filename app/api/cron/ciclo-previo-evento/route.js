@@ -11,6 +11,7 @@ import { ejecutarCicloPrevio } from '../../../../lib/ciclo-previo';
 import { ejecutarPostevento } from '../../../../lib/postevento';
 import { ejecutarRecordatoriosSaldo } from '../../../../lib/saldo-recordatorio';
 import { ejecutarAvisosCambio } from '../../../../lib/aviso-cambio-reserva';
+import { ejecutarAvisosAdicionales } from '../../../../lib/aviso-adicionales';
 import { json } from '../../../../lib/http';
 
 export const dynamic = 'force-dynamic';
@@ -55,5 +56,14 @@ export async function GET(req) {
     avisosCambio = { ok: false, error: err.message };
   }
 
-  return json({ ...resultado, postevento, saldo, avisosCambio });
+  // Correos de adicionales agregados por la familia desde su catálogo
+  // (10-nov-2026) que no salieron al momento. Mismo aislamiento.
+  let avisosAdicionales;
+  try {
+    avisosAdicionales = await ejecutarAvisosAdicionales();
+  } catch (err) {
+    avisosAdicionales = { ok: false, error: err.message };
+  }
+
+  return json({ ...resultado, postevento, saldo, avisosCambio, avisosAdicionales });
 }

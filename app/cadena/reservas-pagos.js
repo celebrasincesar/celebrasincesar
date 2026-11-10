@@ -544,6 +544,9 @@ function FilaReserva({ reserva: r, onCambio }) {
                 (o si) lo manda. Nunca se envía solo ni se marca como
                 enviado — esto es ayuda, no cobranza automática. */}
             {saldo > 0 && <BotonCopiarMensajeSaldo reserva={r} festejado={d.festejado} saldo={saldo} />}
+            {['CONFIRMED', 'BALANCE_PENDING', 'PAID'].includes(r.estado) && !r.esManual && (
+              <BotonCopiarLinkAdicionales reserva={r} festejado={d.festejado} />
+            )}
             <button onClick={() => setManualAbierto((v) => !v)}
               className="text-xs font-black px-3 py-2 rounded-xl"
               style={{ background: 'rgba(13,27,62,0.06)', color: '#0D1B3E' }}>
@@ -647,6 +650,34 @@ function BotonCopiarMensajeSaldo({ reserva: r, festejado, saldo }) {
       className="text-xs font-black px-3 py-2 rounded-xl disabled:opacity-50"
       style={{ background: copiado ? '#22c55e' : 'rgba(21,101,192,0.08)', color: copiado ? 'white' : AZUL }}>
       {copiado ? '✓ Mensaje copiado' : 'Copiar mensaje de saldo'}
+    </button>
+  );
+}
+
+// "Copiar link de adicionales" (pedido de César, 10-nov-2026): el catálogo
+// completo de ESTA reserva, para mandarlo por WhatsApp. La familia elige,
+// ve el valor exacto y confirma; la reserva, el calendario y este panel se
+// actualizan solos y les llega un correo a ella y a César. Solo copia el
+// texto: César decide cuándo mandarlo.
+function BotonCopiarLinkAdicionales({ reserva: r, festejado }) {
+  const [copiado, setCopiado] = useState(false);
+  const nombre = (r.cliente_nombre || '').split(' ')[0] || r.cliente_nombre;
+  const link = `${NEGOCIO.sitio}/mi-celebracion/adicionales?id=${encodeURIComponent(r.codigo)}&t=${encodeURIComponent(r.acceso_token || '')}`;
+  const mensaje = `Hola, ${nombre} 😊 Te dejo el catálogo de adicionales para la celebración de ${festejado || r.cliente_nombre}. Ahí puedes ver fotos y precios, elegir lo que quieras y agregarlo directo a tu reserva: ${link}`;
+
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(mensaje);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2500);
+    } catch {}
+  };
+
+  return (
+    <button onClick={copiar} disabled={!r.acceso_token}
+      className="text-xs font-black px-3 py-2 rounded-xl disabled:opacity-50"
+      style={{ background: copiado ? '#22c55e' : 'rgba(249,115,22,0.10)', color: copiado ? 'white' : '#C2410C' }}>
+      {copiado ? '✓ Mensaje copiado' : '✨ Copiar link de adicionales'}
     </button>
   );
 }

@@ -13,7 +13,7 @@
 
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { NEGOCIO, CATEGORIAS_ADICIONALES } from '../../data/master';
+import { NEGOCIO } from '../../data/master';
 import { compartirAlceKids } from '../../lib/compartir';
 import { EVENTOS, track } from '../../data/analytics';
 
@@ -42,14 +42,6 @@ function fmtFechaHora(iso) {
     + d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
 }
 
-// Mismos dos ids que lib/pendientes-proveedor.js#IDS_DECORACION_TEMATICA
-// — no se importa ese archivo acá porque arrastra el driver de Postgres.
-const IDS_DECORACION_TEMATICA = new Set(['deco-tematica-simple', 'deco-tematica-full']);
-
-// Categorías que tiene sentido ofrecer para agregar después de reservar
-// (documento §8) — el servidor (itemVisible()) es la autoridad final de
-// qué es compatible; acá solo se ofrece una lista razonable.
-const CATEGORIAS_OFRECIDAS = ['inflables', 'juegos', 'packs-diversion', 'decoracion', 'animacion'];
 
 export default function MiCelebracionPage() {
   return (
@@ -304,8 +296,7 @@ function MiCelebracion() {
 
           {/* AGREGAR ADICIONAL */}
           <SeccionAgregarAdicional
-            idParam={id} tParam={t} extrasIds={extrasIds || []}
-            onAgregado={cargar}
+            idParam={id} tParam={t}
           />
         </>
       )}
@@ -498,109 +489,22 @@ function Campo({ label, children }) {
   );
 }
 
-// ── Agregar un adicional después de reservar (documento §8) — reutiliza
-// el catálogo tal cual (data/master.js), sin duplicarlo ni recalcular
-// nada acá: el servidor (itemVisible() + motor de precios) decide si
-// corresponde y cuánto cuesta.
-function SeccionAgregarAdicional({ idParam, tParam, extrasIds, onAgregado }) {
-  const [abierta, setAbierta] = useState(false);
-  const [agregando, setAgregando] = useState(null);
-  const [tematicaPendiente, setTematicaPendiente] = useState(null); // itemId que pide temática
-  const [tematicaTexto, setTematicaTexto] = useState('');
-  const [error, setError] = useState('');
-  const [ultimoDiff, setUltimoDiff] = useState(null);
-
-  const categorias = CATEGORIAS_ADICIONALES.filter((c) => CATEGORIAS_OFRECIDAS.includes(c.id));
-
-  const enviar = async (itemId, tematica) => {
-    setAgregando(itemId);
-    setError('');
-    try {
-      const r = await fetch('/api/mi-celebracion/agregar-adicional', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: idParam, t: tParam, itemId, tematica }),
-      });
-      const j = await r.json();
-      if (j.ok) {
-        setUltimoDiff(j.sinCambios ? null : j.diferencia);
-        setTematicaPendiente(null);
-        setTematicaTexto('');
-        await onAgregado();
-      } else {
-        setError(j.errores?.[0] || 'No pudimos agregarlo. Puede que ya no esté disponible para tu celebración.');
-      }
-    } catch {
-      setError('No pudimos conectarnos. Inténtalo de nuevo.');
-    } finally {
-      setAgregando(null);
-    }
-  };
-
-  const clickAgregar = (item) => {
-    if (IDS_DECORACION_TEMATICA.has(item.id)) {
-      setTematicaPendiente(item.id);
-      return;
-    }
-    enviar(item.id, null);
-  };
-
+// ── Agregar adicionales después de reservar: desde el 10-nov-2026 abre el
+// catálogo completo de la reserva (/mi-celebracion/adicionales), con fotos,
+// fichas, varios a la vez y el valor exacto antes de confirmar. El servidor
+// sigue siendo la autoridad de qué es compatible y cuánto cuesta.
+function SeccionAgregarAdicional({ idParam, tParam }) {
+  const href = `/mi-celebracion/adicionales?id=${encodeURIComponent(idParam)}&t=${encodeURIComponent(tParam)}`;
   return (
-    <Seccion titulo="Agregar un adicional">
-      {!abierta ? (
-        <button onClick={() => setAbierta(true)} className="text-sm font-black" style={{ color: AZUL }}>
-          ✨ Ver adicionales disponibles
-        </button>
-      ) : (
-        <div>
-          {ultimoDiff != null && (
-            <p className="text-sm mb-2 font-bold" style={{ color: VERDE }}>
-              Agregado — se sumó {clp(ultimoDiff)} a tu total.
-            </p>
-          )}
-          {error && <p className="text-sm mb-2" style={{ color: '#DC2626' }}>{error}</p>}
-          {categorias.map((cat) => (
-            <div key={cat.id} className="mb-3">
-              <p className="text-xs font-black uppercase tracking-wide mb-1.5" style={{ color: '#9CA9C4' }}>
-                {cat.emoji} {cat.label}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {cat.items.filter((i) => !extrasIds.includes(i.id)).map((item) => (
-                  <button key={item.id}
-                    onClick={() => clickAgregar(item)}
-                    disabled={agregando === item.id}
-                    className="text-xs font-bold px-3 py-2 rounded-xl disabled:opacity-50"
-                    style={{ color: AZUL, background: 'rgba(21,101,192,0.08)' }}>
-                    {agregando === item.id ? 'Agregando…' : `+ ${item.emoji || ''} ${item.nombre}`}
-                  </button>
-                ))}
-              </div>
-              {tematicaPendiente && cat.items.some((i) => i.id === tematicaPendiente) && (
-                <div className="rounded-xl p-3 mt-2" style={{ background: '#FFF7ED', border: '1.5px solid #FED7AA' }}>
-                  <label className="block text-xs font-black mb-1.5" style={{ color: '#9A3412' }}>
-                    ¿Qué temática quieres para la celebración?
-                  </label>
-                  <input type="text" value={tematicaTexto} onChange={(e) => setTematicaTexto(e.target.value)}
-                    placeholder="Ej.: Minnie, dinosaurios, fútbol, princesas, Stitch..."
-                    className="w-full px-3 py-2 rounded-lg text-sm mb-2" style={{ border: '1.5px solid #FED7AA' }} />
-                  <p className="text-xs mb-2" style={{ color: '#9A3412' }}>
-                    La temática está sujeta a disponibilidad de materiales y proveedores. Algunas
-                    temáticas muy específicas pueden requerir hasta 3 semanas de anticipación. Si
-                    necesitamos proponerte una alternativa, te contactaremos.
-                  </p>
-                  <button
-                    onClick={() => enviar(tematicaPendiente, tematicaTexto)}
-                    disabled={!tematicaTexto.trim() || agregando === tematicaPendiente}
-                    className="text-xs font-black px-3 py-2 rounded-lg text-white disabled:opacity-50"
-                    style={{ background: '#EA580C' }}>
-                    Confirmar temática y agregar
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+    <Seccion titulo="Agregar adicionales">
+      <p className="text-sm mb-3" style={{ color: '#6B7A99' }}>
+        Inflables, juegos, decoración, animación y más — ya filtrados para tu celebración, con sus precios.
+      </p>
+      <a href={href}
+        className="block w-full text-center font-black text-white py-3.5 rounded-2xl"
+        style={{ background: `linear-gradient(135deg,${NARANJA},#EA580C)` }}>
+        ✨ Ver catálogo de adicionales
+      </a>
     </Seccion>
   );
 }
